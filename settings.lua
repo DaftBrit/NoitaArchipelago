@@ -58,6 +58,17 @@ mod_settings =
 				allowed_characters = "0123456789",
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
+			{
+				id = "spawn_rate",
+				ui_name = "Chest Spawn Rate",
+				ui_description = "Rate at which chests spawn",
+				value_default = 1,
+				value_min = 1,
+				value_max = 100,
+				value_display_multiplier = 1,
+				value_display_formatting = " $0",
+				scope = MOD_SETTING_SCOPE_NEW_GAME,
+			},
 		},
 	},
 }
