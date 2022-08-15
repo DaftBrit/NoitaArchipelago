@@ -21,7 +21,7 @@ function drop_reward( x, y, entity_id, rand_x, rand_y, set_rnd_  )
 	while( count > 0 ) do
 		count = count - 1
 		table.insert( entities, { "mods/archipelago/files/entities/props/banner.xml" } )
-		--dofile_once( "mods/archepelago/files/scripts/item_check.lua" )
+		dofile_once( "mods/archepelago/files/scripts/item_check.lua" )
 	end
 
 	for i,entity in ipairs(entities) do
