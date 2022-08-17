@@ -1,7 +1,7 @@
 <Mod
 	name="Archipelago"
 	description="Archipelago multiworld support for Noita"
-	request_no_api_restrictions="0" 
+	request_no_api_restrictions="1"
 > 
 </Mod>
 

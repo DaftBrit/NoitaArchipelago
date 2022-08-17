@@ -1,51 +1,64 @@
--- all functions below are optional and can be left out
+-- Copyright (c) 2022 DaftBrit
+--
+-- This software is released under the MIT License.
+-- https://opensource.org/licenses/MIT
 
---[[
+-- CREDITS:
+-- Noita API wrapper (for requires) taken from Dadido3/noita-mapcap
+-- pollnet library (for websocket implementation) probable-basilisk/pollnet
+-- noita-ws-api (for reference and initial websocket setup) probable-basilisk/noita-ws-api
+-- cheatgui (for reference) probable-basilisk/cheatgui
 
-function OnModPreInit()
-	print("Mod - OnModPreInit()") -- First this is called for all mods
+-- GLOBAL STUFF
+local libPath = "mods/archipelago/files/libraries/"
+dofile(libPath .. "noita-api/compatibility.lua")(libPath)
+if not async then
+	dofile_once("data/scripts/lib/coroutines.lua") -- Loads Noita's coroutines library from `data/scripts/lib/coroutines.lua`.
+end
+_G.item_check = 0
+
+--LIBS
+pollnet = require("pollnet")
+
+--CONF
+dofile("mods/archipelago/files/conf/host.lua")
+
+-- SCRIPTS
+dofile("mods/archipelago/files/scripts/utils.lua")
+dofile("mods/archipelago/files/scripts/json.lua")
+
+function archipelago()
+	if not sock then
+		local url = get_ws_host_url() -- comes from data/ws/host.lua
+		dofile_once("data/scripts/lib/coroutines.lua")
+		if not url then return false end
+		GamePrint("trying to connect to " .. url)
+		local sock = pollnet.open_ws(url)
+		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
+		sock:send("[{\"cmd\":\"Connect\",\"password\":\"\",\"game\":\"Noita\",\"name\":\""..PLAYERNAME.."\",\"uuid\":\"NoitaClient\",\"tags\":[\"AP\",\"WebHost\"],\"version\":{\"major\":0,\"minor\":3,\"build\":4,\"class\":\"Version\"},\"items_handling\":1}]")
+		async( function ()
+			while sock:poll() do
+				local msg = sock:last_message()
+				if msg then
+					print(msg)
+				else
+					wait(1)
+				end
+				if not _G.item_check == 0 then
+					sock:send("[{\"cmd\":\"LocationChecks\",\"locations\":[".._G.item_check.."]}]")
+					_G.item_check = 0
+				end
+			end
+		end)
+	end
 end
 
-function OnModInit()
-	print("Mod - OnModInit()") -- After that this is called for all mods
-end
-
-function OnModPostInit()
-	print("Mod - OnModPostInit()") -- Then this is called for all mods
-end
-
-function OnPlayerSpawned( player_entity ) -- This runs when player entity has been created
-	GamePrint( "OnPlayerSpawned() - Player entity id: " .. tostring(player_entity) )
-end
-
-function OnWorldInitialized() -- This is called once the game world is initialized. Doesn't ensure any world chunks actually exist. Use OnPlayerSpawned to ensure the chunks around player have been loaded or created.
-	GamePrint( "OnWorldInitialized() " .. tostring(GameGetFrameNum()) )
-end
-
-function OnWorldPreUpdate() -- This is called every time the game is about to start updating the world
-	GamePrint( "Pre-update hook " .. tostring(GameGetFrameNum()) )
-end
-
-function OnWorldPostUpdate() -- This is called every time the game has finished updating the world
-	GamePrint( "Post-update hook " .. tostring(GameGetFrameNum()) )
-end
-
-]]--
-
-function OnMagicNumbersAndWorldSeedInitialized() -- this is the last point where the Mod* API is available. after this materials.xml will be loaded.
-	local x = ProceduralRandom(0,0)
-	print( "===================================== random " .. tostring(x) )
+function OnWorldPostUpdate()
+	wake_up_waiting_threads(1)
 end
 
 function OnPlayerSpawned(player)
 	local x, y = EntityGetTransform(player)
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y )
-  end
--- This code runs when all mods' filesystems are registered
--- ModLuaFileAppend( "data/scripts/gun/gun_actions.lua", "mods/archipelago/files/actions.lua" ) -- Basically dofile("mods/archipelago/files/actions.lua") will appear at the end of gun_actions.lua
--- ModMagicNumbersFileAdd( "mods/archipelago/files/magic_numbers.xml" ) -- Will override some magic numbers using the specified file
--- ModRegisterAudioEventMappings( "mods/archipelago/files/audio_events.txt" ) -- Use this to register custom fmod events. Event mapping files can be generated via File -> Export GUIDs in FMOD Studio.
--- ModMaterialsFileAdd( "mods/archipelago/files/materials_rainbow.xml" ) -- Adds a new 'rainbow' material to materials
--- ModLuaFileAppend( "data/scripts/items/potion.lua", "mods/archipelago/files/potion_appends.lua" )
-
---print("archipelago mod init done")
+	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y ) -- for testing
+	archipelago()
+end

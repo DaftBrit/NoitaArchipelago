@@ -59,6 +59,15 @@ mod_settings =
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
+				id = "slot_name",
+				ui_name = "Slot",
+				ui_description = "Slot name",
+				value_default = "",
+				text_max_length = 20,
+				allowed_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789",
+				scope = MOD_SETTING_SCOPE_NEW_GAME,
+			},
+			{
 				id = "spawn_rate",
 				ui_name = "Chest Spawn Rate",
 				ui_description = "Rate at which chests spawn",

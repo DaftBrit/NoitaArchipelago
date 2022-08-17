@@ -1,9 +1,7 @@
 dofile_once("data/scripts/lib/utilities.lua")
-dofile_once( "data/scripts/gun/gun_actions.lua" )
-dofile_once( "data/scripts/game_helpers.lua" )
-
+dofile_once("data/scripts/gun/gun_actions.lua")
+dofile_once("data/scripts/game_helpers.lua")
 -------------------------------------------------------------------------------
-
 function drop_reward( x, y, entity_id, rand_x, rand_y, set_rnd_  )
 	local set_rnd = false 
 	if( set_rnd_ ~= nil ) then set_rnd = set_rnd_ end
@@ -21,7 +19,6 @@ function drop_reward( x, y, entity_id, rand_x, rand_y, set_rnd_  )
 	while( count > 0 ) do
 		count = count - 1
 		table.insert( entities, { "mods/archipelago/files/entities/props/banner.xml" } )
-		dofile_once( "mods/archepelago/files/scripts/item_check.lua" )
 	end
 
 	for i,entity in ipairs(entities) do
@@ -59,12 +56,13 @@ function on_open( entity_item )
 	SetRandomSeed( rand_x, rand_y )
 	drop_reward( x, y, entity_item, rand_x, rand_y, false )
 	EntityLoad("data/entities/particles/image_emitters/chest_effect.xml", x, y)
-
+	--archipelago(110005)
 end
 
 function item_pickup( entity_item, entity_who_picked, name )
 	-- GamePrintImportant( "$log_chest", "" )
 	GamePrintImportant("ARCHIPELAGO ITEM CHECK!","")
+	_G.item_check = 110009
 	-- GameTriggerMusicCue( "item" )
 
 	--if (remove_entity == false) then

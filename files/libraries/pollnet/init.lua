@@ -1,43 +1,20 @@
---[[ 
-pollnet bindings for luajit
-
-example usage to read twitch chat:
-local pollnet = require("pollnet")
-local async = require("async") -- assuming you have some kind of async
-async.run(function()
-  local url = "wss://irc-ws.chat.twitch.tv:443"
-  local sock = pollnet.open_ws(url)
-  sock:send("PASS doesntmatter")
-  -- special nick for anon read-only access on twitch
-  local anon_user_name = "justinfan" .. math.random(1, 100000)
-  local target_channel = "your_channel_name_here"
-  sock:send("NICK " .. anon_user_name)
-  sock:send("JOIN #" .. target_channel)
-  
-  while sock:poll() do
-    local msg = sock:last_message()
-    if msg then
-      if msg == "PING :tmi.twitch.tv" then
-        sock:send("PONG :tmi.twitch.tv")
-      end
-      print(msg) 
-    end
-    async.await_frames(1)
-  end
-  print("Socket closed: ", sock:last_message())
-end)
-]]
-
+if pollnet then return end -- guard against multiple "includes"
 local ffi = require("ffi")
 ffi.cdef[[
 struct pnctx* pollnet_init();
 struct pnctx* pollnet_get_or_init_static();
 void pollnet_shutdown(struct pnctx* ctx);
+unsigned int pollnet_open_tcp(struct pnctx* ctx, const char* addr);
+unsigned int pollnet_listen_tcp(struct pnctx* ctx, const char* addr);
 unsigned int pollnet_open_ws(struct pnctx* ctx, const char* url);
+unsigned int pollnet_simple_http_get(struct pnctx* ctx, const char* url);
+unsigned int pollnet_simple_http_post(struct pnctx* ctx, const char* url, const char* content_type, const char* data, unsigned int datasize);
 void pollnet_close(struct pnctx* ctx, unsigned int handle);
 void pollnet_close_all(struct pnctx* ctx);
 void pollnet_send(struct pnctx* ctx, unsigned int handle, const char* msg);
+void pollnet_send_binary(struct pnctx* ctx, unsigned int handle, const char* msg, unsigned int msgsize);
 unsigned int pollnet_update(struct pnctx* ctx, unsigned int handle);
+unsigned int pollnet_update_blocking(struct pnctx* ctx, unsigned int handle);
 int pollnet_get(struct pnctx* ctx, unsigned int handle, char* dest, unsigned int dest_size);
 int pollnet_get_error(struct pnctx* ctx, unsigned int handle, char* dest, unsigned int dest_size);
 unsigned int pollnet_get_connected_client_handle(struct pnctx* ctx, unsigned int handle);
@@ -89,7 +66,7 @@ end
 function socket_mt:_open(scratch_size, opener, ...)
   init_ctx()
   if self._socket then self:close() end
-  if not scratch_size then scratch_size = 64000 end
+  scratch_size = scratch_size or 64000
   if type(opener) == "number" then
     self._socket = opener
   else
@@ -101,8 +78,22 @@ function socket_mt:_open(scratch_size, opener, ...)
   return self
 end
 
+function socket_mt:http_get(url, scratch_size)
+  return self:_open(scratch_size, pollnet.pollnet_simple_http_get, url)
+end
+
+function socket_mt:http_post(url, body, content_type, scratch_size)
+  body = body or ""
+  content_type = content_type or "application/x-www-form-urlencoded"
+  return self:_open(scratch_size, pollnet.pollnet_simple_http_post, url, content_type, body, #body)
+end
+
 function socket_mt:open_ws(url, scratch_size)
   return self:_open(scratch_size, pollnet.pollnet_open_ws, url)
+end
+
+function socket_mt:open_tcp(addr, scratch_size)
+  return self:_open(scratch_size, pollnet.pollnet_open_tcp, addr)
 end
 
 function socket_mt:serve_http(addr, dir, scratch_size)
@@ -128,6 +119,10 @@ function socket_mt:listen_ws(addr, scratch_size)
   return self:_open(scratch_size, pollnet.pollnet_listen_ws, addr)
 end
 
+function socket_mt:listen_tcp(addr, scratch_size)
+  return self:_open(scratch_size, pollnet.pollnet_listen_tcp, addr)
+end
+
 function socket_mt:on_connection(f)
   self._on_connection = f
   return self
@@ -143,7 +138,7 @@ function socket_mt:_get_message()
 end
 
 function socket_mt:poll()
-  if not self._socket then 
+  if not self._socket then
     self._status = "invalid"
     return false, "invalid"
   end
@@ -161,12 +156,14 @@ function socket_mt:poll()
     self._status = "opening"
     return true
   elseif res == "error" then
+    self._status = "error"
     self._last_message = self:error_msg()
-    self._socket = nil -- hmm
     return false, self._last_message
   elseif res == "closed" then
+    self._status = "closed"
     return false, "closed"
   elseif res == "newclient" then
+    self._status = "open"
     local client_addr = self:_get_message()
     local client_handle = pollnet.pollnet_get_connected_client_handle(_ctx, self._socket)
     assert(client_handle > 0)
@@ -217,8 +214,24 @@ local function listen_ws(addr, scratch_size)
   return Socket():listen_ws(addr, scratch_size)
 end
 
+local function open_tcp(addr, scratch_size)
+  return Socket():open_tcp(addr, scratch_size)
+end
+
+local function listen_tcp(addr, scratch_size)
+  return Socket():listen_tcp(addr, scratch_size)
+end
+
 local function serve_http(addr, dir, scratch_size)
   return Socket():serve_http(addr, dir, scratch_size)
+end
+
+local function http_get(url, scratch_size)
+  return Socket():http_get(url, scratch_size)
+end
+
+local function http_post(url, body, content_type, scratch_size)
+  return Socket():http_post(url, body, content_type, scratch_size)
 end
 
 local function get_nanoid()
@@ -227,13 +240,17 @@ local function get_nanoid()
   return ffi.string(_id_scratch, msg_size)
 end
 
-lib_pollnet = {
+return {
   init = init_ctx,
   init_hack_static = init_ctx_hack_static,
-  shutdown = shutdown_ctx, 
-  open_ws = open_ws, 
+  shutdown = shutdown_ctx,
+  open_ws = open_ws,
   listen_ws = listen_ws,
+  open_tcp = open_tcp,
+  listen_tcp = listen_tcp,
   serve_http = serve_http,
+  http_get = http_get,
+  http_post = http_post,
   Socket = Socket,
   pollnet = pollnet,
   nanoid = get_nanoid,
