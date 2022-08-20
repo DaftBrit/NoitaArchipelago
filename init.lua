@@ -25,59 +25,83 @@ dofile("mods/archipelago/files/conf/host.lua")
 
 -- SCRIPTS
 dofile("mods/archipelago/files/scripts/utils.lua")
-dofile("mods/archipelago/files/scripts/json.lua")
+json = dofile("mods/archipelago/files/scripts/json.lua")
+
+players= {}
+check_list = {}
+item_table = {}
+item_table["110000"] = "Bad Times"
+item_table["110001"] = "data/entities/items/pickup/heart.xml"
+item_table["110002"] = "data/entities/items/pickup/spell_refresh.xml"
+item_table["110003"] = "data/entities/items/pickup/goldnugget_50.xml"
+item_table["110004"] = "data/entities/items/wand_level_01.xml"
+item_table["110005"] = "data/entities/items/pickup/potion.xml"
 
 function archipelago()
 	if not sock then
-		local url = get_ws_host_url() -- comes from data/ws/host.lua
-		--dofile_once("data/scripts/lib/coroutines.lua")
-		if not url then return false end
-		GamePrint("trying to connect to " .. url)
-		sock = pollnet.open_ws(url)
 		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
 		local PASSWD = ModSettingGet("archipelago.passwd") or ""
-		sock:send("[{\"cmd\":\"Connect\",\"password\":\""..PASSWD.."\",\"game\":\"Noita\",\"name\":\""..PLAYERNAME.."\",\"uuid\":\"NoitaClient\",\"tags\":[\"AP\",\"WebHost\"],\"version\":{\"major\":0,\"minor\":3,\"build\":4,\"class\":\"Version\"},\"items_handling\":1}]")
-		async( function ()
-			while sock:poll() do
-				local raw_msg = sock:last_message()
-				if raw_msg then
-					print(raw_msg)
-					raw_msg = raw_msg:sub(2)
-					raw_msg = raw_msg:sub(1,-2)
-					local msg = JSON:decode(raw_msg)
-					--print(raw_msg)
-					if msg["cmd"] == "Connected" then
-						GamePrint("Connected to Archipelago server")
-						check_list = msg["missing_locations"]
-					end
-					if check_list[1] then
-						next_item = check_list[1]
-					end
-				else
-					wait(1)
-				end
-			end
-		end)
+		local url = get_ws_host_url() -- comes from data/ws/host.lua
+		if not url then return false end
+		sock = pollnet.open_ws(url)
+		conn = sock:send("[{\"cmd\":\"Connect\",\"password\":\""..PASSWD.."\",\"game\":\"Noita\",\"name\":\""..PLAYERNAME.."\",\"uuid\":\"NoitaClient\",\"tags\":[\"AP\",\"WebHost\"],\"version\":{\"major\":0,\"minor\":3,\"build\":4,\"class\":\"Version\"},\"items_handling\":1}]")
 	end
-end
-function item_check()
-	async( function()
+	async( function ()
 		while sock:poll() do
+			-- Message read loop and variable set
+			raw_msg = sock:last_message()
+			if raw_msg then
+				print(raw_msg)
+				local to_parse = raw_msg:sub(2,#raw_msg-1)
+				local msg = JSON:decode(to_parse)
+				if msg["cmd"] == "Connected" then
+					GamePrintImportant("Connected!","Connected to Archipelago server")
+					check_list = msg["missing_locations"]
+					slot_number = msg["slot"]
+					for k, v in pairs(msg["players"]) do
+						players[v["slot"]] = v["name"]
+					end
+				end
+				-- Player messaging
+				if msg["cmd"] == "PrintJSON" and msg["type"] == "ItemSend" then
+					local player = players[msg["item"]["player"]]
+					local item_string = msg["data"][2]["text"]
+					local item_id = msg["data"][3]["text"]
+					local player_to = players[msg["receiving"]]
+					if item_string == " found their " then
+						GamePrintImportant(item_id,player..item_string..item_id)
+					end
+					if item_string == " sent " then
+						local item_string2 = msg["data"][4]["text"]
+						GamePrintImportant(item_id,player..item_string..item_id..item_string2..player_to)
+					end
+					-- Item Spawning
+					if msg["receiving"] == slot_number then
+						local x, y = EntityGetTransform(global_player)
+						print(item_table[item_id])
+						if item_table[item_id] == "Bad Times" then
+							print("Bad time function here")
+						else
+							EntityLoad( item_table[item_id], x + 10, y - 10 )
+						end
+					end
+				end
+				if check_list[1] then
+					next_item = check_list[1]
+				end
+			else
+				wait(1)
+			end
+			-- Item check and message send
 			if next_item then
 				local x, y = EntityGetTransform(global_player)
 				local radius = 15
-				--print(x.." "..y)
 				local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
 				if pickup[1] then
 					sock:send("[{\"cmd\":\"LocationChecks\",\"locations\":["..next_item.."]}]")
 					EntityKill( pickup[1] )
 					table.remove(check_list,1)
-					next_item = nil
-				else
-					wait(1)
 				end
-			else
-				wait(1)
 			end
 		end
 	end)
@@ -85,7 +109,6 @@ end
 function OnWorldPostUpdate()
 	wake_up_waiting_threads(1)
 end
-
 function OnPlayerSpawned(player)
 	global_player = player
 	local x, y = EntityGetTransform(player)
@@ -95,5 +118,4 @@ function OnPlayerSpawned(player)
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 80, y ) -- for testing
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 100, y ) -- for testing
 	archipelago()
-	item_check()
 end

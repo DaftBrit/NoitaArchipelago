@@ -61,7 +61,7 @@ end
 
 function item_pickup( entity_item, entity_who_picked, name )
 	-- GamePrintImportant( "$log_chest", "" )
-	GamePrintImportant("ARCHIPELAGO ITEM CHECK!","")
+	-- GamePrint("ARCHIPELAGO ITEM CHECK!")
 	-- GameTriggerMusicCue( "item" )
 
 	--if (remove_entity == false) then
