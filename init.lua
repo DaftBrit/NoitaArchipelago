@@ -37,6 +37,23 @@ item_table["110003"] = "data/entities/items/pickup/goldnugget_50.xml"
 item_table["110004"] = "data/entities/items/wand_level_01.xml"
 item_table["110005"] = "data/entities/items/pickup/potion.xml"
 
+local function BadTimes()
+	--Function to spawn "Bad Times" events, uses the noita streaming integration system
+	dofile("mods/archipelago/files/scripts/badtimes.lua")
+	math.randomseed(os.time())
+	local event_id = math.random(1, #streaming_events)
+	print (event_id)
+	for i,v in pairs( streaming_events ) do
+		if i == event_id then
+			print(v["id"])
+			local event_desc = v["id"]:gsub("_", " ")
+			GamePrintImportant("BAD TIMES!!", event_desc)
+			_streaming_run_event(v["id"])
+			break
+		end
+	end
+end
+
 function archipelago()
 	if not sock then
 		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
@@ -78,9 +95,8 @@ function archipelago()
 					-- Item Spawning
 					if msg["receiving"] == slot_number then
 						local x, y = EntityGetTransform(global_player)
-						print(item_table[item_id])
 						if item_table[item_id] == "Bad Times" then
-							print("Bad time function here")
+							BadTimes()
 						else
 							EntityLoad( item_table[item_id], x + 10, y - 10 )
 						end
