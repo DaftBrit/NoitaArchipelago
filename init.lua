@@ -25,10 +25,12 @@ dofile("mods/archipelago/files/conf/host.lua")
 
 -- SCRIPTS
 dofile("mods/archipelago/files/scripts/utils.lua")
-json = dofile("mods/archipelago/files/scripts/json.lua")
+dofile("mods/archipelago/files/scripts/json.lua")
 
-players= {}
+Games = {}
+players = {}
 check_list = {}
+item_id_to_name = {}
 item_table = {}
 item_table["110000"] = "Bad Times"
 item_table["110001"] = "data/entities/items/pickup/heart.xml"
@@ -55,6 +57,7 @@ local function BadTimes()
 end
 
 function archipelago()
+	-- main function wrapper
 	if not sock then
 		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
 		local PASSWD = ModSettingGet("archipelago.passwd") or ""
@@ -68,32 +71,57 @@ function archipelago()
 			-- Message read loop and variable set
 			raw_msg = sock:last_message()
 			if raw_msg then
-				print(raw_msg)
-				local to_parse = raw_msg:sub(2,#raw_msg-1)
-				local msg = JSON:decode(to_parse)
-				if msg["cmd"] == "Connected" then
-					GamePrintImportant("Connected!","Connected to Archipelago server")
-					check_list = msg["missing_locations"]
-					slot_number = msg["slot"]
-					for k, v in pairs(msg["players"]) do
+				--print(raw_msg)
+				msg = JSON:decode(raw_msg)
+				function JSON:onDecodeError(message, text, location, etc)
+					print(message)
+				end
+				if msg[1]["cmd"] == "Connected" then
+					GamePrint("Connected to Archipelago server")
+					check_list = msg[1]["missing_locations"]
+					slot_number = msg[1]["slot"]
+					for k, v in pairs(msg[1]["players"]) do
 						players[v["slot"]] = v["name"]
+					end
+					for key, val in pairs(msg[1]["slot_info"]) do
+						table.insert(Games,val["game"])
+					end
+					local games_json = JSON:encode(Games)
+					print(games_json)
+					sock:send("[{\"cmd\":\"GetDataPackage\",\"games\":"..games_json.."}]")
+				end
+				if msg[2] then
+					if msg[2]["cmd"] == "ReceivedItems" then
+						print("This is where we can deliver already collected items")
+					end
+				end
+				-- Map dataset
+				if msg[1]["cmd"] == "DataPackage" then
+					for i, g in pairs(msg[1]["data"]["games"]) do
+						for item_name, item_id in pairs(msg[1]["data"]["games"][i]["item_name_to_id"]) do
+							item_id_to_name[tostring(item_id)] = item_name
+						end
 					end
 				end
 				-- Player messaging
-				if msg["cmd"] == "PrintJSON" and msg["type"] == "ItemSend" then
-					local player = players[msg["item"]["player"]]
-					local item_string = msg["data"][2]["text"]
-					local item_id = msg["data"][3]["text"]
-					local player_to = players[msg["receiving"]]
+				if msg[1]["cmd"] == "PrintJSON" and msg[1]["type"] == "ItemSend" then
+					local player = players[msg[1]["item"]["player"]]
+					--print("player "..player)
+					local item_string = msg[1]["data"][2]["text"]
+					--print("item string"..item_string)
+					local item_id = msg[1]["data"][3]["text"]
+					--print("item id "..item_id)
+					local item_name = item_id_to_name[item_id]
+					local player_to = players[msg[1]["receiving"]]
 					if item_string == " found their " then
-						GamePrintImportant(item_id,player..item_string..item_id)
+						GamePrint(player..item_string..item_name)
 					end
 					if item_string == " sent " then
-						local item_string2 = msg["data"][4]["text"]
-						GamePrintImportant(item_id,player..item_string..item_id..item_string2..player_to)
+						local item_string2 = msg[1]["data"][4]["text"]
+						GamePrint(player..item_string..item_name..item_string2..player_to)
 					end
 					-- Item Spawning
-					if msg["receiving"] == slot_number then
+					if msg[1]["receiving"] == slot_number then
 						local x, y = EntityGetTransform(global_player)
 						if item_table[item_id] == "Bad Times" then
 							BadTimes()

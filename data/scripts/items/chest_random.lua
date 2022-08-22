@@ -60,14 +60,6 @@ function on_open( entity_item )
 end
 
 function item_pickup( entity_item, entity_who_picked, name )
-	-- GamePrintImportant( "$log_chest", "" )
-	-- GamePrint("ARCHIPELAGO ITEM CHECK!")
-	-- GameTriggerMusicCue( "item" )
-
-	--if (remove_entity == false) then
-	--	EntityLoad( "data/entities/misc/chest_random_dummy.xml", x, y )
-	--end
-
 	on_open( entity_item )
 	
 	EntityKill( entity_item )
