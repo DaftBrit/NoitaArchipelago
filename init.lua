@@ -27,6 +27,7 @@ dofile("mods/archipelago/files/conf/host.lua")
 dofile("mods/archipelago/files/scripts/utils.lua")
 dofile("mods/archipelago/files/scripts/json.lua")
 
+chest_counter = 0
 Games = {}
 players = {}
 check_list = {}
@@ -44,10 +45,8 @@ local function BadTimes()
 	dofile("mods/archipelago/files/scripts/badtimes.lua")
 	math.randomseed(os.time())
 	local event_id = math.random(1, #streaming_events)
-	print (event_id)
 	for i,v in pairs( streaming_events ) do
 		if i == event_id then
-			print(v["id"])
 			local event_desc = v["id"]:gsub("_", " ")
 			GamePrintImportant("BAD TIMES!!", event_desc)
 			_streaming_run_event(v["id"])
@@ -69,14 +68,16 @@ function archipelago()
 	async( function ()
 		while sock:poll() do
 			-- Message read loop and variable set
+			kills = StatsGetValue("enemies_killed")
 			raw_msg = sock:last_message()
 			if raw_msg then
-				--print(raw_msg)
+				print(raw_msg)
 				msg = JSON:decode(raw_msg)
 				function JSON:onDecodeError(message, text, location, etc)
 					print(message)
 				end
 				if msg[1]["cmd"] == "Connected" then
+					sock:send("[{\"cmd\":\"Sync\"}]")
 					GamePrint("Connected to Archipelago server")
 					check_list = msg[1]["missing_locations"]
 					slot_number = msg[1]["slot"]
@@ -87,12 +88,18 @@ function archipelago()
 						table.insert(Games,val["game"])
 					end
 					local games_json = JSON:encode(Games)
-					print(games_json)
 					sock:send("[{\"cmd\":\"GetDataPackage\",\"games\":"..games_json.."}]")
 				end
-				if msg[2] then
-					if msg[2]["cmd"] == "ReceivedItems" then
-						print("This is where we can deliver already collected items")
+				--Item sync for items already sent
+				if msg[1]["cmd"] == "ReceivedItems" and ModSettingGet("archipelago.redeliver_items") then
+					for key, val in pairs(msg[1]["items"]) do
+						local x, y = EntityGetTransform(global_player)
+						local item_id = msg[1]["items"][key]["item"]
+						local str_item_id = tostring(item_id)
+						--Dont repeat bad events
+						if item_table[str_item_id] ~= "Bad Times" then
+							EntityLoad( item_table[str_item_id], x, y)
+						end
 					end
 				end
 				-- Map dataset
@@ -114,11 +121,11 @@ function archipelago()
 					local item_name = item_id_to_name[item_id]
 					local player_to = players[msg[1]["receiving"]]
 					if item_string == " found their " then
-						GamePrint(player..item_string..item_name)
+						GamePrintImportant(item_name,player..item_string..item_name)
 					end
 					if item_string == " sent " then
 						local item_string2 = msg[1]["data"][4]["text"]
-						GamePrint(player..item_string..item_name..item_string2..player_to)
+						GamePrintImportant(item_name,player..item_string..item_name..item_string2..player_to)
 					end
 					-- Item Spawning
 					if msg[1]["receiving"] == slot_number then
@@ -126,7 +133,7 @@ function archipelago()
 						if item_table[item_id] == "Bad Times" then
 							BadTimes()
 						else
-							EntityLoad( item_table[item_id], x + 10, y - 10 )
+							EntityLoad( item_table[item_id], x, y)
 						end
 					end
 				end
@@ -145,6 +152,17 @@ function archipelago()
 					sock:send("[{\"cmd\":\"LocationChecks\",\"locations\":["..next_item.."]}]")
 					EntityKill( pickup[1] )
 					table.remove(check_list,1)
+				end
+			end
+			-- Spawn chest on X kills
+			if ModSettingGet("archipelago.kill_count") > 0 then
+				local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
+				local count = (kills / per_kill) - chest_counter
+				local x, y = EntityGetTransform(global_player)
+				if count == 1 then
+					EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y )
+					GamePrint(kills.." kills spawned a chest")
+					chest_counter = chest_counter + 1
 				end
 			end
 		end
