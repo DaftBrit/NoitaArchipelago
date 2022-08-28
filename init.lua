@@ -8,6 +8,7 @@
 -- pollnet library (for websocket implementation) probable-basilisk/pollnet
 -- noita-ws-api (for reference and initial websocket setup) probable-basilisk/noita-ws-api
 -- cheatgui (for reference) probable-basilisk/cheatgui
+-- sqlite FFI ColonelThirtyTwo/lsqlite3-ffi
 
 -- GLOBAL STUFF
 local libPath = "mods/archipelago/files/libraries/"
@@ -19,6 +20,7 @@ _G.item_check = 0
 
 --LIBS
 pollnet = require("pollnet")
+sqlite = require("sqlite")
 
 --CONF
 dofile("mods/archipelago/files/conf/host.lua")
