@@ -123,7 +123,11 @@ function archipelago()
 					local item_name = item_id_to_name[item_id]
 					local player_to = players[msg[1]["receiving"]]
 					if item_string == " found their " then
-						GamePrintImportant(item_name,player..item_string..item_name)
+						if item_table[item_id] == "Bad Times" then
+							BadTimes()
+						else
+							GamePrintImportant(item_name,player..item_string..item_name)
+						end
 					end
 					if item_string == " sent " then
 						local item_string2 = msg[1]["data"][4]["text"]
