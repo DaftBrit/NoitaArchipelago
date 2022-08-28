@@ -19,6 +19,8 @@ that a check has taken place.
       - Bad events can be toggled in the player yaml settings
  
 TODO mod install guide
- 
-[Local item](https://user-images.githubusercontent.com/87314354/187090201-85f3c0dd-7fa1-4844-b3bc-4a608170ba03.webm)
-[Remote item](https://user-images.githubusercontent.com/87314354/187090215-37e2f8da-d315-4515-b5c2-a26cbd133e5f.webm)
+ Local item
+https://user-images.githubusercontent.com/87314354/187090201-85f3c0dd-7fa1-4844-b3bc-4a608170ba03.webm
+
+ Remote item
+https://user-images.githubusercontent.com/87314354/187090215-37e2f8da-d315-4515-b5c2-a26cbd133e5f.webm
