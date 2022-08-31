@@ -35,12 +35,24 @@ players = {}
 check_list = {}
 item_id_to_name = {}
 item_table = {}
+
 item_table["110000"] = "Bad Times"
+
 item_table["110001"] = "data/entities/items/pickup/heart.xml"
 item_table["110002"] = "data/entities/items/pickup/spell_refresh.xml"
-item_table["110003"] = "data/entities/items/pickup/goldnugget_50.xml"
-item_table["110004"] = "data/entities/items/wand_level_01.xml"
-item_table["110005"] = "data/entities/items/pickup/potion.xml"
+item_table["110003"] = "data/entities/items/pickup/potion.xml"
+
+item_table["110004"] = "data/entities/items/pickup/goldnugget_10.xml"
+item_table["110005"] = "data/entities/items/pickup/goldnugget_50.xml"
+item_table["110006"] = "data/entities/items/pickup/goldnugget_200.xml"
+item_table["110007"] = "data/entities/items/pickup/goldnugget_1000.xml"
+
+item_table["110008"] = "data/entities/items/wand_level_01.xml"
+item_table["110009"] = "data/entities/items/wand_level_02.xml"
+item_table["110010"] = "data/entities/items/wand_level_03.xml"
+item_table["110011"] = "data/entities/items/wand_level_04.xml"
+item_table["110012"] = "data/entities/items/wand_level_05.xml"
+item_table["110013"] = "data/entities/items/wand_level_06.xml"
 
 local function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
@@ -60,7 +72,7 @@ end
 function archipelago()
 	-- main function wrapper
 	if not sock then
-		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
+		PLAYERNAME = ModSettingGet("archipelago.slot_name")
 		local PASSWD = ModSettingGet("archipelago.passwd") or ""
 		local url = get_ws_host_url() -- comes from data/ws/host.lua
 		if not url then return false end
@@ -123,15 +135,27 @@ function archipelago()
 					local item_name = item_id_to_name[item_id]
 					local player_to = players[msg[1]["receiving"]]
 					if item_string == " found their " then
-						if item_table[item_id] == "Bad Times" then
-							BadTimes()
-						else
-							GamePrintImportant(item_name,player..item_string..item_name)
+						if item_table[item_id] ~= "Bad Times" then
+							if player == PLAYERNAME or player_to == PLAYERNAME then
+								--We only want popup messages for our items sent / received
+								GamePrintImportant(item_name,player..item_string..item_name)
+							else
+								--Less important messaging in the bottom left
+								GamePrint(player..item_string..item_name)
+							end
 						end
 					end
 					if item_string == " sent " then
 						local item_string2 = msg[1]["data"][4]["text"]
-						GamePrintImportant(item_name,player..item_string..item_name..item_string2..player_to)
+						if item_table[item_id] ~= "Bad Times" then
+							if player == PLAYERNAME or player_to == PLAYERNAME then
+								--We only want popup messages for our items sent / received
+								GamePrintImportant(item_name,player..item_string..item_name..item_string2..player_to)
+							else
+								--Less important messaging in the bottom left
+								GamePrint(player..item_string..item_name..item_string2..player_to)
+							end
+						end
 					end
 					-- Item Spawning
 					if msg[1]["receiving"] == slot_number then
