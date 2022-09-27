@@ -28,6 +28,7 @@ dofile("mods/archipelago/files/conf/host.lua")
 -- SCRIPTS
 dofile("mods/archipelago/files/scripts/utils.lua")
 dofile("mods/archipelago/files/scripts/json.lua")
+dofile_once("data/scripts/lib/utilities.lua")
 
 local chest_counter = 0
 local Games = {}
@@ -131,12 +132,14 @@ local function RecvMsgReceivedItems(msg)
 	--Item sync for items already sent
 	if ModSettingGet("archipelago.redeliver_items") then
 		for key, val in pairs(msg["items"]) do
-			local x, y = EntityGetTransform(global_player)
-			local item_id = msg["items"][key]["item"]
-			local str_item_id = tostring(item_id)
-			--Dont repeat bad events
-			if item_table[str_item_id] ~= "Bad Times" then
-				EntityLoad( item_table[str_item_id], x, y)
+			for i, p in ipairs(get_players()) do
+				local x, y = EntityGetTransform(p)
+				local item_id = msg["items"][key]["item"]
+				local str_item_id = tostring(item_id)
+				--Dont repeat bad events
+				if item_table[str_item_id] ~= "Bad Times" then
+					EntityLoad( item_table[str_item_id], x, y)
+				end
 			end
 		end
 	end
@@ -185,11 +188,13 @@ local function RecvMsgPrintJSON(msg)
 		end
 		-- Item Spawning
 		if msg["receiving"] == slot_number then
-			local x, y = EntityGetTransform(global_player)
-			if item_table[item_id] == "Bad Times" then
-				BadTimes()
-			else
-				EntityLoad( item_table[item_id], x, y)
+			for i, p in ipairs(get_players()) do
+				local x, y = EntityGetTransform(p)
+				if item_table[item_id] == "Bad Times" then
+					BadTimes()
+				else
+					EntityLoad( item_table[item_id], x, y)
+				end
 			end
 		end
 	end
@@ -229,13 +234,15 @@ local function AsyncThread()
 
 		-- Item check and message send
 		if next_item then
-			local x, y = EntityGetTransform(global_player)
-			local radius = 15
-			local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
-			if pickup[1] then
-				SendCmd("LocationChecks", { locations = { next_item } })
-				EntityKill( pickup[1] )
-				table.remove(check_list, 1)
+			for i, p in ipairs(get_players()) do
+				local x, y = EntityGetTransform(p)
+				local radius = 15
+				local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
+				if pickup[1] then
+					SendCmd("LocationChecks", { locations = { next_item } })
+					EntityKill( pickup[1] )
+					table.remove(check_list, 1)
+				end
 			end
 		end
 
@@ -244,11 +251,13 @@ local function AsyncThread()
 			local kills = StatsGetValue("enemies_killed")
 			local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
 			local count = (kills / per_kill) - chest_counter
-			local x, y = EntityGetTransform(global_player)
-			if count == 1 then
-				EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y )
-				GamePrint(kills .. " kills spawned a chest")
-				chest_counter = chest_counter + 1
+			for i, p in ipairs(get_players()) do
+				local x, y = EntityGetTransform(p)
+				if count == 1 then
+					EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y )
+					GamePrint(kills .. " kills spawned a chest")
+					chest_counter = chest_counter + 1
+				end
 			end
 		end
 	end
@@ -269,7 +278,6 @@ function OnWorldPostUpdate()
 end
 
 function OnPlayerSpawned(player)
-	global_player = player
 	local x, y = EntityGetTransform(player)
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y ) -- for testing
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 40, y ) -- for testing
