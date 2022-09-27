@@ -31,6 +31,7 @@ dofile("mods/archipelago/files/scripts/json.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 
 local chest_counter = 0
+local last_death_time = 0
 local Games = {}
 local players = {}
 local check_list = {}
@@ -77,7 +78,7 @@ local function SendCmd(cmd, data)
 	data["cmd"] = cmd
 
 	local cmd_str = JSON:encode({data})
-	print("SENT" .. cmd_str)
+	print("SENT: " .. cmd_str)
 	sock:send(cmd_str)
 end
 
@@ -93,7 +94,7 @@ local function InitSocket()
 			game = "Noita",
 			name = PLAYERNAME,
 			uuid = "NoitaClient",
-			tags = { "AP", "WebHost" },
+			tags = { "AP", "WebHost", "DeathLink" },
 			version = { major = 0, minor = 3, build = 4, class = "Version" },
 			items_handling = 1
 		})
@@ -108,7 +109,7 @@ local function GetNextMessage()
 	local raw_msg = sock:last_message()
 	if not raw_msg then return nil end
 
-	--print(raw_msg)
+	print("RECV: " .. raw_msg)
 	return JSON:decode(raw_msg)[1]
 end
 
@@ -200,11 +201,40 @@ local function RecvMsgPrintJSON(msg)
 	end
 end
 
+local function RecvMsgPrint(msg)
+	GamePrint(msg["text"])
+end
+
+local function UpdateDeathTime()
+	local curr_death_time = os.time()
+	if curr_death_time - last_death_time <= 1 then return false end
+	last_death_time = curr_death_time
+	return true
+end
+
+local function RecvMsgBounced(msg)
+	if contains_element(msg["tags"], "DeathLink") then
+		if not UpdateDeathTime() then return end
+
+		for i, p in ipairs(get_players()) do
+			local gsc_id = EntityGetFirstComponentIncludingDisabled(p, "GameStatsComponent")
+			ComponentSetValue2(gsc_id, "extra_death_msg", msg["data"]["cause"])
+			EntityKill(p)
+		end
+
+		GamePrintImportant(msg["data"]["source"] .. " died", msg["data"]["cause"])
+	else
+		print("Unsupported Bounced type received. " .. JSON:encode(msg))
+	end
+end
+
 local recv_msg_table = {
 	["Connected"] = RecvMsgConnected,
 	["ReceivedItems"] = RecvMsgReceivedItems,
 	["DataPackage"] = RecvMsgDataPackage,
-	["PrintJSON"] = RecvMsgPrintJSON
+	["PrintJSON"] = RecvMsgPrintJSON,
+	["Print"] = RecvMsgPrint,
+	["Bounced"] = RecvMsgBounced
 }
 
 local function ProcessMsg(msg)
@@ -275,6 +305,48 @@ end
 
 function OnWorldPostUpdate()
 	wake_up_waiting_threads(1)
+end
+
+function GetCauseOfDeath()
+	local raw_death_msg = StatsGetValue("killed_by")
+	local origin, cause = string.match(raw_death_msg, "(.*) | (.*)")
+
+	if origin then
+		origin = GameTextGetTranslatedOrNot(origin)
+	end
+
+	local result = 'Noita'
+	if not_empty(origin) and not_empty(cause) then
+		result = origin .. "'s " .. cause
+	elseif not_empty(origin) then
+		result = origin
+	elseif not_empty(cause) then
+		result = cause
+	end
+
+	return result .. StatsGetValue("killed_by_extra")
+end
+
+-- Workaround: When the player creates a new game, OnPlayerDied gets called.
+-- However we know they have to pause the game (menu) to start a new game.
+game_is_paused = false
+function OnPausedChanged(is_paused, is_inventory_pause)
+	game_is_paused = is_paused and not is_inventory_pause
+end
+
+function OnPlayerDied(player)
+	if game_is_paused or not UpdateDeathTime() then return end
+
+	local death_msg = GetCauseOfDeath()
+	local slotname = ModSettingGet("archipelago.slot_name")
+	SendCmd("Bounce", {
+		tags = { "DeathLink" },
+		data = {
+			time = last_death_time,
+			cause = slotname .. " died to " .. death_msg,
+			source = slotname
+		}
+	})
 end
 
 function OnPlayerSpawned(player)

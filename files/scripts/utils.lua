@@ -137,3 +137,14 @@ function do_here(fn)
   setfenv(f, getfenv())
   f()
 end
+
+function contains_element(tbl, elem)
+  for _, v in ipairs(tbl) do
+    if v == elem then return true end
+  end
+  return false
+end
+
+function not_empty(s)
+  return s ~= nil and s ~= ''
+end
