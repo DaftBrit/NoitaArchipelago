@@ -45,8 +45,8 @@ mod_settings =
 				ui_name = "Server",
 				ui_description = "Server address",
 				value_default = "archipelago.gg",
-				text_max_length = 20,
-				allowed_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789",
+				text_max_length = 120,
+				allowed_characters = "%-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~",
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
@@ -64,7 +64,7 @@ mod_settings =
 				ui_description = "Slot name",
 				value_default = "",
 				text_max_length = 20,
-				allowed_characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789",
+				allowed_characters = " !#$%&'()+,-.0123456789;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~",
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
