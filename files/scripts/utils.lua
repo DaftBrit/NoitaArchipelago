@@ -1,3 +1,5 @@
+dofile_once("data/scripts/lib/utilities.lua")
+
 function hello()
   GamePrintImportant("Hello", "Hello")
   GamePrint("Hello")
@@ -147,4 +149,11 @@ end
 
 function not_empty(s)
   return s ~= nil and s ~= ''
+end
+
+function EntityLoadAtPlayer(filename, xoff, yoff)
+  for i, p in ipairs(get_players()) do
+    local x, y = EntityGetTransform(p)
+    EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
+  end
 end
