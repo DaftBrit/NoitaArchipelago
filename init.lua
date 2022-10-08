@@ -32,6 +32,7 @@ dofile_once("data/scripts/lib/utilities.lua")
 
 local chest_counter = 0
 local last_death_time = 0
+local death_link = false
 local Games = {}
 local players = {}
 local check_list = {}
@@ -55,7 +56,6 @@ local item_table = {
 	["110012"] = "data/entities/items/wand_level_05.xml",
 	["110013"] = "data/entities/items/wand_level_06.xml"
 }
-
 local sock = nil
 
 local function BadTimes()
@@ -82,6 +82,17 @@ local function SendCmd(cmd, data)
 	sock:send(cmd_str)
 end
 
+local function SetDeathLinkEnabled(enabled)
+	death_link = enabled
+	print("Deathlink = " .. tostring(enabled))
+
+	local conn_tags = { "AP", "WebHost" }
+	if enabled then
+		table.insert(conn_tags, "DeathLink")
+	end
+	SendCmd("ConnectUpdate", { tags = conn_tags })
+end
+
 local function InitSocket()
 	if not sock then
 		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
@@ -94,7 +105,7 @@ local function InitSocket()
 			game = "Noita",
 			name = PLAYERNAME,
 			uuid = "NoitaClient",
-			tags = { "AP", "WebHost", "DeathLink" },
+			tags = { "AP", "WebHost" },
 			version = { major = 0, minor = 3, build = 4, class = "Version" },
 			items_handling = 1
 		})
@@ -127,6 +138,9 @@ local function RecvMsgConnected(msg)
 		table.insert(Games, val["game"])
 	end
 	SendCmd("GetDataPackage", { games = Games })
+
+	death_link = msg["slot_data"]["deathLink"] == 1
+	SetDeathLinkEnabled(death_link)
 end
 
 local function RecvMsgReceivedItems(msg)
@@ -214,7 +228,7 @@ end
 
 local function RecvMsgBounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
-		if not UpdateDeathTime() then return end
+		if not death_link or not UpdateDeathTime() then return end
 
 		for i, p in ipairs(get_players()) do
 			local gsc_id = EntityGetFirstComponentIncludingDisabled(p, "GameStatsComponent")
@@ -335,7 +349,7 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 end
 
 function OnPlayerDied(player)
-	if game_is_paused or not UpdateDeathTime() then return end
+	if not death_link or game_is_paused or not UpdateDeathTime() then return end
 
 	local death_msg = GetCauseOfDeath()
 	local slotname = ModSettingGet("archipelago.slot_name")
