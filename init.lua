@@ -147,14 +147,11 @@ local function RecvMsgReceivedItems(msg)
 	--Item sync for items already sent
 	if ModSettingGet("archipelago.redeliver_items") then
 		for key, val in pairs(msg["items"]) do
-			for i, p in ipairs(get_players()) do
-				local x, y = EntityGetTransform(p)
-				local item_id = msg["items"][key]["item"]
-				local str_item_id = tostring(item_id)
-				--Dont repeat bad events
-				if item_table[str_item_id] ~= "Bad Times" then
-					EntityLoad( item_table[str_item_id], x, y)
-				end
+			local item_id = msg["items"][key]["item"]
+			local str_item_id = tostring(item_id)
+			--Dont repeat bad events
+			if item_table[str_item_id] ~= "Bad Times" then
+				EntityLoadAtPlayer(item_table[str_item_id])
 			end
 		end
 	end
@@ -203,13 +200,10 @@ local function RecvMsgPrintJSON(msg)
 		end
 		-- Item Spawning
 		if msg["receiving"] == slot_number then
-			for i, p in ipairs(get_players()) do
-				local x, y = EntityGetTransform(p)
-				if item_table[item_id] == "Bad Times" then
-					BadTimes()
-				else
-					EntityLoad( item_table[item_id], x, y)
-				end
+			if item_table[item_id] == "Bad Times" then
+				BadTimes()
+			else
+				EntityLoadAtPlayer(item_table[item_id])
 			end
 		end
 	end
@@ -295,13 +289,10 @@ local function AsyncThread()
 			local kills = StatsGetValue("enemies_killed")
 			local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
 			local count = (kills / per_kill) - chest_counter
-			for i, p in ipairs(get_players()) do
-				local x, y = EntityGetTransform(p)
-				if count == 1 then
-					EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y )
-					GamePrint(kills .. " kills spawned a chest")
-					chest_counter = chest_counter + 1
-				end
+			if count == 1 then
+				EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
+				GamePrint(kills .. " kills spawned a chest")
+				chest_counter = chest_counter + 1
 			end
 		end
 	end
