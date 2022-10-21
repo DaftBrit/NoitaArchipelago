@@ -18,6 +18,11 @@ if not async then
 end
 _G.item_check = 0
 
+-- TRANSLATIONS
+local TRANSLATIONS_FILE = "data/translations/common.csv"
+local translations = ModTextFileGetContent(TRANSLATIONS_FILE) .. ModTextFileGetContent("data/translations/ap_common.csv")
+ModTextFileSetContent(TRANSLATIONS_FILE, translations)
+
 --LIBS
 local pollnet = require("pollnet")
 local sqlite = require("sqlite")
@@ -37,8 +42,10 @@ local Games = {}
 local players = {}
 local check_list = {}
 local item_id_to_name = {}
+
+local TRAP_STR = "TRAP"
 local item_table = {
-	["110000"] = "Bad Times",
+	["110000"] = TRAP_STR,
 
 	["110001"] = "data/entities/items/pickup/heart.xml",
 	["110002"] = "data/entities/items/pickup/spell_refresh.xml",
@@ -58,6 +65,7 @@ local item_table = {
 }
 local sock = nil
 
+-- Traps
 local function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
 	dofile("mods/archipelago/files/scripts/badtimes.lua")
@@ -66,7 +74,7 @@ local function BadTimes()
 	for i,v in pairs( streaming_events ) do
 		if i == event_id then
 			local event_desc = v["id"]:gsub("_", " ")
-			GamePrintImportant("BAD TIMES!!", event_desc)
+			GamePrintImportant("$ap_bad_times", event_desc)
 			_streaming_run_event(v["id"])
 			break
 		end
@@ -84,7 +92,6 @@ end
 
 local function SetDeathLinkEnabled(enabled)
 	death_link = enabled
-	print("Deathlink = " .. tostring(enabled))
 
 	local conn_tags = { "AP", "WebHost" }
 	if enabled then
@@ -126,7 +133,7 @@ end
 
 local function RecvMsgConnected(msg)
 	SendCmd("Sync")
-	GamePrint("Connected to Archipelago server")
+	GamePrint("$ap_connected_to_server")
 
 	check_list = msg["missing_locations"]
 	slot_number = msg["slot"]
@@ -150,7 +157,7 @@ local function RecvMsgReceivedItems(msg)
 			local item_id = msg["items"][key]["item"]
 			local str_item_id = tostring(item_id)
 			--Dont repeat bad events
-			if item_table[str_item_id] ~= "Bad Times" then
+			if item_table[str_item_id] ~= TRAP_STR then
 				EntityLoadAtPlayer(item_table[str_item_id])
 			end
 		end
@@ -176,7 +183,7 @@ local function RecvMsgPrintJSON(msg)
 		local item_name = item_id_to_name[item_id]
 		local player_to = players[msg["receiving"]]
 		if item_string == " found their " then
-			if item_table[item_id] ~= "Bad Times" then
+			if item_table[item_id] ~= TRAP_STR then
 				if player == PLAYERNAME or player_to == PLAYERNAME then
 					--We only want popup messages for our items sent / received
 					GamePrintImportant(item_name, player .. item_string .. item_name)
@@ -188,7 +195,7 @@ local function RecvMsgPrintJSON(msg)
 		end
 		if item_string == " sent " then
 			local item_string2 = msg["data"][4]["text"]
-			if item_table[item_id] ~= "Bad Times" then
+			if item_table[item_id] ~= TRAP_STR then
 				if player == PLAYERNAME or player_to == PLAYERNAME then
 					--We only want popup messages for our items sent / received
 					GamePrintImportant(item_name, player .. item_string ..item_name .. item_string2 .. player_to)
@@ -200,7 +207,7 @@ local function RecvMsgPrintJSON(msg)
 		end
 		-- Item Spawning
 		if msg["receiving"] == slot_number then
-			if item_table[item_id] == "Bad Times" then
+			if item_table[item_id] == TRAP_STR then
 				BadTimes()
 			else
 				EntityLoadAtPlayer(item_table[item_id])
@@ -230,7 +237,7 @@ local function RecvMsgBounced(msg)
 			EntityKill(p)
 		end
 
-		GamePrintImportant(msg["data"]["source"] .. " died", msg["data"]["cause"])
+		GamePrintImportant(GameTextGet("$ap_died", msg["data"]["source"]), msg["data"]["cause"])
 	else
 		print("Unsupported Bounced type received. " .. JSON:encode(msg))
 	end
@@ -291,7 +298,7 @@ local function AsyncThread()
 			local count = (kills / per_kill) - chest_counter
 			if count == 1 then
 				EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
-				GamePrint(kills .. " kills spawned a chest")
+				GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
 				chest_counter = chest_counter + 1
 			end
 		end
@@ -322,7 +329,11 @@ function GetCauseOfDeath()
 
 	local result = 'Noita'
 	if not_empty(origin) and not_empty(cause) then
-		result = origin .. "'s " .. cause
+		if origin:sub(-1) == 's' then
+			result = GameTextGet("$menugameover_causeofdeath_killer_cause_name_ends_in_s", origin, cause)
+		else
+			result = GameTextGet("$menugameover_causeofdeath_killer_cause", origin, cause)
+		end
 	elseif not_empty(origin) then
 		result = origin
 	elseif not_empty(cause) then
@@ -340,7 +351,7 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 end
 
 function OnPlayerDied(player)
-	if not death_link or game_is_paused or not UpdateDeathTime() then return end
+	if not sock or not death_link or game_is_paused or not UpdateDeathTime() then return end
 
 	local death_msg = GetCauseOfDeath()
 	local slotname = ModSettingGet("archipelago.slot_name")
