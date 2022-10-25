@@ -10,6 +10,8 @@
 -- cheatgui (for reference) probable-basilisk/cheatgui
 -- sqlite FFI ColonelThirtyTwo/lsqlite3-ffi
 
+-- TODO: We need to make sure we sync items per https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
+
 -- GLOBAL STUFF
 local libPath = "mods/archipelago/files/libraries/"
 dofile(libPath .. "noita-api/compatibility.lua")(libPath)
@@ -22,6 +24,10 @@ _G.item_check = 0
 local TRANSLATIONS_FILE = "data/translations/common.csv"
 local translations = ModTextFileGetContent(TRANSLATIONS_FILE) .. ModTextFileGetContent("data/translations/ap_common.csv")
 ModTextFileSetContent(TRANSLATIONS_FILE, translations)
+
+-- SCRIPT EXTENSIONS
+ModLuaFileAppend("data/scripts/biomes/temple_altar.lua", "mods/archipelago/files/scripts/ap_extend_temple_altar.lua")
+ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "mods/archipelago/files/scripts/ap_extend_temple_altar.lua")
 
 --LIBS
 local pollnet = require("pollnet.init")
@@ -50,9 +56,10 @@ local chest_counter = 0
 local last_death_time = 0
 local death_link = false
 local Games = {}
-local players = {}
+local player_slot_to_name = {}
 local check_list = {}
 local item_id_to_name = {}
+local current_slot = 0
 
 local TRAP_STR = "TRAP"
 local item_table = {
@@ -86,6 +93,12 @@ local item_table = {
 }
 --Item table names are weird because there was intent to do something like 
 --item_table[item_id][1](item_table[item_id][2]) for spawning stuff, but it didn't work
+
+-- Locations:
+-- 110000-110499 Chests
+-- 111000-111034 Holy mountain shops (5 each)
+-- 111035-111038 Secret shop below the hourglass room by the Hiisi Base
+
 local sock = nil
 
 -- Traps
@@ -171,7 +184,7 @@ local function RecvMsgConnected(msg)
 	check_list = msg["missing_locations"]
 	slot_number = msg["slot"]
 	for k, plr in pairs(msg["players"]) do
-		players[plr["slot"]] = plr["name"]
+		player_slot_to_name[plr["slot"]] = plr["name"]
 	end
 
 	for key, val in pairs(msg["slot_info"]) do
@@ -221,6 +234,13 @@ local function RecvMsgDataPackage(msg)
 			item_id_to_name[tostring(item_id)] = item_name
 		end
 	end
+
+	-- Request items we need to display (i.e. shops)
+	local locations = {}
+	for i=111000,111034 do
+		table.insert(locations, i)
+	end
+	--SendCmd("LocationScouts", { locations = locations, create_as_hint = 0 })
 end
 
 local function RecvMsgPrintJSON(msg)
@@ -335,13 +355,39 @@ local function RecvMsgBounced(msg)
 	end
 end
 
+local function GetItemName(player, item)
+	-- TODO localization
+	if player == current_slot then
+		return item_id_to_name[item]	-- or "Your itemname"?
+	end
+	return player_slot_to_name[player] .. "'s " .. item_id_to_name[item]
+end
+
+-- Set global shop item names to share with the shop lua context
+local function RecvLocationInfo(msg)
+	for _, net_item in ipairs(msg["locations"]) do
+		local item = net_item["item"]
+		local location = net_item["location"]
+		local player = net_item["player"]
+		local flags = net_item["flags"]
+
+		GlobalsSetValue("AP_SHOPITEM_NAME_" .. tostring(location), GetItemName(player, item))
+		GlobalsSetValue("AP_SHOPITEM_FLAGS_" .. tostring(location), flags)
+
+		if item_table[tostring(item)] ~= nil then
+			GlobalsSetValue("AP_SHOPITEM_OVERRIDE_" .. tostring(location), item_table[tostring(item)])
+		end
+	end
+end
+
 local recv_msg_table = {
 	["Connected"] = RecvMsgConnected,
 	["ReceivedItems"] = RecvMsgReceivedItems,
 	["DataPackage"] = RecvMsgDataPackage,
 	["PrintJSON"] = RecvMsgPrintJSON,
 	["Print"] = RecvMsgPrint,
-	["Bounced"] = RecvMsgBounced
+	["Bounced"] = RecvMsgBounced,
+	["LocationInfo"] = RecvLocationInfo
 }
 
 local function ProcessMsg(msg)
@@ -374,11 +420,27 @@ local function CheckVictoryConditionFlag()
 	end
 end
 
+
+local function CheckComponentItemsUnlocked()
+	local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
+	GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", "")
+	
+	local locations = {}
+	for item in string.gmatch(purchase_queue, "[^,]+") do
+		table.insert(locations, tonumber(item))
+		--GamePrintImportant("TODO", item)
+	end
+	if #locations > 0 then
+		SendCmd("LocationChecks", { locations = locations })
+	end
+end
+
 local function AsyncThread()
 	while sock:poll() do
 		-- Message read loop and variable set
 
 		CheckVictoryConditionFlag()
+		CheckComponentItemsUnlocked()
 
 		local msg = GetNextMessage()
 		if msg then
@@ -393,6 +455,7 @@ local function AsyncThread()
 
 		-- Item check and message send
 		if next_item then
+			
 			for i, p in ipairs(get_players()) do
 				local x, y = EntityGetTransform(p)
 				local radius = 15

@@ -1,0 +1,28 @@
+<Entity tags="teleportable_NOT,item">
+  <!-- I think we need this so the item can drop (stealing from the shop) -->
+  <!-- https://noita.wiki.gg/wiki/Documentation:_VelocityComponent -->
+  <VelocityComponent/>
+
+  <!-- This makes the entity into an item that can be picked up/shopped and hover -->
+  <!-- https://noita.wiki.gg/wiki/Documentation:_ItemComponent -->
+  <ItemComponent
+    _tags="enabled_in_world"
+    item_name=""
+    ui_description=""
+    play_hover_animation="1"/>
+
+  <!-- Calls a lua function when picked up, we need it to notify AP -->
+  <!-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent -->
+	<LuaComponent 
+		remove_after_executed="1"
+		script_item_picked_up="mods/archipelago/files/scripts/ap_shopitem.lua"
+	/>
+
+  <!-- Standard shop pickup script -->
+  <!-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent -->
+	<LuaComponent 
+		remove_after_executed="1"
+		script_item_picked_up="data/scripts/items/shop_effect.lua"
+	/>
+
+</Entity>
