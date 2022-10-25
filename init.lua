@@ -227,17 +227,49 @@ local function UpdateDeathTime()
 	return true
 end
 
+-- Modified from @Priskip in Noita Discord (https://github.com/Priskip)
+-- Removes an Extra Life perk and returns true if one exists
+local function DecreaseExtraLife(entity_id)
+	local children = EntityGetAllChildren(entity_id)
+	for _, child in ipairs(children) do
+		local effect_component = EntityGetFirstComponentIncludingDisabled(child, "GameEffectComponent")
+		local effect_value = ComponentGetValue2(effect_component, "effect")
+
+		if effect_value == "RESPAWN" and ComponentGetValue2(effect_component, "mCounter") == 0 then
+			--Remove extra life child
+			EntityKill(child)
+
+			--Remove UI component
+			for _2, child2 in ipairs(children) do
+				local child_ui_icon_component = EntityGetFirstComponentIncludingDisabled(child2, "UIIconComponent")
+				local name_value = ComponentGetValue2(child_ui_icon_component, "name")
+
+				if name_value == "$perk_respawn" then
+					EntityKill(child2)
+					break
+				end
+			end
+
+			GamePrintImportant("$log_gamefx_respawn", "$logdesc_gamefx_respawn")
+			return true
+		end
+	end
+	return false
+end
+
 local function RecvMsgBounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
 		if not death_link or not UpdateDeathTime() then return end
 
-		for i, p in ipairs(get_players()) do
-			local gsc_id = EntityGetFirstComponentIncludingDisabled(p, "GameStatsComponent")
-			ComponentSetValue2(gsc_id, "extra_death_msg", msg["data"]["cause"])
-			EntityKill(p)
-		end
-
 		GamePrintImportant(GameTextGet("$ap_died", msg["data"]["source"]), msg["data"]["cause"])
+
+		for i, p in ipairs(get_players()) do
+			if not DecreaseExtraLife(p) then
+				local gsc_id = EntityGetFirstComponentIncludingDisabled(p, "GameStatsComponent")
+				ComponentSetValue2(gsc_id, "extra_death_msg", msg["data"]["cause"])
+				EntityKill(p)
+			end
+		end
 	else
 		print("Unsupported Bounced type received. " .. JSON:encode(msg))
 	end
