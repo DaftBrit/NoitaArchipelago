@@ -34,6 +34,7 @@ dofile("mods/archipelago/files/conf/host.lua")
 dofile("mods/archipelago/files/scripts/utils.lua")
 dofile("mods/archipelago/files/scripts/json.lua")
 dofile_once("data/scripts/lib/utilities.lua")
+dofile("data/scripts/lib/mod_settings.lua")
 
 local chest_counter = 0
 local last_death_time = 0
@@ -45,24 +46,35 @@ local item_id_to_name = {}
 
 local TRAP_STR = "TRAP"
 local item_table = {
-	["110000"] = TRAP_STR,
+	["110000"] = { TRAP_STR, TRAP_STR },
 
-	["110001"] = "data/entities/items/pickup/heart.xml",
-	["110002"] = "data/entities/items/pickup/spell_refresh.xml",
-	["110003"] = "data/entities/items/pickup/potion.xml",
+	["110001"] = {EntityLoadAtPlayer, "data/entities/items/pickup/heart.xml" },
+	["110002"] = {EntityLoadAtPlayer, "data/entities/items/pickup/spell_refresh.xml" },
+	["110003"] = {EntityLoadAtPlayer, "data/entities/items/pickup/potion.xml" },
 
-	["110004"] = "data/entities/items/pickup/goldnugget_10.xml",
-	["110005"] = "data/entities/items/pickup/goldnugget_50.xml",
-	["110006"] = "data/entities/items/pickup/goldnugget_200.xml",
-	["110007"] = "data/entities/items/pickup/goldnugget_1000.xml",
+	["110004"] = {EntityLoadAtPlayer, "data/entities/items/pickup/goldnugget_10.xml" },
+	["110005"] = {EntityLoadAtPlayer, "data/entities/items/pickup/goldnugget_50.xml" },
+	["110006"] = {EntityLoadAtPlayer, "data/entities/items/pickup/goldnugget_200.xml" },
+	["110007"] = {EntityLoadAtPlayer, "data/entities/items/pickup/goldnugget_1000.xml" },
 
-	["110008"] = "data/entities/items/wand_level_01.xml",
-	["110009"] = "data/entities/items/wand_level_02.xml",
-	["110010"] = "data/entities/items/wand_level_03.xml",
-	["110011"] = "data/entities/items/wand_level_04.xml",
-	["110012"] = "data/entities/items/wand_level_05.xml",
-	["110013"] = "data/entities/items/wand_level_06.xml"
+	["110008"] = {EntityLoadAtPlayer, "data/entities/items/wand_level_01.xml" },
+	["110009"] = {EntityLoadAtPlayer, "data/entities/items/wand_level_02.xml" },
+	["110010"] = {EntityLoadAtPlayer, "data/entities/items/wand_level_03.xml" },
+	["110011"] = {EntityLoadAtPlayer, "data/entities/items/wand_level_04.xml" },
+	["110012"] = {EntityLoadAtPlayer, "data/entities/items/wand_level_05.xml" },
+	["110013"] = {EntityLoadAtPlayer, "data/entities/items/wand_level_06.xml" },
+
+	["110014"] = {give_perk, "PROTECTION_FIRE" },
+	["110015"] = {give_perk, "PROTECTION_RADIOACTIVITY" },
+	["110016"] = {give_perk, "PROTECTION_EXPLOSION" },
+	["110017"] = {give_perk, "PROTECTION_MELEE" },
+	["110018"] = {give_perk, "PROTECTION_ELECTRICITY" },
+	["110019"] = {give_perk, "EDIT_WANDS_EVERYWHERE" },
+	["110020"] = {give_perk, "REMOVE_FOG_OF_WAR" },
+	["110021"] = {give_perk, "RESPAWN" }
 }
+--Item table names are weird because there was intent to do something like 
+--item_table[item_id][1](item_table[item_id][2]) for spawning stuff, but it didn't work
 local sock = nil
 
 -- Traps
@@ -78,6 +90,16 @@ local function BadTimes()
 			_streaming_run_event(v["id"])
 			break
 		end
+	end
+end
+
+dofile_once("data/scripts/perks/perk.lua")
+function give_perk(perk_name)
+--Function to spawn a perk at the player and then have the player automatically pick it up
+	for i, p in ipairs(get_players()) do
+		local x, y = EntityGetTransform(p)
+		local perk = perk_spawn(x, y, perk_name)
+		perk_pickup(perk, p, EntityGetName(perk), false, false)
 	end
 end
 
@@ -207,10 +229,14 @@ local function RecvMsgPrintJSON(msg)
 		end
 		-- Item Spawning
 		if msg["receiving"] == slot_number then
-			if item_table[item_id] == TRAP_STR then
+			if item_table[item_id][1] == TRAP_STR then
 				BadTimes()
+			elseif item_table[item_id][1] == EntityLoadAtPlayer then
+				EntityLoadAtPlayer(item_table[item_id][2])
 			else
-				EntityLoadAtPlayer(item_table[item_id])
+				give_perk(item_table[item_id][2])
+--				item_table[item_id][1](item_table[item_id][2])
+--				Couldn't get this to work, if you can figure it out it'd be a much cleaner way to implement item spawning
 			end
 		end
 	end
@@ -405,4 +431,5 @@ function OnPlayerSpawned(player)
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 80, y ) -- for testing
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 100, y ) -- for testing
 	archipelago()
+	--Need something here to give you items that carry over from previous runs.
 end
