@@ -35,6 +35,7 @@ dofile("mods/archipelago/files/scripts/utils.lua")
 dofile("mods/archipelago/files/scripts/json.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile("data/scripts/lib/mod_settings.lua")
+ModLuaFileAppend("data/scripts/perks/perk_list.lua", "mods/archipelago/files/perk_list.lua")
 
 local chest_counter = 0
 local last_death_time = 0
@@ -432,4 +433,13 @@ function OnPlayerSpawned(player)
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 100, y ) -- for testing
 	archipelago()
 	--Need something here to give you items that carry over from previous runs.
+	give_perk("MOVEMENT_FASTER") -- for testing gotta go fast
+	give_perk("MOVEMENT_FASTER") -- for testing
+	give_perk("HOVER_BOOST") -- for testing
+	give_perk("FASTER_LEVITATION") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing we're rich we're rich
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
 end
