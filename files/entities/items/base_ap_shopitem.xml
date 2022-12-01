@@ -13,16 +13,16 @@
 
   <!-- Calls a lua function when picked up, we need it to notify AP -->
   <!-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent -->
-	<LuaComponent 
-		remove_after_executed="1"
-		script_item_picked_up="mods/archipelago/files/scripts/ap_shopitem.lua"
-	/>
+  <LuaComponent 
+    remove_after_executed="1"
+    script_item_picked_up="mods/archipelago/files/scripts/ap_shopitem.lua"
+  />
 
   <!-- Standard shop pickup script -->
   <!-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent -->
-	<LuaComponent 
-		remove_after_executed="1"
-		script_item_picked_up="data/scripts/items/shop_effect.lua"
-	/>
+  <LuaComponent 
+    remove_after_executed="1"
+    script_item_picked_up="data/scripts/items/shop_effect.lua"
+  />
 
 </Entity>

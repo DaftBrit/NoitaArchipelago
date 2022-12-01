@@ -58,10 +58,6 @@ local function ap_get_cost_x_offset(price)
   return textwidth * 0.5 - 0.5
 end
 
---local function ap_bit_test(value, bit)
---  return math.floor(value / bit) ~= math.floor(value / (bit*2))*2
---end
-
 local function ap_generate_shop_item_entity(x, y)
   local entity_file = ap_get_item_override(y)
   local flags = ap_get_item_flags(y)
@@ -93,7 +89,6 @@ end
 local function ap_generate_shop_item(x, y, cheap_item)
   local biomeid = ap_get_shop_num(y)
   local price = ap_generate_item_price(biomeid, cheap_item)
-  --price = 5 -- TODO: only for testing
 
   if cheap_item then
     EntityLoad("data/entities/misc/sale_indicator.xml", x, y)
@@ -140,30 +135,30 @@ end
 
 -- Replacing this function with our own to inject AP items
 spawn_all_shopitems = function(x, y)
-	EntityLoad( "data/entities/buildings/shop_hitbox.xml", x, y )
-	
-	SetRandomSeed(x, y)
+  EntityLoad( "data/entities/buildings/shop_hitbox.xml", x, y )
+  
+  SetRandomSeed(x, y)
   -- this is the "Extra Item In Holy Mountain" perk
-	local count = tonumber( GlobalsGetValue( "TEMPLE_SHOP_ITEM_COUNT", "5" ) )
-	local width = 132
-	local item_width = width / count
-	local sale_item_i = Random( 1, count )
+  local count = tonumber( GlobalsGetValue( "TEMPLE_SHOP_ITEM_COUNT", "5" ) )
+  local width = 132
+  local item_width = width / count
+  local sale_item_i = Random( 1, count )
 
-	if( Random(0, 100) <= 50 ) then
+  if( Random(0, 100) <= 50 ) then
     ap_remaining_ap_items = 5
     ap_remaining_items = count * 2
-		for i=1,count do
+    for i=1,count do
       ap_spawn_either(x + (i-1)*item_width, y, i == sale_item_i)
       ap_spawn_either(x + (i-1)*item_width, y - 30, false)
-			LoadPixelScene( "data/biome_impl/temple/shop_second_row.png", "data/biome_impl/temple/shop_second_row_visual.png", x + (i-1)*item_width - 8, y-22, "", true )
-		end
-	else	
-		for i=1,count do
+      LoadPixelScene( "data/biome_impl/temple/shop_second_row.png", "data/biome_impl/temple/shop_second_row_visual.png", x + (i-1)*item_width - 8, y-22, "", true )
+    end
+  else
+    for i=1,count do
       if i <= 5 then
         ap_generate_shop_item(x + (i-1)*item_width, y, i == sale_item_i)
       else
         generate_shop_wand(x + (i-1)*item_width, y, i == sale_item_i)
       end
-		end
-	end
+    end
+  end
 end
