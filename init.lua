@@ -240,7 +240,7 @@ local function RecvMsgDataPackage(msg)
 	for i=111000,111034 do
 		table.insert(locations, i)
 	end
-	--SendCmd("LocationScouts", { locations = locations, create_as_hint = 0 })
+	SendCmd("LocationScouts", { locations = locations })
 end
 
 local function RecvMsgPrintJSON(msg)
@@ -356,11 +356,11 @@ local function RecvMsgBounced(msg)
 end
 
 local function GetItemName(player, item)
-	-- TODO localization
 	if player == current_slot then
+		-- TODO item localization?
 		return item_id_to_name[item]	-- or "Your itemname"?
 	end
-	return player_slot_to_name[player] .. "'s " .. item_id_to_name[item]
+	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player], item_id_to_name[item])
 end
 
 -- Set global shop item names to share with the shop lua context
@@ -424,11 +424,10 @@ end
 local function CheckComponentItemsUnlocked()
 	local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
 	GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", "")
-	
+
 	local locations = {}
 	for item in string.gmatch(purchase_queue, "[^,]+") do
 		table.insert(locations, tonumber(item))
-		--GamePrintImportant("TODO", item)
 	end
 	if #locations > 0 then
 		SendCmd("LocationChecks", { locations = locations })
@@ -455,7 +454,6 @@ local function AsyncThread()
 
 		-- Item check and message send
 		if next_item then
-			
 			for i, p in ipairs(get_players()) do
 				local x, y = EntityGetTransform(p)
 				local radius = 15
