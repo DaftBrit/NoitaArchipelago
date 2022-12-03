@@ -24,8 +24,11 @@ local translations = ModTextFileGetContent(TRANSLATIONS_FILE) .. ModTextFileGetC
 ModTextFileSetContent(TRANSLATIONS_FILE, translations)
 
 --LIBS
-local pollnet = require("pollnet")
-local sqlite = require("sqlite")
+local pollnet = require("pollnet.init")
+local sqlite = require("sqlite.init")
+local stringstore = require("StringStore.stringstore")
+local NoitaGlobalStore = require("StringStore.noitaglobalstore") --not sure whether capitalization is correct, change it if you want
+local NoitaVariableStore = require("StringStore.noitavariablestore") --I only capitalized it because the name was long and I was getting confused
 
 --CONF
 dofile("mods/archipelago/files/conf/host.lua")
@@ -36,6 +39,7 @@ dofile("mods/archipelago/files/scripts/json.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile("data/scripts/lib/mod_settings.lua")
 ModLuaFileAppend("data/scripts/perks/perk_list.lua", "mods/archipelago/files/perk_list.lua")
+ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "mods/archipelago/files/scripts/greedending.lua")
 
 local chest_counter = 0
 local last_death_time = 0
@@ -137,7 +141,7 @@ local function InitSocket()
 			uuid = "NoitaClient",
 			tags = { "AP", "WebHost" },
 			version = { major = 0, minor = 3, build = 4, class = "Version" },
-			items_handling = 1
+			items_handling = 7
 		})
 	end
 end
@@ -175,16 +179,24 @@ end
 
 local function RecvMsgReceivedItems(msg)
 	--Item sync for items already sent
-	if ModSettingGet("archipelago.redeliver_items") then
+--	if ModSettingGet("archipelago.redeliver_items") then -- disabled for testing
 		for key, val in pairs(msg["items"]) do
-			local item_id = msg["items"][key]["item"]
-			local str_item_id = tostring(item_id)
-			--Dont repeat bad events
-			if item_table[str_item_id] ~= TRAP_STR then
-				EntityLoadAtPlayer(item_table[str_item_id])
+			local item_id = tostring(msg["items"][key]["item"])
+			if item_table[item_id][1] == TRAP_STR then
+				BadTimes()
+			elseif item_table[item_id][1] == EntityLoadAtPlayer then
+				EntityLoadAtPlayer(item_table[item_id][2])
+				print("Item spawned!")
+			else
+				give_perk(item_table[item_id][2])
+				print("Perk spawned!")
 			end
 		end
-	end
+--			local item_id = msg["items"][key]["item"]
+--			local str_item_id = tostring(item_id)
+			--Dont repeat bad events
+--			if item_table[str_item_id] ~= TRAP_STR then
+--				EntityLoadAtPlayer(item_table[str_item_id])
 end
 
 local function RecvMsgDataPackage(msg)
@@ -205,6 +217,8 @@ local function RecvMsgPrintJSON(msg)
 		--print("item id "..item_id)
 		local item_name = item_id_to_name[item_id]
 		local player_to = players[msg["receiving"]]
+		local sender = msg["data"][1]["text"]
+		local location_id = msg["data"][5]["text"]
 		if item_string == " found their " then
 			if item_table[item_id] ~= TRAP_STR then
 				if player == PLAYERNAME or player_to == PLAYERNAME then
@@ -424,15 +438,37 @@ function OnPlayerDied(player)
 	})
 end
 
+function add_items_to_inventory(player, items)
+  for _, path in ipairs(items) do
+    local item = EntityLoad(path)
+    if item then
+      GamePickUpInventoryItem(player, item)
+    else
+      GamePrint("Error: Couldn't load the item ["..path.."]!")
+    end
+  end
+end
+
+local LOAD_KEY = "archipelago_first_load_done"
 function OnPlayerSpawned(player)
+	archipelago()
+	-- ask the game if it's a new game. If no, end here. If yes, do the below actions, which includes marking it as not a new game.
+	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
+		print("you loaded")
+		return
+	end
+	GlobalsSetValue(LOAD_KEY, "1")
+--	self.LAST_RECEIVED_ITEM_INDEX = -1
 	local x, y = EntityGetTransform(player)
+	local items = {
+    "data/entities/items/wand_level_10.xml",
+    }
+    add_items_to_inventory(player, items)
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y ) -- for testing
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 40, y ) -- for testing
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 60, y ) -- for testing
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 80, y ) -- for testing
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 100, y ) -- for testing
-	archipelago()
-	--Need something here to give you items that carry over from previous runs.
 	give_perk("MOVEMENT_FASTER") -- for testing gotta go fast
 	give_perk("MOVEMENT_FASTER") -- for testing
 	give_perk("HOVER_BOOST") -- for testing
@@ -442,4 +478,15 @@ function OnPlayerSpawned(player)
 	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
 	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
 	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
 end
+
+--function GameOnCompleted()
+--	print("woah you done it gration")
+--end
