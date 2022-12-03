@@ -463,6 +463,7 @@ function OnPlayerSpawned(player)
 	local items = {
     "data/entities/items/wand_level_10.xml",
     }
+	give_perk("EXPLOSION_IMMUNITY")
     add_items_to_inventory(player, items)
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y ) -- for testing
 	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 40, y ) -- for testing
