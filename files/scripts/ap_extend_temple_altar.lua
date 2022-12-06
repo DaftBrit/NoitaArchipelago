@@ -76,6 +76,8 @@ local function ap_generate_shop_item_entity(x, y)
     end
   end
 
+  -- TODO fix entity_file for perks, make sure wands are floating
+
   local eid = EntityLoad(entity_file, x, y)
   for _, component in ipairs(EntityGetAllComponents(eid)) do
     if ComponentGetTypeName(component) == "ItemComponent" then
@@ -136,7 +138,7 @@ end
 -- Replacing this function with our own to inject AP items
 spawn_all_shopitems = function(x, y)
   EntityLoad( "data/entities/buildings/shop_hitbox.xml", x, y )
-  
+
   SetRandomSeed(x, y)
   -- this is the "Extra Item In Holy Mountain" perk
   local count = tonumber( GlobalsGetValue( "TEMPLE_SHOP_ITEM_COUNT", "5" ) )
@@ -147,6 +149,7 @@ spawn_all_shopitems = function(x, y)
   if( Random(0, 100) <= 50 ) then
     ap_remaining_ap_items = 5
     ap_remaining_items = count * 2
+    ap_num_ap_items = 0
     for i=1,count do
       ap_spawn_either(x + (i-1)*item_width, y, i == sale_item_i)
       ap_spawn_either(x + (i-1)*item_width, y - 30, false)

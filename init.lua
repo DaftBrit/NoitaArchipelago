@@ -177,12 +177,23 @@ local function GetNextMessage()
 	return JSON:decode(raw_msg)[1]
 end
 
+-- Not necessary but just so we know that these are globals
+check_list = {}
+slot_number = -1
+
 local function RecvMsgConnected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
 	slot_number = msg["slot"]
-	check_list = msg["missing_locations"]
-	slot_number = msg["slot"]
+
+	-- Retrieve all chest location ids the server is considering
+	check_list = {}
+	for _, location in ipairs(msg["missing_locations"]) do
+		if location >= 110000 or location <= 110500 then
+			table.insert(check_list, location)
+		end
+	end
+
 	for k, plr in pairs(msg["players"]) do
 		player_slot_to_name[plr["slot"]] = plr["name"]
 	end
@@ -192,6 +203,7 @@ local function RecvMsgConnected(msg)
 	end
 	SendCmd("GetDataPackage", { games = Games })
 
+	-- Enable deathlink if the setting on the server said so
 	death_link = msg["slot_data"]["deathLink"] == 1
 	SetDeathLinkEnabled(death_link)
 
@@ -364,9 +376,9 @@ local function GetItemName(player, item)
 end
 
 -- Set global shop item names to share with the shop lua context
-local function RecvLocationInfo(msg)
+local function RecvMsgLocationInfo(msg)
 	for _, net_item in ipairs(msg["locations"]) do
-		local item = net_item["item"]
+		local item = tostring(net_item["item"])
 		local location = net_item["location"]
 		local player = net_item["player"]
 		local flags = net_item["flags"]
@@ -374,8 +386,9 @@ local function RecvLocationInfo(msg)
 		GlobalsSetValue("AP_SHOPITEM_NAME_" .. tostring(location), GetItemName(player, item))
 		GlobalsSetValue("AP_SHOPITEM_FLAGS_" .. tostring(location), flags)
 
-		if item_table[tostring(item)] ~= nil then
-			GlobalsSetValue("AP_SHOPITEM_OVERRIDE_" .. tostring(location), item_table[tostring(item)])
+		-- TODO: Handle perks
+		if item_table[item] ~= nil then
+			GlobalsSetValue("AP_SHOPITEM_OVERRIDE_" .. tostring(location), item_table[item][2])
 		end
 	end
 end
@@ -387,7 +400,7 @@ local recv_msg_table = {
 	["PrintJSON"] = RecvMsgPrintJSON,
 	["Print"] = RecvMsgPrint,
 	["Bounced"] = RecvMsgBounced,
-	["LocationInfo"] = RecvLocationInfo
+	["LocationInfo"] = RecvMsgLocationInfo
 }
 
 local function ProcessMsg(msg)
