@@ -31,21 +31,19 @@ local sqlite = require("sqlite.init")
 dofile("mods/archipelago/files/conf/host.lua")
 
 -- SCRIPTS
-dofile("mods/archipelago/files/scripts/utils.lua")
+dofile("mods/archipelago/files/scripts/ap_utils.lua")
 dofile("mods/archipelago/files/scripts/json.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile("data/scripts/lib/mod_settings.lua")
 ModLuaFileAppend("data/scripts/perks/perk_list.lua", "mods/archipelago/files/ap_extend_perk_list.lua")
-ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "mods/archipelago/files/scripts/ap_extend_greed_ending.lua")
+ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "mods/archipelago/files/scripts/ap_extend_ending.lua")
 
 -- CURRENT PROBLEMS:
--- Orbs spawned from chests aren't pick-up-able
 -- Orbs are noisy
 -- Double item spawns when being sent items
 
 
 -- TODO:
--- Victory conditions
 -- Shop spawns (heinermann doing this)
 
 local chest_counter = 0
@@ -55,7 +53,6 @@ local Games = {}
 local players = {}
 local check_list = {}
 local item_id_to_name = {}
-local victory = {}
 
 local TRAP_STR = "TRAP"
 local item_table = {
@@ -85,7 +82,7 @@ local item_table = {
 	["110019"] = {give_perk, "EDIT_WANDS_EVERYWHERE" },
 	["110020"] = {give_perk, "REMOVE_FOG_OF_WAR" },
 	["110021"] = {give_perk, "RESPAWN" },
-	["110022"] = {EntityLoadAtPlayer, "data/entities/items/orbs/orb_base_quiet.xml" },
+	["110022"] = {EntityLoadAtPlayer, "data/entities/items/orbs/ap_orb_base_quiet.xml" },
 }
 --Item table names are weird because there was intent to do something like 
 --item_table[item_id][1](item_table[item_id][2]) for spawning stuff, but it didn't work
@@ -94,7 +91,7 @@ local sock = nil
 -- Traps
 local function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
-	dofile("mods/archipelago/files/scripts/badtimes.lua")
+	dofile("mods/archipelago/files/scripts/ap_badtimes.lua")
 	math.randomseed(os.time())
 	local event_id = math.random(1, #streaming_events)
 	for i,v in pairs( streaming_events ) do
@@ -184,6 +181,11 @@ local function RecvMsgConnected(msg)
 
 	death_link = msg["slot_data"]["deathLink"] == 1
 	SetDeathLinkEnabled(death_link)
+
+	bad_effects = msg["slot_data"]["badEffects"]
+	victory_condition = msg["slot_data"]["victoryCondition"]
+	orbs_as_checks = msg["slot_data"]["orbsAsChecks"]
+	bosses_as_checks = msg["slot_data"]["bossesAsChecks"]
 end
 
 local function RecvMsgReceivedItems(msg)
@@ -352,23 +354,23 @@ local function ProcessMsg(msg)
 	end
 end
 
+local function CheckVictoryConditionFor(flag, msg)
+	if GameHasFlagRun(flag) then
+		print(msg)
+		SendCmd("StatusUpdate", {status = 30})
+		GameRemoveFlagRun(flag)
+	end
+end
+
 local function CheckVictoryConditionFlag()
-	if GameHasFlagRun("ap_greed_ending") then
-		print("we're rich")
-		SendCmd("LocationChecks", 110540)
-		GameRemoveFlagRun("ap_greed_ending")
-	elseif GameHasFlagRun("ap_pure_ending") then
-		print("we're rich and alive")
-		SendCmd("LocationChecks", 110541)
-		GameRemoveFlagRun("ap_pure_ending")
-	elseif GameHasFlagRun("ap_peaceful_ending") then
-		print("I love nature")
-		SendCmd("LocationChecks", 110542)
-		GameRemoveFlagRun("ap_peaceful_ending")
-	elseif GameHasFlagRun("ap_yendor_ending") then
-		print("I love Pixel Dungeon. Nethack is okay too")
-		SendCmd("LocationChecks", 110543)
-		GameRemoveFlagRun("ap_yendor_ending")
+	if victory_condition == 0 then
+		CheckVictoryConditionFor("ap_greed_ending", "we're rich")
+	elseif victory_condition == 1 then
+		CheckVictoryConditionFor("ap_pure_ending", "we're rich and alive")
+	elseif victory_condition == 2 then
+		CheckVictoryConditionFor("ap_peaceful_ending", "I love nature")
+	elseif victory_condition == 3 then
+		CheckVictoryConditionFor("ap_yendor_ending", "red pixel pog")
 	end
 end
 
@@ -409,7 +411,7 @@ local function AsyncThread()
 			local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
 			local count = (kills / per_kill) - chest_counter
 			if count == 1 then
-				EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
+				EntityLoadAtPlayer("data/entities/items/pickup/ap_chest_random.xml", 20, 0)
 				GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
 				chest_counter = chest_counter + 1
 			end
@@ -501,13 +503,14 @@ function OnPlayerSpawned(player)
 	local items = {
     "data/entities/items/wand_level_10.xml",
     }
-	give_perk("EXPLOSION_IMMUNITY")
+	give_perk("PROTECTION_EXPLOSION")
+	give_perk("PROTECTION_FIRE")
     add_items_to_inventory(player, items)
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y ) -- for testing
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 40, y ) -- for testing
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 60, y ) -- for testing
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 80, y ) -- for testing
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 100, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 20, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 40, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 60, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 80, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 100, y ) -- for testing
 	give_perk("MOVEMENT_FASTER") -- for testing gotta go fast
 	give_perk("MOVEMENT_FASTER") -- for testing
 	give_perk("HOVER_BOOST") -- for testing
@@ -525,7 +528,3 @@ function OnPlayerSpawned(player)
 	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
 	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
 end
-
---function GameOnCompleted()
---	print("woah you done it gration")
---end
