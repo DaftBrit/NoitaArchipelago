@@ -26,9 +26,6 @@ ModTextFileSetContent(TRANSLATIONS_FILE, translations)
 --LIBS
 local pollnet = require("pollnet.init")
 local sqlite = require("sqlite.init")
-local stringstore = require("StringStore.stringstore")
-local NoitaGlobalStore = require("StringStore.noitaglobalstore") --not sure whether capitalization is correct, change it if you want
-local NoitaVariableStore = require("StringStore.noitavariablestore") --I only capitalized it because the name was long and I was getting confused
 
 --CONF
 dofile("mods/archipelago/files/conf/host.lua")
@@ -38,8 +35,18 @@ dofile("mods/archipelago/files/scripts/utils.lua")
 dofile("mods/archipelago/files/scripts/json.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile("data/scripts/lib/mod_settings.lua")
-ModLuaFileAppend("data/scripts/perks/perk_list.lua", "mods/archipelago/files/perk_list.lua")
-ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "mods/archipelago/files/scripts/greedending.lua")
+ModLuaFileAppend("data/scripts/perks/perk_list.lua", "mods/archipelago/files/ap_extend_perk_list.lua")
+ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "mods/archipelago/files/scripts/ap_extend_greed_ending.lua")
+
+-- CURRENT PROBLEMS:
+-- Orbs spawned from chests aren't pick-up-able
+-- Orbs are noisy
+-- Double item spawns when being sent items
+
+
+-- TODO:
+-- Victory conditions
+-- Shop spawns (heinermann doing this)
 
 local chest_counter = 0
 local last_death_time = 0
@@ -48,6 +55,7 @@ local Games = {}
 local players = {}
 local check_list = {}
 local item_id_to_name = {}
+local victory = {}
 
 local TRAP_STR = "TRAP"
 local item_table = {
@@ -76,7 +84,8 @@ local item_table = {
 	["110018"] = {give_perk, "PROTECTION_ELECTRICITY" },
 	["110019"] = {give_perk, "EDIT_WANDS_EVERYWHERE" },
 	["110020"] = {give_perk, "REMOVE_FOG_OF_WAR" },
-	["110021"] = {give_perk, "RESPAWN" }
+	["110021"] = {give_perk, "RESPAWN" },
+	["110022"] = {EntityLoadAtPlayer, "data/entities/items/orbs/orb_base_quiet.xml" },
 }
 --Item table names are weird because there was intent to do something like 
 --item_table[item_id][1](item_table[item_id][2]) for spawning stuff, but it didn't work
@@ -161,7 +170,7 @@ end
 local function RecvMsgConnected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
-
+	slot_number = msg["slot"]
 	check_list = msg["missing_locations"]
 	slot_number = msg["slot"]
 	for k, plr in pairs(msg["players"]) do
@@ -182,14 +191,19 @@ local function RecvMsgReceivedItems(msg)
 --	if ModSettingGet("archipelago.redeliver_items") then -- disabled for testing
 		for key, val in pairs(msg["items"]) do
 			local item_id = tostring(msg["items"][key]["item"])
-			if item_table[item_id][1] == TRAP_STR then
-				BadTimes()
-			elseif item_table[item_id][1] == EntityLoadAtPlayer then
-				EntityLoadAtPlayer(item_table[item_id][2])
-				print("Item spawned!")
+			if tostring(msg["items"][key]["player"]) == tostring(slot_number) then
+				print("Don't resend own items")
 			else
-				give_perk(item_table[item_id][2])
-				print("Perk spawned!")
+				if item_table[item_id][1] == TRAP_STR then
+					-- BadTimes()
+					print("No badtimes today")
+				elseif item_table[item_id][1] == EntityLoadAtPlayer then
+					EntityLoadAtPlayer(item_table[item_id][2])
+					print("Item spawned!")
+				else
+					give_perk(item_table[item_id][2])
+					print("Perk spawned!")
+				end
 			end
 		end
 --			local item_id = msg["items"][key]["item"]
@@ -246,10 +260,13 @@ local function RecvMsgPrintJSON(msg)
 		if msg["receiving"] == slot_number then
 			if item_table[item_id][1] == TRAP_STR then
 				BadTimes()
+				print("bad times spawned from recvmsgprintjson")
 			elseif item_table[item_id][1] == EntityLoadAtPlayer then
 				EntityLoadAtPlayer(item_table[item_id][2])
+				print("item spawned from recvmsgprintjson")
 			else
 				give_perk(item_table[item_id][2])
+				print("perk spawned from recvmsgprintjson")
 --				item_table[item_id][1](item_table[item_id][2])
 --				Couldn't get this to work, if you can figure it out it'd be a much cleaner way to implement item spawning
 			end
@@ -335,9 +352,31 @@ local function ProcessMsg(msg)
 	end
 end
 
+local function CheckVictoryConditionFlag()
+	if GameHasFlagRun("ap_greed_ending") then
+		print("we're rich")
+		SendCmd("LocationChecks", 110540)
+		GameRemoveFlagRun("ap_greed_ending")
+	elseif GameHasFlagRun("ap_pure_ending") then
+		print("we're rich and alive")
+		SendCmd("LocationChecks", 110541)
+		GameRemoveFlagRun("ap_pure_ending")
+	elseif GameHasFlagRun("ap_peaceful_ending") then
+		print("I love nature")
+		SendCmd("LocationChecks", 110542)
+		GameRemoveFlagRun("ap_peaceful_ending")
+	elseif GameHasFlagRun("ap_yendor_ending") then
+		print("I love Pixel Dungeon. Nethack is okay too")
+		SendCmd("LocationChecks", 110543)
+		GameRemoveFlagRun("ap_yendor_ending")
+	end
+end
+
 local function AsyncThread()
 	while sock:poll() do
 		-- Message read loop and variable set
+
+		CheckVictoryConditionFlag()
 
 		local msg = GetNextMessage()
 		if msg then
@@ -458,7 +497,6 @@ function OnPlayerSpawned(player)
 		return
 	end
 	GlobalsSetValue(LOAD_KEY, "1")
---	self.LAST_RECEIVED_ITEM_INDEX = -1
 	local x, y = EntityGetTransform(player)
 	local items = {
     "data/entities/items/wand_level_10.xml",
