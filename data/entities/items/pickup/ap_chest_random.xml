@@ -36,13 +36,13 @@
     </ItemComponent>
 
     <LuaComponent
-            script_physics_body_modified="data/scripts/items/chest_random.lua"
+            script_physics_body_modified="data/scripts/items/ap_chest_random.lua"
             execute_times="1"
     >
     </LuaComponent>
 
     <LuaComponent
-            script_item_picked_up="data/scripts/items/chest_random.lua" >
+            script_item_picked_up="data/scripts/items/ap_chest_random.lua" >
     </LuaComponent>
 
     <LightComponent

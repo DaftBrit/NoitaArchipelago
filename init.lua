@@ -26,20 +26,25 @@ ModTextFileSetContent(TRANSLATIONS_FILE, translations)
 --LIBS
 local pollnet = require("pollnet.init")
 local sqlite = require("sqlite.init")
-local stringstore = require("StringStore.stringstore")
-local NoitaGlobalStore = require("StringStore.noitaglobalstore") --not sure whether capitalization is correct, change it if you want
-local NoitaVariableStore = require("StringStore.noitavariablestore") --I only capitalized it because the name was long and I was getting confused
 
 --CONF
 dofile("mods/archipelago/files/conf/host.lua")
 
 -- SCRIPTS
-dofile("mods/archipelago/files/scripts/utils.lua")
+dofile("mods/archipelago/files/scripts/ap_utils.lua")
 dofile("mods/archipelago/files/scripts/json.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile("data/scripts/lib/mod_settings.lua")
-ModLuaFileAppend("data/scripts/perks/perk_list.lua", "mods/archipelago/files/perk_list.lua")
-ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "mods/archipelago/files/scripts/greedending.lua")
+ModLuaFileAppend("data/scripts/perks/perk_list.lua", "mods/archipelago/files/ap_extend_perk_list.lua")
+ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "mods/archipelago/files/scripts/ap_extend_ending.lua")
+
+-- CURRENT PROBLEMS:
+-- Orbs are noisy
+-- Double item spawns when being sent items
+
+
+-- TODO:
+-- Shop spawns (heinermann doing this)
 
 local chest_counter = 0
 local last_death_time = 0
@@ -76,7 +81,8 @@ local item_table = {
 	["110018"] = {give_perk, "PROTECTION_ELECTRICITY" },
 	["110019"] = {give_perk, "EDIT_WANDS_EVERYWHERE" },
 	["110020"] = {give_perk, "REMOVE_FOG_OF_WAR" },
-	["110021"] = {give_perk, "RESPAWN" }
+	["110021"] = {give_perk, "RESPAWN" },
+	["110022"] = {EntityLoadAtPlayer, "data/entities/items/orbs/ap_orb_base_quiet.xml" },
 }
 --Item table names are weird because there was intent to do something like 
 --item_table[item_id][1](item_table[item_id][2]) for spawning stuff, but it didn't work
@@ -85,7 +91,7 @@ local sock = nil
 -- Traps
 local function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
-	dofile("mods/archipelago/files/scripts/badtimes.lua")
+	dofile("mods/archipelago/files/scripts/ap_badtimes.lua")
 	math.randomseed(os.time())
 	local event_id = math.random(1, #streaming_events)
 	for i,v in pairs( streaming_events ) do
@@ -161,7 +167,7 @@ end
 local function RecvMsgConnected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
-
+	slot_number = msg["slot"]
 	check_list = msg["missing_locations"]
 	slot_number = msg["slot"]
 	for k, plr in pairs(msg["players"]) do
@@ -175,6 +181,11 @@ local function RecvMsgConnected(msg)
 
 	death_link = msg["slot_data"]["deathLink"] == 1
 	SetDeathLinkEnabled(death_link)
+
+	bad_effects = msg["slot_data"]["badEffects"]
+	victory_condition = msg["slot_data"]["victoryCondition"]
+	orbs_as_checks = msg["slot_data"]["orbsAsChecks"]
+	bosses_as_checks = msg["slot_data"]["bossesAsChecks"]
 end
 
 local function RecvMsgReceivedItems(msg)
@@ -182,14 +193,19 @@ local function RecvMsgReceivedItems(msg)
 --	if ModSettingGet("archipelago.redeliver_items") then -- disabled for testing
 		for key, val in pairs(msg["items"]) do
 			local item_id = tostring(msg["items"][key]["item"])
-			if item_table[item_id][1] == TRAP_STR then
-				BadTimes()
-			elseif item_table[item_id][1] == EntityLoadAtPlayer then
-				EntityLoadAtPlayer(item_table[item_id][2])
-				print("Item spawned!")
+			if tostring(msg["items"][key]["player"]) == tostring(slot_number) then
+				print("Don't resend own items")
 			else
-				give_perk(item_table[item_id][2])
-				print("Perk spawned!")
+				if item_table[item_id][1] == TRAP_STR then
+					-- BadTimes()
+					print("No badtimes today")
+				elseif item_table[item_id][1] == EntityLoadAtPlayer then
+					EntityLoadAtPlayer(item_table[item_id][2])
+					print("Item spawned!")
+				else
+					give_perk(item_table[item_id][2])
+					print("Perk spawned!")
+				end
 			end
 		end
 --			local item_id = msg["items"][key]["item"]
@@ -246,10 +262,13 @@ local function RecvMsgPrintJSON(msg)
 		if msg["receiving"] == slot_number then
 			if item_table[item_id][1] == TRAP_STR then
 				BadTimes()
+				print("bad times spawned from recvmsgprintjson")
 			elseif item_table[item_id][1] == EntityLoadAtPlayer then
 				EntityLoadAtPlayer(item_table[item_id][2])
+				print("item spawned from recvmsgprintjson")
 			else
 				give_perk(item_table[item_id][2])
+				print("perk spawned from recvmsgprintjson")
 --				item_table[item_id][1](item_table[item_id][2])
 --				Couldn't get this to work, if you can figure it out it'd be a much cleaner way to implement item spawning
 			end
@@ -335,9 +354,31 @@ local function ProcessMsg(msg)
 	end
 end
 
+local function CheckVictoryConditionFor(flag, msg)
+	if GameHasFlagRun(flag) then
+		print(msg)
+		SendCmd("StatusUpdate", {status = 30})
+		GameRemoveFlagRun(flag)
+	end
+end
+
+local function CheckVictoryConditionFlag()
+	if victory_condition == 0 then
+		CheckVictoryConditionFor("ap_greed_ending", "we're rich")
+	elseif victory_condition == 1 then
+		CheckVictoryConditionFor("ap_pure_ending", "we're rich and alive")
+	elseif victory_condition == 2 then
+		CheckVictoryConditionFor("ap_peaceful_ending", "I love nature")
+	elseif victory_condition == 3 then
+		CheckVictoryConditionFor("ap_yendor_ending", "red pixel pog")
+	end
+end
+
 local function AsyncThread()
 	while sock:poll() do
 		-- Message read loop and variable set
+
+		CheckVictoryConditionFlag()
 
 		local msg = GetNextMessage()
 		if msg then
@@ -370,7 +411,7 @@ local function AsyncThread()
 			local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
 			local count = (kills / per_kill) - chest_counter
 			if count == 1 then
-				EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
+				EntityLoadAtPlayer("data/entities/items/pickup/ap_chest_random.xml", 20, 0)
 				GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
 				chest_counter = chest_counter + 1
 			end
@@ -458,18 +499,18 @@ function OnPlayerSpawned(player)
 		return
 	end
 	GlobalsSetValue(LOAD_KEY, "1")
---	self.LAST_RECEIVED_ITEM_INDEX = -1
 	local x, y = EntityGetTransform(player)
 	local items = {
     "data/entities/items/wand_level_10.xml",
     }
-	give_perk("EXPLOSION_IMMUNITY")
+	give_perk("PROTECTION_EXPLOSION")
+	give_perk("PROTECTION_FIRE")
     add_items_to_inventory(player, items)
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 20, y ) -- for testing
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 40, y ) -- for testing
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 60, y ) -- for testing
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 80, y ) -- for testing
-	EntityLoad( "data/entities/items/pickup/chest_random.xml", x + 100, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 20, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 40, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 60, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 80, y ) -- for testing
+	EntityLoad( "data/entities/items/pickup/ap_chest_random.xml", x + 100, y ) -- for testing
 	give_perk("MOVEMENT_FASTER") -- for testing gotta go fast
 	give_perk("MOVEMENT_FASTER") -- for testing
 	give_perk("HOVER_BOOST") -- for testing
@@ -487,7 +528,3 @@ function OnPlayerSpawned(player)
 	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
 	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
 end
-
---function GameOnCompleted()
---	print("woah you done it gration")
---end
