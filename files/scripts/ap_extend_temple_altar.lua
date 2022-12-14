@@ -92,42 +92,48 @@ local function ap_extend_temple_altar()
     end
   end
 
-  -- TODO move this into its own unique entity script
+  -- Creates a trap item
   local function create_trap_item_entity(x, y)
     local entity_name = "mods/archipelago/files/entities/items/ap_trap_item_0" .. tostring(Random(1, 4)) .. ".xml"
-
-    local eid = EntityLoad(entity_name, x, y)
-    -- TODO more variation stuff (messed up names and other hints)
-    -- Maybe rare chance of some funny hints like bouncing really fast, wobbling, chasing the player, etc?
-    return eid
+    local trap_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
+    return EntityLoad(entity_name, x, y), trap_description
   end
 
   local ITEM_FLAG_PROGRESSION = 1
   local ITEM_FLAG_USEFUL = 2
   local ITEM_FLAG_TRAP = 4
 
-  -- Spawns in an AP item (our own entity to represent items that don't exist in this game)
-  local function create_foreign_item_entity(x, y)
+  local function create_ap_entity_from_flags(x, y)
     local flags = get_item_flags(y)
-    local name = get_item_name(y)
 
-    if bit.band(flags, ITEM_FLAG_TRAP) ~= 0 then -- trap
+    if bit.band(flags, ITEM_FLAG_TRAP) ~= 0 then
       return create_trap_item_entity(x, y)
     end
     
     local item_filename = "ap_junk_shopitem.xml"
+    local item_description = "$ap_shopdescription_junk"
     if bit.band(flags, ITEM_FLAG_USEFUL) ~= 0 then
       item_filename = "ap_useful_shopitem.xml"
+      item_description = "$ap_shopdescription_useful"
     elseif bit.band(flags, ITEM_FLAG_PROGRESSION) ~= 0 then
       item_filename = "ap_progression_shopitem.xml"
+      item_description = "$ap_shopdescription_progression"
     end
 
-    local eid = EntityLoad("mods/archipelago/files/entities/items/" .. item_filename, x, y)
+    local item_entity = EntityLoad("mods/archipelago/files/entities/items/" .. item_filename, x, y)
+    return item_entity, item_description
+  end
+
+  -- Spawns in an AP item (our own entity to represent items that don't exist in this game)
+  local function create_foreign_item_entity(x, y)
+    local eid, description = create_ap_entity_from_flags(x, y)
+    local name = get_item_name(y)
 
     -- Change item name
     for _, component in ipairs(EntityGetAllComponents(eid)) do
       if ComponentGetTypeName(component) == "ItemComponent" then
         ComponentSetValue2(component, "item_name", name)
+        ComponentSetValue2(component, "ui_description", description)
       end
     end
     return eid

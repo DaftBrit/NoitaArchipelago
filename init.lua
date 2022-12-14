@@ -105,7 +105,7 @@ local sock = nil
 local function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
 	dofile("mods/archipelago/files/scripts/ap_badtimes.lua")
-	math.randomseed(os.time())
+	math.randomseed(os.time()) -- TODO use Noita's random instead of Lua random
 	local event_id = math.random(1, #streaming_events)
 	for i,v in pairs( streaming_events ) do
 		if i == event_id then
@@ -243,7 +243,7 @@ end
 local function RecvMsgDataPackage(msg)
 	for i, g in pairs(msg["data"]["games"]) do
 		for item_name, item_id in pairs(msg["data"]["games"][i]["item_name_to_id"]) do
-			item_id_to_name[tostring(item_id)] = item_name
+			item_id_to_name[tostring(item_id)] = string.gsub(item_name, "_", " ")
 		end
 	end
 
@@ -367,11 +367,31 @@ local function RecvMsgBounced(msg)
 	end
 end
 
-local function GetItemName(player, item)
-	if player == current_slot then
-		-- TODO item localization?
-		return item_id_to_name[item]	-- or "Your itemname"?
+local ITEM_FLAG_TRAP = 4
+local TRAP_ITEM_NAMES = {
+	"Infinite Lives",
+	"Godmode",
+	"9999 Rupees",
+	"Debug Mode",
+	"Instant Victory",
+	"Unlimited Resources",
+	"Unlimited Power",
+	"Infinite Energy",
+	"Limitless Food",
+	"The Best Item Ever"
+}
+local function GetItemName(player, item, flags)
+	local item_name = item_id_to_name[item]
+	if bit.band(flags, ITEM_FLAG_TRAP) ~= 0 then
+		SetRandomSeed(tonumber(item), flags)
+		item_name = TRAP_ITEM_NAMES[Random(1, #TRAP_ITEM_NAMES)]
 	end
+
+	if player == current_slot then
+		-- TODO item name localization too?
+		return GameTextGet("$ap_your_shopitem_name", item_id_to_name[item])
+	end
+
 	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player], item_id_to_name[item])
 end
 
@@ -381,7 +401,7 @@ local function RecvMsgLocationInfo(msg)
 		local item = tostring(net_item.item)
 		local location = tostring(net_item.location)
 
-		GlobalsSetValue("AP_SHOPITEM_NAME_" .. location, GetItemName(net_item.player, item))
+		GlobalsSetValue("AP_SHOPITEM_NAME_" .. location, GetItemName(net_item.player, item, net_item.flags))
 		GlobalsSetValue("AP_SHOPITEM_FLAGS_" .. location, net_item.flags)
 		GlobalsSetValue("AP_SHOPITEM_ITEM_ID_" .. location, item)
 	end
