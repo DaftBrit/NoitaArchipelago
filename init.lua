@@ -378,18 +378,12 @@ end
 -- Set global shop item names to share with the shop lua context
 local function RecvMsgLocationInfo(msg)
 	for _, net_item in ipairs(msg["locations"]) do
-		local item = tostring(net_item["item"])
-		local location = net_item["location"]
-		local player = net_item["player"]
-		local flags = net_item["flags"]
+		local item = tostring(net_item.item)
+		local location = tostring(net_item.location)
 
-		GlobalsSetValue("AP_SHOPITEM_NAME_" .. tostring(location), GetItemName(player, item))
-		GlobalsSetValue("AP_SHOPITEM_FLAGS_" .. tostring(location), flags)
-
-		-- TODO: Handle perks
-		if item_table[item] ~= nil then
-			GlobalsSetValue("AP_SHOPITEM_OVERRIDE_" .. tostring(location), item_table[item][2])
-		end
+		GlobalsSetValue("AP_SHOPITEM_NAME_" .. location, GetItemName(net_item.player, item))
+		GlobalsSetValue("AP_SHOPITEM_FLAGS_" .. location, net_item.flags)
+		GlobalsSetValue("AP_SHOPITEM_ITEM_ID_" .. location, item)
 	end
 end
 
