@@ -5,9 +5,8 @@ local function init_item(shopitems)
 end
 
 return {
-	[110000] = init_item({}), -- TODO
+	[110000] = init_item({}),
 
-  -- TODO: these might not be shoppable
 	[110001] = init_item({ "data/entities/items/pickup/heart.xml" }),
 	[110002] = init_item({ "data/entities/items/pickup/spell_refresh.xml" }),
 	[110003] = init_item({ "data/entities/items/pickup/potion.xml" }) ,

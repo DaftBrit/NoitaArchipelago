@@ -237,8 +237,9 @@ local function RecvMsgReceivedItems(msg)
 end
 
 local function RecvMsgDataPackage(msg)
-	for i, g in pairs(msg["data"]["games"]) do
+	for i, _ in pairs(msg["data"]["games"]) do
 		for item_name, item_id in pairs(msg["data"]["games"][i]["item_name_to_id"]) do
+			-- Some games like Hollow Knight use underscores for whatever reason
 			item_id_to_name[tostring(item_id)] = string.gsub(item_name, "_", " ")
 		end
 	end
@@ -253,14 +254,14 @@ end
 
 local function RecvMsgPrintJSON(msg)
 	if msg["type"] == "ItemSend" then
-		local player = players[msg["item"]["player"]]
+		local player = player_slot_to_name[msg["item"]["player"]]
 		--print("player "..player)
 		local item_string = msg["data"][2]["text"]
 		--print("item string"..item_string)
 		local item_id = msg["data"][3]["text"]
 		--print("item id "..item_id)
 		local item_name = item_id_to_name[item_id]
-		local player_to = players[msg["receiving"]]
+		local player_to = player_slot_to_name[msg["receiving"]]
 		local sender = msg["data"][1]["text"]
 		local location_id = msg["data"][5]["text"]
 		if item_string == " found their " then
@@ -415,7 +416,7 @@ local recv_msg_table = {
 	["PrintJSON"] = RecvMsgPrintJSON,
 	["Print"] = RecvMsgPrint,
 	["Bounced"] = RecvMsgBounced,
-	["LocationInfo"] = RecvMsgLocationInfo
+	["LocationInfo"] = RecvMsgLocationInfo,
 }
 
 local function ProcessMsg(msg)
