@@ -1,7 +1,9 @@
+dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
+dofile_once("mods/archipelago/files/scripts/json.lua")
 
 local function ap_extend_temple_altar()
-  local item_table = dofile("data/scripts/ap_item_mappings.lua")
+  local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
   local TRAP_ID = 110000
 
   local remaining_ap_items = 0
@@ -42,10 +44,13 @@ local function ap_extend_temple_altar()
     return tonumber(GlobalsGetValue("AP_SHOPITEM_ITEM_ID_" .. get_shop_location_id_str(y)))
   end
 
+  local function get_is_our_item(y)
+    return GlobalsGetValue("AP_SHOPITEM_IS_OURS_" .. get_shop_location_id_str(y)) == "1"
+  end
+
   -- Uses vanilla wand price calculation, copied from the actual shop code.
   -- cheap_item is true if it's an on-sale item
   local function generate_item_price(biomeid, cheap_item)
-    print("BIOME ID IS " .. biomeid)
     biomeid = (0.5 * biomeid) + ( 0.5 * biomeid * biomeid )
     local price = (50 + biomeid * 210) + (Random(-15, 15) * 10)
 
@@ -55,23 +60,6 @@ local function ap_extend_temple_altar()
     return math.floor(price)
   end -- generate_item_price
 
-  -- Calculates the X offset for the text of the price, used to center the text over the item
-  local function get_cost_x_offset(price)
-    local text = tostring(price)
-    local textwidth = 0
-    
-    for i=1,#text do
-      local l = string.sub( text, i, i )
-      
-      if ( l ~= "1" ) then
-        textwidth = textwidth + 6
-      else
-        textwidth = textwidth + 3
-      end
-    end
-    return textwidth * 0.5 - 0.5
-  end -- get_cost_x_offset
-
   -- Spawn in an item or perk entity for the shop
   local function create_our_item_entity(item, x, y)
     if item.shop.perk ~= nil then
@@ -79,13 +67,7 @@ local function ap_extend_temple_altar()
       return perk_spawn(x, y, item.shop.perk, true)
     elseif #item.shop > 0 then
       -- our item is something else (random choice)
-      local eid = EntityLoad(item.shop[Random(1, #item.shop)], x, y)
-
-      EntityAddComponent( eid, "LuaComponent", { 
-        script_item_picked_up="data/scripts/items/shop_effect.lua"
-      })
-
-      return eid
+      return EntityLoad(item.shop[Random(1, #item.shop)], x, y)
     else -- error?
       -- TODO
       print_error("Failed to load our own shopitem!")
@@ -94,7 +76,7 @@ local function ap_extend_temple_altar()
 
   -- Creates a trap item
   local function create_trap_item_entity(x, y)
-    local entity_name = "mods/archipelago/files/entities/items/ap_trap_item_0" .. tostring(Random(1, 4)) .. ".xml"
+    local entity_name = "data/archipelago/items/ap_trap_item_0" .. tostring(Random(1, 4)) .. ".xml"
     local trap_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
     return EntityLoad(entity_name, x, y), trap_description
   end
@@ -103,6 +85,7 @@ local function ap_extend_temple_altar()
   local ITEM_FLAG_USEFUL = 2
   local ITEM_FLAG_TRAP = 4
 
+  -- Basically chooses the item graphic depending on the generated item's flags
   local function create_ap_entity_from_flags(x, y)
     local flags = get_item_flags(y)
 
@@ -120,23 +103,18 @@ local function ap_extend_temple_altar()
       item_description = "$ap_shopdescription_progression"
     end
 
-    local item_entity = EntityLoad("mods/archipelago/files/entities/items/" .. item_filename, x, y)
+    local item_entity = EntityLoad("data/archipelago/items/" .. item_filename, x, y)
     return item_entity, item_description
   end
 
   -- Spawns in an AP item (our own entity to represent items that don't exist in this game)
   local function create_foreign_item_entity(x, y)
-    local eid, description = create_ap_entity_from_flags(x, y)
+    local entity_id, description = create_ap_entity_from_flags(x, y)
     local name = get_item_name(y)
 
     -- Change item name
-    for _, component in ipairs(EntityGetAllComponents(eid)) do
-      if ComponentGetTypeName(component) == "ItemComponent" then
-        ComponentSetValue2(component, "item_name", name)
-        ComponentSetValue2(component, "ui_description", description)
-      end
-    end
-    return eid
+    change_entity_ingame_name(entity_id, name, description)
+    return entity_id
   end
 
   -- Generates an items and creates the entity used to make the shop item
@@ -145,8 +123,9 @@ local function ap_extend_temple_altar()
     local item = item_table[item_id]
     local flags = get_item_flags(y)
     local name = get_item_name(y)
+    local is_our_item = get_is_our_item(y)
 
-    if item and item.shop and item_id ~= TRAP_ID then
+    if is_our_item and item and item.shop and item_id ~= TRAP_ID then
       return create_our_item_entity(item, x, y)
     else
       return create_foreign_item_entity(x, y)
@@ -159,35 +138,27 @@ local function ap_extend_temple_altar()
     local biomeid = get_shop_num(y)
     local price = generate_item_price(biomeid, cheap_item)
 
-    if cheap_item then
-      EntityLoad("data/entities/misc/sale_indicator.xml", x, y)
-    end
+    local entity_id = generate_ap_shop_item_entity(x, y)
 
-    local eid = generate_ap_shop_item_entity(x, y)
-
-    EntityAddComponent(eid, "SpriteComponent", { 
-      _tags="shop_cost,enabled_in_world",
-      image_file="data/fonts/font_pixel_white.xml",
-      is_text_sprite="1", 
-      offset_x=tostring(get_cost_x_offset(price)),
-      offset_y="20",
-      update_transform="1",
-      update_transform_rotation="0",
-      text=tostring(price),
-      z_index="-1",
-    })
-
-    EntityAddComponent(eid, "ItemCostComponent", { 
-      _tags="shop_cost,enabled_in_world", 
-      cost=price,
-      stealable="1"
-    })
-
-    -- We add a custom component to store the id that we are unlocking when the item is purchased
-    EntityAddComponent(eid, "VariableStorageComponent", {
+    -- We add a custom component to store the id that we are unlocking when the item is purchased,
+    -- as well as some other things
+    EntityAddComponent(entity_id, "VariableStorageComponent", {
       _tags="archipelago,enabled_in_world",
-      name="ap_location_id",
-      value_string=get_shop_location_id_str(y)
+      name="ap_shop_data",
+      value_string=JSON:encode({
+        location_id = get_shop_location_id_str(y),
+        price = price,
+        sale = cheap_item,
+      })
+    })
+
+    EntityAddComponent(entity_id, "LuaComponent", {
+      _tags="archipelago",
+      script_source_file="data/archipelago/scripts/shopitem_processed.lua",
+      execute_on_added="1",
+      execute_every_n_frame="-1",
+      call_init_function="1",
+      script_item_picked_up="data/archipelago/scripts/shopitem_processed.lua",
     })
   end -- generate_shop_item
 
@@ -208,6 +179,7 @@ local function ap_extend_temple_altar()
   end -- spawn_either
 
   -- Replacing this function with our own to inject AP items
+  -- It mostly follows the original shopgen logic with the exception of distributing AP items
   spawn_all_shopitems = function(x, y)
     EntityLoad( "data/entities/buildings/shop_hitbox.xml", x, y )
 

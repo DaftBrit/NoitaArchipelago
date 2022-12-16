@@ -1,5 +1,5 @@
 <Entity>
-  <Base file="mods/archipelago/files/entities/items/base_ap_shopitem.xml" />
+  <Base file="data/archipelago/items/base_ap_shopitem.xml" />
 
   <!-- https://noita.wiki.gg/wiki/Documentation:_SpriteComponent -->
   <SpriteComponent 

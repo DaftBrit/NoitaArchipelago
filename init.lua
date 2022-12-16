@@ -26,8 +26,8 @@ local translations = ModTextFileGetContent(TRANSLATIONS_FILE) .. ModTextFileGetC
 ModTextFileSetContent(TRANSLATIONS_FILE, translations)
 
 -- SCRIPT EXTENSIONS
-ModLuaFileAppend("data/scripts/biomes/temple_altar.lua", "mods/archipelago/files/scripts/ap_extend_temple_altar.lua")
-ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "mods/archipelago/files/scripts/ap_extend_temple_altar.lua")
+ModLuaFileAppend("data/scripts/biomes/temple_altar.lua", "data/archipelago/scripts/extend_temple_altar.lua")
+ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "data/archipelago/scripts/extend_temple_altar.lua")
 
 --LIBS
 local pollnet = require("pollnet.init")
@@ -59,7 +59,7 @@ local Games = {}
 local player_slot_to_name = {}
 local check_list = {}
 local item_id_to_name = {}
-local current_slot = 0
+local current_player_slot = -1
 
 local TRAP_STR = "TRAP"
 local item_table = {
@@ -177,14 +177,10 @@ local function GetNextMessage()
 	return JSON:decode(raw_msg)[1]
 end
 
--- Not necessary but just so we know that these are globals
-check_list = {}
-slot_number = -1
-
 local function RecvMsgConnected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
-	slot_number = msg["slot"]
+	current_player_slot = msg["slot"]
 
 	-- Retrieve all chest location ids the server is considering
 	check_list = {}
@@ -218,7 +214,7 @@ local function RecvMsgReceivedItems(msg)
 --	if ModSettingGet("archipelago.redeliver_items") then -- disabled for testing
 		for key, val in pairs(msg["items"]) do
 			local item_id = tostring(msg["items"][key]["item"])
-			if tostring(msg["items"][key]["player"]) == tostring(slot_number) then
+			if tostring(msg["items"][key]["player"]) == tostring(current_player_slot) then
 				print("Don't resend own items")
 			else
 				if item_table[item_id][1] == TRAP_STR then
@@ -291,7 +287,7 @@ local function RecvMsgPrintJSON(msg)
 			end
 		end
 		-- Item Spawning
-		if msg["receiving"] == slot_number then
+		if msg["receiving"] == current_player_slot then
 			if item_table[item_id][1] == TRAP_STR then
 				BadTimes()
 				print("bad times spawned from recvmsgprintjson")
@@ -377,7 +373,7 @@ local TRAP_ITEM_NAMES = {
 	"Unlimited Resources",
 	"Unlimited Power",
 	"Infinite Energy",
-	"Limitless Food",
+	"Unlimited Food",
 	"The Best Item Ever"
 }
 local function GetItemName(player, item, flags)
@@ -387,12 +383,12 @@ local function GetItemName(player, item, flags)
 		item_name = TRAP_ITEM_NAMES[Random(1, #TRAP_ITEM_NAMES)]
 	end
 
-	if player == current_slot then
+	if player == current_player_slot then
 		-- TODO item name localization too?
-		return GameTextGet("$ap_your_shopitem_name", item_id_to_name[item])
+		return GameTextGet("$ap_your_shopitem_name", item_name)
 	end
 
-	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player], item_id_to_name[item])
+	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player], item_name)
 end
 
 -- Set global shop item names to share with the shop lua context
@@ -404,6 +400,11 @@ local function RecvMsgLocationInfo(msg)
 		GlobalsSetValue("AP_SHOPITEM_NAME_" .. location, GetItemName(net_item.player, item, net_item.flags))
 		GlobalsSetValue("AP_SHOPITEM_FLAGS_" .. location, net_item.flags)
 		GlobalsSetValue("AP_SHOPITEM_ITEM_ID_" .. location, item)
+
+		-- We need a way to determine whether the item is meant for us or a different Noita instance
+		if (net_item.player == current_player_slot) then
+			GlobalsSetValue("AP_SHOPITEM_IS_OURS_" .. location, "1")
+		end
 	end
 end
 
