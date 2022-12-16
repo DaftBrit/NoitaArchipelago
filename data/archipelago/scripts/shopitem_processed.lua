@@ -76,4 +76,6 @@ function item_pickup(entity_item, entity_who_picked, name)
 
   local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
   GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", purchase_queue .. "," .. data.location_id)
+
+  EntityKill(entity_item)
 end
