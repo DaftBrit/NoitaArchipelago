@@ -55,6 +55,7 @@ local Games = {}
 local player_slot_to_name = {}
 local check_list = {}
 local item_id_to_name = {}
+local location_id_to_name = {}
 local current_player_slot = -1
 local sock = nil
 
@@ -161,6 +162,16 @@ local function CheckComponentItemsUnlocked()
 	end
 end
 
+
+local function ShouldDeliverItem(item)
+	-- Was it sent by us, to us?
+	if item["player"] == current_player_slot then
+		-- Was it in a chest? Then we are relying on this.
+		return item["location"] >= AP.FIRST_CHEST_LOCATION_ID and item["location"] <= AP.LAST_CHEST_LOCATION_ID
+	end
+	return true
+end
+
 ----------------------------------------------------------------------------------------------------
 -- SPECIFIC MESSAGE HANDLING
 ----------------------------------------------------------------------------------------------------
@@ -177,7 +188,7 @@ function RECV_MSG.Connected(msg)
 	-- Retrieve all chest location ids the server is considering
 	check_list = {}
 	for _, location in ipairs(msg["missing_locations"]) do
-		if location >= AP.FIRST_CHEST_LOCATION_ID or location <= AP.LAST_CHEST_LOCATION_ID then
+		if location >= AP.FIRST_CHEST_LOCATION_ID and location <= AP.LAST_CHEST_LOCATION_ID then
 			table.insert(check_list, location)
 		end
 	end
@@ -204,24 +215,24 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(msg)
-	--Item sync for items already sent
---	if ModSettingGet("archipelago.redeliver_items") then -- disabled for testing
-		for key, val in pairs(msg["items"]) do
-			local item_id = msg["items"][key]["item"]
-			-- Don't resend own items
-			if msg["items"][key]["player"] ~= current_player_slot then
-				SpawnItem(item_id, false) -- no traps
-			end
+	for _, item in pairs(msg["items"]) do
+		if ShouldDeliverItem(item) then
+			SpawnItem(item["item"], true)
 		end
+	end
 end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
 function RECV_MSG.DataPackage(msg)
-	for i, _ in pairs(msg["data"]["games"]) do
-		for item_name, item_id in pairs(msg["data"]["games"][i]["item_name_to_id"]) do
+	for _, game in pairs(msg["data"]["games"]) do
+		for item_name, item_id in pairs(game["item_name_to_id"]) do
 			-- Some games like Hollow Knight use underscores for whatever reason
 			item_id_to_name[item_id] = string.gsub(item_name, "_", " ")
+		end
+
+		for location_name, location_id in pairs(game["location_name_to_id"]) do
+			location_id_to_name[location_id] = string.gsub(location_name, "_", " ")
 		end
 	end
 
@@ -234,45 +245,52 @@ function RECV_MSG.DataPackage(msg)
 end
 
 
+function ParseJSONPart(part)
+	local result = ""
+	if part["type"] == "player_id" then
+		result = player_slot_to_name[tonumber(part["text"])]
+	elseif part["type"] == "item_id" then
+		result = item_id_to_name[tonumber(part["text"])]
+	elseif part["type"] == "location_id" then
+		result = location_id_to_name[tonumber(part["text"])]
+	elseif part["type"] == "color" then
+		Log.Info("Found colour in message: " .. part["color"])
+		result = ""	-- TODO color not supported
+	else
+		-- text, player_name, item_name, location_name, entrance_name
+		result = part["text"]
+	end
+
+	if result == nil then
+		Log.Error("Failed to retrieve text for " .. part["type"] .. " " .. part["text"])
+		return ""
+	end
+	return result
+end
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
 function RECV_MSG.PrintJSON(msg)
 	if msg["type"] == "ItemSend" then
-		local item_string = msg["data"][2]["text"]
-		local item_id = tonumber(msg["data"][3]["text"])
-		local item_name = item_id_to_name[item_id]
+		local destination_player_id = msg["receiving"]
+		local source_player_id = msg["item"]["player"]
+		local item_id = msg["item"]["item"]
 
-		local player_name = player_slot_to_name[msg["item"]["player"]]
-		local player_to = player_slot_to_name[msg["receiving"]]
-		local sender = msg["data"][1]["text"]
-
-		-- TODO rewrite this to not depend on text strings (we already know this is ItemSend)
-		if item_string == " found their " then
-			if item_id ~= AP.TRAP_ID then
-				if player_name == PLAYERNAME or player_to == PLAYERNAME then
-					--We only want popup messages for our items sent / received
-					GamePrintImportant(item_name, player_name .. item_string .. item_name)
-				else
-					--Less important messaging in the bottom left
-					GamePrint(player_name .. item_string .. item_name)
-				end
-			end
-		elseif item_string == " sent " then
-			local item_string2 = msg["data"][4]["text"]
-			if item_id ~= AP.TRAP_ID then
-				if player_name == PLAYERNAME or player_to == PLAYERNAME then
-					--We only want popup messages for our items sent / received
-					GamePrintImportant(item_name, player_name .. item_string ..item_name .. item_string2 .. player_to)
-				else
-					--Less important messaging in the bottom left
-					GamePrint(player_name .. item_string .. item_name .. item_string2 .. player_to)
-				end
-			end
+		-- Build the message
+		local msg_str = ""
+		for _, part in ipairs(msg["data"]) do
+			msg_str = msg_str .. ParseJSONPart(part)
 		end
 
-		-- Item Spawning
-		if msg["receiving"] == current_player_slot then
-			SpawnItem(item_id, true)	-- with traps
+		local is_destination_player = destination_player_id == current_player_slot
+		local is_source_player = source_player_id == current_player_slot
+
+		if (is_destination_player or is_source_player) and destination_player_id ~= source_player_id then
+			GamePrintImportant(item_id_to_name[item_id], msg_str)
+		else
+			GamePrint(msg_str)
 		end
+	else
+		Log.Warn("Unsupported PrintJSON type " .. msg["type"])
 	end
 end
 
@@ -280,6 +298,16 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Print
 function RECV_MSG.Print(msg)
 	GamePrint(msg["text"])
+end
+
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#ConnectionRefused
+function RECV_MSG.ConnectionRefused(msg)
+	local msg_str = "Connection Refused"
+	if msg["errors"] then
+		msg_str = msg_str .. ": " .. table.concat(msg["errors"], ",")
+	end
+	Log.Error(msg_str)
 end
 
 
@@ -348,6 +376,7 @@ function InitSocket()
 		if not url then return false end
 
 		sock = pollnet.open_ws(url)
+
 		SendCmd("Connect", {
 			password = PASSWD,
 			game = "Noita",
