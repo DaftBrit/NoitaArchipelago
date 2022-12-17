@@ -1,6 +1,6 @@
 -- Script run when shop item is picked up
 dofile_once("data/scripts/lib/utilities.lua")
-dofile_once("mods/archipelago/files/scripts/json.lua")
+dofile_once("data/archipelago/lib/json.lua")
 
 
 local function get_transferred_values(entity_id)

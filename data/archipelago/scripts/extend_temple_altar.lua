@@ -1,10 +1,10 @@
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
-dofile_once("mods/archipelago/files/scripts/json.lua")
+dofile_once("data/archipelago/lib/json.lua")
 
 local function ap_extend_temple_altar()
   local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
-  local TRAP_ID = 110000
+  local AP = dofile("data/archipelago/scripts/constants.lua")
 
   local remaining_ap_items = 0
   local total_remaining_items = 0
@@ -24,7 +24,7 @@ local function ap_extend_temple_altar()
 
   -- Gets the location id for the shop based on the y coordinate and number of AP items already placed (assuming max 5)
   local function get_shop_location_id_str(y)
-    return tostring(111000 + (get_shop_num(y)-1) * 5 + num_ap_items)
+    return tostring(AP.FIRST_SHOPITEM_LOCATION_ID + (get_shop_num(y)-1) * 5 + num_ap_items)
   end
 
   -- Gets the actual name of the item to be put into the shop
@@ -76,34 +76,30 @@ local function ap_extend_temple_altar()
 
   -- Creates a trap item
   local function create_trap_item_entity(x, y)
-    local entity_name = "data/archipelago/items/ap_trap_item_0" .. tostring(Random(1, 4)) .. ".xml"
+    local entity_name = "data/archipelago/entities/items/ap_trap_item_0" .. tostring(Random(1, 4)) .. ".xml"
     local trap_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
     return EntityLoad(entity_name, x, y), trap_description
   end
-
-  local ITEM_FLAG_PROGRESSION = 1
-  local ITEM_FLAG_USEFUL = 2
-  local ITEM_FLAG_TRAP = 4
 
   -- Basically chooses the item graphic depending on the generated item's flags
   local function create_ap_entity_from_flags(x, y)
     local flags = get_item_flags(y)
 
-    if bit.band(flags, ITEM_FLAG_TRAP) ~= 0 then
+    if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
       return create_trap_item_entity(x, y)
     end
     
     local item_filename = "ap_junk_shopitem.xml"
     local item_description = "$ap_shopdescription_junk"
-    if bit.band(flags, ITEM_FLAG_USEFUL) ~= 0 then
+    if bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
       item_filename = "ap_useful_shopitem.xml"
       item_description = "$ap_shopdescription_useful"
-    elseif bit.band(flags, ITEM_FLAG_PROGRESSION) ~= 0 then
+    elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
       item_filename = "ap_progression_shopitem.xml"
       item_description = "$ap_shopdescription_progression"
     end
 
-    local item_entity = EntityLoad("data/archipelago/items/" .. item_filename, x, y)
+    local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
     return item_entity, item_description
   end
 
@@ -125,7 +121,7 @@ local function ap_extend_temple_altar()
     local name = get_item_name(y)
     local is_our_item = get_is_our_item(y)
 
-    if is_our_item and item and item.shop and item_id ~= TRAP_ID then
+    if is_our_item and item and item.shop and item_id ~= AP.TRAP_ID then
       return create_our_item_entity(item, x, y)
     else
       return create_foreign_item_entity(x, y)

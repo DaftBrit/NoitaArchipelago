@@ -1,3 +1,5 @@
+-- NOTE: Right now this file replaces the vanilla script
+
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/gun/gun_actions.lua")
 dofile_once("data/scripts/game_helpers.lua")
@@ -19,7 +21,7 @@ function drop_reward( x, y, entity_id, rand_x, rand_y, set_rnd_  )
 	local count = 1
 	while( count > 0 ) do
 		count = count - 1
-		table.insert( entities, { "mods/archipelago/files/entities/props/banner.xml" } )
+		table.insert( entities, { "data/archipelago/entities/banner.xml" } )
 	end
 
 	for i,entity in ipairs(entities) do

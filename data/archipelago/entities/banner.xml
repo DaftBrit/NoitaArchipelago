@@ -6,7 +6,7 @@
 
 	<SpriteComponent 
 		z_index="1"
-		image_file="mods/archipelago/files/props_gfx/banner.xml" 
+		image_file="data/archipelago/props_gfx/banner.xml" 
 		offset_x="0"
 		offset_y="0" >
 	</SpriteComponent>
@@ -69,7 +69,7 @@
         scale_velocity.x="-0.2" 
         scale_velocity.y="4" 
         sprite_centered="0" 
-        sprite_file="mods/archipelago/files/particles/ray.xml" 
+        sprite_file="data/particles/ray.xml" 
         sprite_random_rotation="0" 
         use_rotation_from_entity="0" 
         use_rotation_from_velocity_component="0" 

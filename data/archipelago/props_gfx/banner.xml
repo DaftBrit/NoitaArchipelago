@@ -1,5 +1,5 @@
 <Sprite
- filename="mods/archipelago/files/props_gfx/banner.png"
+ filename="data/archipelago/props_gfx/banner.png"
  offset_x="12"
  offset_y="30" 
  default_animation="stand" >
