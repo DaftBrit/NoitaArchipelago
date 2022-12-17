@@ -15,7 +15,7 @@ local function BadTimes()
 end
 
 
-function SpawnItem(item_id, no_traps)
+function SpawnItem(item_id, traps)
   local item = item_table[item_id]
 	if item == nil then
 		print_error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
@@ -25,7 +25,7 @@ function SpawnItem(item_id, no_traps)
   SeedRandom()
 
   if item_id == AP.TRAP_ID then
-    if no_traps then return end
+    if not traps then return end
     BadTimes()
   elseif item.shop.perk ~= nil then
     give_perk(item.shop.perk)

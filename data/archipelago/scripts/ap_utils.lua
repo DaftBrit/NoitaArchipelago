@@ -1,6 +1,7 @@
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
 
+
 function contains_element(tbl, elem)
   for _, v in ipairs(tbl) do
     if v == elem then return true end
@@ -20,6 +21,20 @@ function give_perk(perk_name)
 		perk_pickup(perk, p, EntityGetName(perk), false, false)
 	end
 end
+
+
+function add_items_to_inventory(items)
+	local player = get_players()[1]
+	for _2, path in ipairs(items) do
+		local item = EntityLoad(path)
+		if item then
+			GamePickUpInventoryItem(player, item)
+		else
+			print_error("Error: Couldn't load the item [" .. path .. "]!")
+		end
+  end
+end
+
 
 -- Uses the player's position to initialize the random seed
 function SeedRandom()
@@ -62,7 +77,7 @@ end
 
 -- Modified from @Priskip in Noita Discord (https://github.com/Priskip)
 -- Removes an Extra Life perk and returns true if one exists
-local function DecreaseExtraLife(entity_id)
+function DecreaseExtraLife(entity_id)
 	local children = EntityGetAllChildren(entity_id)
 	for _, child in ipairs(children) do
 		local effect_component = EntityGetFirstComponentIncludingDisabled(child, "GameEffectComponent")
@@ -90,3 +105,30 @@ local function DecreaseExtraLife(entity_id)
 	return false
 end
 
+
+function give_debug_items()
+	give_perk("PROTECTION_EXPLOSION")
+	give_perk("PROTECTION_FIRE")
+	add_items_to_inventory({"data/entities/items/wand_level_10.xml"})
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 20 ) -- for testing
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 40 ) -- for testing
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 60 ) -- for testing
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 80 ) -- for testing
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 100 ) -- for testing
+	give_perk("MOVEMENT_FASTER") -- for testing gotta go fast
+	give_perk("MOVEMENT_FASTER") -- for testing
+	give_perk("HOVER_BOOST") -- for testing
+	give_perk("FASTER_LEVITATION") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing we're rich we're rich
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+end

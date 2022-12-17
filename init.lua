@@ -10,14 +10,13 @@
 -- cheatgui (for reference) probable-basilisk/cheatgui
 -- sqlite FFI ColonelThirtyTwo/lsqlite3-ffi
 
--- TODO: We need to make sure we sync items per https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
+-- TODO: We need to make sure we sync items per 
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 
 -- GLOBAL STUFF
 local libPath = "data/archipelago/lib/"
 dofile_once(libPath .. "noita-api/compatibility.lua")(libPath)
-if not async then
-	dofile_once("data/scripts/lib/coroutines.lua") -- Loads Noita's coroutines library from `data/scripts/lib/coroutines.lua`.
-end
+dofile_once("data/scripts/lib/coroutines.lua") -- Loads Noita's coroutines wrapper library
 
 -- Apply patches in this file
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
@@ -26,14 +25,23 @@ dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
 local pollnet = require("pollnet.init")
 local sqlite = require("sqlite.init")
 
+dofile_once("data/archipelago/lib/json.lua")
+function JSON:onDecodeError(message, text, location, etc)
+	Log.Error(message)
+end
+
 --CONF
 dofile_once("data/archipelago/scripts/host.lua")
 
 -- SCRIPTS
 dofile_once("data/archipelago/scripts/ap_utils.lua")
-dofile_once("data/archipelago/lib/json.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/lib/mod_settings.lua")
+dofile_once("data/archipelago/scripts/item_utils.lua")
+
+local Log = dofile("data/archipelago/scripts/logger.lua")
+local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
+local AP = dofile("data/archipelago/scripts/constants.lua")
 
 -- CURRENT PROBLEMS:
 -- Orbs are noisy
@@ -48,27 +56,18 @@ local player_slot_to_name = {}
 local check_list = {}
 local item_id_to_name = {}
 local current_player_slot = -1
-
-local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
-
-dofile_once("data/archipelago/scripts/item_utils.lua")
+local sock = nil
 
 -- Locations:
 -- 110000-110499 Chests
 -- 111000-111034 Holy mountain shops (5 each)
 -- 111035-111038 Secret shop below the hourglass room by the Hiisi Base
 
-local sock = nil
+----------------------------------------------------------------------------------------------------
+-- DEATHLINK
+----------------------------------------------------------------------------------------------------
 
-local function SendCmd(cmd, data)
-	data = data or {}
-	data["cmd"] = cmd
-
-	local cmd_str = JSON:encode({data})
-	print("SENT: " .. cmd_str)
-	sock:send(cmd_str)
-end
-
+-- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
 	death_link = enabled
 
@@ -79,38 +78,98 @@ local function SetDeathLinkEnabled(enabled)
 	SendCmd("ConnectUpdate", { tags = conn_tags })
 end
 
-local function InitSocket()
-	if not sock then
-		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
-		local PASSWD = ModSettingGet("archipelago.passwd") or ""
-		local url = get_ws_host_url() -- comes from data/ws/host.lua
-		if not url then return false end
-		sock = pollnet.open_ws(url)
-		SendCmd("Connect", {
-			password = PASSWD,
-			game = "Noita",
-			name = PLAYERNAME,
-			uuid = "NoitaClient",
-			tags = { "AP", "WebHost" },
-			version = { major = 0, minor = 3, build = 4, class = "Version" },
-			items_handling = 7
-		})
+
+-- Updates a death timer to prevent immediate re-sends of deaths that have been received.
+local function UpdateDeathTime()
+	local curr_death_time = os.time()
+	if curr_death_time - last_death_time <= 1 then return false end
+	last_death_time = curr_death_time
+	return true
+end
+
+
+----------------------------------------------------------------------------------------------------
+-- VICTORY CONDITIONS
+----------------------------------------------------------------------------------------------------
+
+local function CheckVictoryConditionFor(flag, msg)
+	if GameHasFlagRun(flag) then
+		Log.Info(msg)
+		SendCmd("StatusUpdate", {status = 30})
+		GameRemoveFlagRun(flag)
 	end
 end
 
-function JSON:onDecodeError(message, text, location, etc)
-	print_error(message)
+
+local function CheckVictoryConditionFlag()
+	if victory_condition == 0 then
+		CheckVictoryConditionFor("ap_greed_ending", "we're rich")
+	elseif victory_condition == 1 then
+		CheckVictoryConditionFor("ap_pure_ending", "we're rich and alive")
+	elseif victory_condition == 2 then
+		CheckVictoryConditionFor("ap_peaceful_ending", "I love nature")
+	elseif victory_condition == 3 then
+		CheckVictoryConditionFor("ap_yendor_ending", "red pixel pog")
+	end
 end
 
-local function GetNextMessage()
-	local raw_msg = sock:last_message()
-	if not raw_msg then return nil end
 
-	print("RECV: " .. raw_msg)
-	return JSON:decode(raw_msg)[1]
+----------------------------------------------------------------------------------------------------
+-- SHOP AND ITEM MANAGEMENT
+----------------------------------------------------------------------------------------------------
+local TRAP_ITEM_NAMES = {
+	"Infinite Lives",
+	"Godmode",
+	"9999 Rupees",
+	"Debug Mode",
+	"Instant Victory",
+	"Unlimited Resources",
+	"Unlimited Power",
+	"Infinite Energy",
+	"Unlimited Food",
+	"The Best Item Ever"
+}
+
+-- Creates a name based on the player_id, item_id, and flags to be presented as the name of an AP item
+local function GetItemName(player_id, item_id, flags)
+	local item_name = item_id_to_name[item_id]
+	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
+		SetRandomSeed(item_id, flags)
+		item_name = TRAP_ITEM_NAMES[Random(1, #TRAP_ITEM_NAMES)]
+	end
+
+	if player_id == current_player_slot then
+		-- TODO item name localization too?
+		return GameTextGet("$ap_your_shopitem_name", item_name)
+	end
+
+	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player_id], item_name)
 end
 
-local function RecvMsgConnected(msg)
+
+-- Used to check and report any locations that have been discovered by external lua components
+local function CheckComponentItemsUnlocked()
+	local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
+	GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", "")
+
+	local locations = {}
+	for item in string.gmatch(purchase_queue, "[^,]+") do
+		table.insert(locations, tonumber(item))
+	end
+	if #locations > 0 then
+		SendCmd("LocationChecks", { locations = locations })
+	end
+end
+
+----------------------------------------------------------------------------------------------------
+-- SPECIFIC MESSAGE HANDLING
+----------------------------------------------------------------------------------------------------
+
+-- Function names must match corresponding command name
+local RECV_MSG = {}
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
+function RECV_MSG.Connected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
 	current_player_slot = msg["slot"]
@@ -118,7 +177,7 @@ local function RecvMsgConnected(msg)
 	-- Retrieve all chest location ids the server is considering
 	check_list = {}
 	for _, location in ipairs(msg["missing_locations"]) do
-		if location >= 110000 or location <= 110500 then
+		if location >= AP.FIRST_CHEST_LOCATION_ID or location <= AP.LAST_CHEST_LOCATION_ID then
 			table.insert(check_list, location)
 		end
 	end
@@ -142,20 +201,23 @@ local function RecvMsgConnected(msg)
 	bosses_as_checks = msg["slot_data"]["bossesAsChecks"]
 end
 
-local function RecvMsgReceivedItems(msg)
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
+function RECV_MSG.ReceivedItems(msg)
 	--Item sync for items already sent
 --	if ModSettingGet("archipelago.redeliver_items") then -- disabled for testing
 		for key, val in pairs(msg["items"]) do
 			local item_id = msg["items"][key]["item"]
-			if msg["items"][key]["player"] == current_player_slot then
-				print("Don't resend own items")
-			else
-				SpawnItem(item_id, true)
+			-- Don't resend own items
+			if msg["items"][key]["player"] ~= current_player_slot then
+				SpawnItem(item_id, false) -- no traps
 			end
 		end
 end
 
-local function RecvMsgDataPackage(msg)
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
+function RECV_MSG.DataPackage(msg)
 	for i, _ in pairs(msg["data"]["games"]) do
 		for item_name, item_id in pairs(msg["data"]["games"][i]["item_name_to_id"]) do
 			-- Some games like Hollow Knight use underscores for whatever reason
@@ -171,60 +233,58 @@ local function RecvMsgDataPackage(msg)
 	SendCmd("LocationScouts", { locations = locations })
 end
 
-local function RecvMsgPrintJSON(msg)
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
+function RECV_MSG.PrintJSON(msg)
 	if msg["type"] == "ItemSend" then
-		local player = player_slot_to_name[msg["item"]["player"]]
-		--print("player "..player)
 		local item_string = msg["data"][2]["text"]
-		--print("item string"..item_string)
 		local item_id = tonumber(msg["data"][3]["text"])
-		--print("item id "..item_id)
 		local item_name = item_id_to_name[item_id]
+
+		local player_name = player_slot_to_name[msg["item"]["player"]]
 		local player_to = player_slot_to_name[msg["receiving"]]
 		local sender = msg["data"][1]["text"]
-		local location_id = msg["data"][5]["text"]
+
+		-- TODO rewrite this to not depend on text strings (we already know this is ItemSend)
 		if item_string == " found their " then
 			if item_id ~= AP.TRAP_ID then
-				if player == PLAYERNAME or player_to == PLAYERNAME then
+				if player_name == PLAYERNAME or player_to == PLAYERNAME then
 					--We only want popup messages for our items sent / received
-					GamePrintImportant(item_name, player .. item_string .. item_name)
+					GamePrintImportant(item_name, player_name .. item_string .. item_name)
 				else
 					--Less important messaging in the bottom left
-					GamePrint(player .. item_string .. item_name)
+					GamePrint(player_name .. item_string .. item_name)
 				end
 			end
-		end
-		if item_string == " sent " then
+		elseif item_string == " sent " then
 			local item_string2 = msg["data"][4]["text"]
 			if item_id ~= AP.TRAP_ID then
-				if player == PLAYERNAME or player_to == PLAYERNAME then
+				if player_name == PLAYERNAME or player_to == PLAYERNAME then
 					--We only want popup messages for our items sent / received
-					GamePrintImportant(item_name, player .. item_string ..item_name .. item_string2 .. player_to)
+					GamePrintImportant(item_name, player_name .. item_string ..item_name .. item_string2 .. player_to)
 				else
 					--Less important messaging in the bottom left
-					GamePrint(player .. item_string .. item_name .. item_string2 .. player_to)
+					GamePrint(player_name .. item_string .. item_name .. item_string2 .. player_to)
 				end
 			end
 		end
+
 		-- Item Spawning
 		if msg["receiving"] == current_player_slot then
-			SpawnItem(item_id)
+			SpawnItem(item_id, true)	-- with traps
 		end
 	end
 end
 
-local function RecvMsgPrint(msg)
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Print
+function RECV_MSG.Print(msg)
 	GamePrint(msg["text"])
 end
 
-local function UpdateDeathTime()
-	local curr_death_time = os.time()
-	if curr_death_time - last_death_time <= 1 then return false end
-	last_death_time = curr_death_time
-	return true
-end
 
-local function RecvMsgBounced(msg)
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
+function RECV_MSG.Bounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
 		if not death_link or not UpdateDeathTime() then return end
 
@@ -238,39 +298,14 @@ local function RecvMsgBounced(msg)
 			end
 		end
 	else
-		print("Unsupported Bounced type received. " .. JSON:encode(msg))
+		Log.Warn("Unsupported Bounced type received. " .. JSON:encode(msg))
 	end
 end
 
-local TRAP_ITEM_NAMES = {
-	"Infinite Lives",
-	"Godmode",
-	"9999 Rupees",
-	"Debug Mode",
-	"Instant Victory",
-	"Unlimited Resources",
-	"Unlimited Power",
-	"Infinite Energy",
-	"Unlimited Food",
-	"The Best Item Ever"
-}
-local function GetItemName(player, item, flags)
-	local item_name = item_id_to_name[item]
-	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
-		SetRandomSeed(item, flags)
-		item_name = TRAP_ITEM_NAMES[Random(1, #TRAP_ITEM_NAMES)]
-	end
 
-	if player == current_player_slot then
-		-- TODO item name localization too?
-		return GameTextGet("$ap_your_shopitem_name", item_name)
-	end
-
-	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player], item_name)
-end
-
--- Set global shop item names to share with the shop lua context
-local function RecvMsgLocationInfo(msg)
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#LocationInfo
+function RECV_MSG.LocationInfo(msg)
+	-- Set global shop item names to share with the shop lua context
 	for _, net_item in ipairs(msg["locations"]) do
 		local item = net_item.item
 		local location = tostring(net_item.location)
@@ -286,64 +321,73 @@ local function RecvMsgLocationInfo(msg)
 	end
 end
 
-local recv_msg_table = {
-	["Connected"] = RecvMsgConnected,
-	["ReceivedItems"] = RecvMsgReceivedItems,
-	["DataPackage"] = RecvMsgDataPackage,
-	["PrintJSON"] = RecvMsgPrintJSON,
-	["Print"] = RecvMsgPrint,
-	["Bounced"] = RecvMsgBounced,
-	["LocationInfo"] = RecvMsgLocationInfo,
-}
+----------------------------------------------------------------------------------------------------
+-- CORE MESSAGE HANDLING
+----------------------------------------------------------------------------------------------------
 
-local function ProcessMsg(msg)
+-- Note: These functions are not local because of some weird access shenanigans with Lua.
+-- It'll break if they are local.
+
+-- Encodes and sends a command over the socket
+function SendCmd(cmd, data)
+	data = data or {}
+	data["cmd"] = cmd
+
+	local cmd_str = JSON:encode({data})
+	Log.Info("SENT: " .. cmd_str)
+	sock:send(cmd_str)
+end
+
+
+-- Initializes the socket for AP communication
+function InitSocket()
+	if not sock then
+		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
+		local PASSWD = ModSettingGet("archipelago.passwd") or ""
+		local url = get_ws_host_url() -- comes from data/ws/host.lua
+		if not url then return false end
+
+		sock = pollnet.open_ws(url)
+		SendCmd("Connect", {
+			password = PASSWD,
+			game = "Noita",
+			name = PLAYERNAME,
+			uuid = "NoitaClient",
+			tags = { "AP", "WebHost" },
+			version = { major = 0, minor = 3, build = 4, class = "Version" },
+			items_handling = 7
+		})
+	end
+end
+
+
+-- Retrieves the last message from the socket and parses it into a Lua-digestible format
+function GetNextMessage()
+	local raw_msg = sock:last_message()
+	if not raw_msg then return nil end
+
+	Log.Info("RECV: " .. raw_msg)
+	return JSON:decode(raw_msg)[1]
+end
+
+
+-- Finds the appropriate function in the lookup table for a message, and calls it
+function ProcessMsg(msg)
 	local cmd = msg["cmd"]
 
-	if recv_msg_table[cmd] then
-		recv_msg_table[cmd](msg)
+	if RECV_MSG[cmd] then
+		RECV_MSG[cmd](msg)
 	else
-		print("Unsupported command '" .. cmd .. "' received. " .. JSON:encode(msg))
+		Log.Warn("Unsupported command '" .. cmd .. "' received. " .. JSON:encode(msg))
 	end
 end
 
-local function CheckVictoryConditionFor(flag, msg)
-	if GameHasFlagRun(flag) then
-		print(msg)
-		SendCmd("StatusUpdate", {status = 30})
-		GameRemoveFlagRun(flag)
-	end
-end
-
-local function CheckVictoryConditionFlag()
-	if victory_condition == 0 then
-		CheckVictoryConditionFor("ap_greed_ending", "we're rich")
-	elseif victory_condition == 1 then
-		CheckVictoryConditionFor("ap_pure_ending", "we're rich and alive")
-	elseif victory_condition == 2 then
-		CheckVictoryConditionFor("ap_peaceful_ending", "I love nature")
-	elseif victory_condition == 3 then
-		CheckVictoryConditionFor("ap_yendor_ending", "red pixel pog")
-	end
-end
-
-
-local function CheckComponentItemsUnlocked()
-	local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
-	GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", "")
-
-	local locations = {}
-	for item in string.gmatch(purchase_queue, "[^,]+") do
-		table.insert(locations, tonumber(item))
-	end
-	if #locations > 0 then
-		SendCmd("LocationChecks", { locations = locations })
-	end
-end
+----------------------------------------------------------------------------------------------------
+-- ASYNC THREAD
+----------------------------------------------------------------------------------------------------
 
 local function AsyncThread()
 	while sock:poll() do
-		-- Message read loop and variable set
-
 		CheckVictoryConditionFlag()
 		CheckComponentItemsUnlocked()
 
@@ -357,6 +401,8 @@ local function AsyncThread()
 		else
 			wait(1)
 		end
+
+		-- TODO move these chest shenanigans out of here into a remote item_pickup script
 
 		-- Item check and message send
 		if next_item then
@@ -386,27 +432,36 @@ local function AsyncThread()
 	end
 end
 
-function archipelago()
+
+function InitializeArchipelagoThread()
 	-- main function wrapper
 	InitSocket()
 	if sock then
 		async(AsyncThread)
 	else
-		print("Unable to establish Archipelago connection")
+		Log.Error("Unable to establish Archipelago connection")
 	end
 end
 
+----------------------------------------------------------------------------------------------------
+-- NOITA CALLBACKS
+----------------------------------------------------------------------------------------------------
+
+-- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
 	wake_up_waiting_threads(1)
 end
 
--- Workaround: When the player creates a new game, OnPlayerDied gets called.
--- However we know they have to pause the game (menu) to start a new game.
-game_is_paused = false
+
+-- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPausedChanged
 function OnPausedChanged(is_paused, is_inventory_pause)
+	-- Workaround: When the player creates a new game, OnPlayerDied gets called (triggers DeathLink).
+	-- However we know they have to pause the game (menu) to start a new game.
 	game_is_paused = is_paused and not is_inventory_pause
 end
 
+
+-- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
 	if not sock or not death_link or game_is_paused or not UpdateDeathTime() then return end
 
@@ -422,51 +477,20 @@ function OnPlayerDied(player)
 	})
 end
 
-function add_items_to_inventory(player, items)
-  for _, path in ipairs(items) do
-    local item = EntityLoad(path)
-    if item then
-      GamePickUpInventoryItem(player, item)
-    else
-      GamePrint("Error: Couldn't load the item ["..path.."]!")
-    end
-  end
-end
 
 local LOAD_KEY = "archipelago_first_load_done"
+-- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned
 function OnPlayerSpawned(player)
-	archipelago()
+	game_is_paused = false
+	
+	InitializeArchipelagoThread()
 	-- ask the game if it's a new game. If no, end here. If yes, do the below actions, which includes marking it as not a new game.
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
-		print("you loaded")
+		Log.Info("you loaded")
 		return
 	end
 	GlobalsSetValue(LOAD_KEY, "1")
-	local items = {
-    "data/entities/items/wand_level_10.xml",
-  }
-	give_perk("PROTECTION_EXPLOSION")
-	give_perk("PROTECTION_FIRE")
-  add_items_to_inventory(player, items)
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 20 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 40 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 60 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 80 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 100 ) -- for testing
-	give_perk("MOVEMENT_FASTER") -- for testing gotta go fast
-	give_perk("MOVEMENT_FASTER") -- for testing
-	give_perk("HOVER_BOOST") -- for testing
-	give_perk("FASTER_LEVITATION") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing we're rich we're rich
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+
+	-- For debugging
+	give_debug_items()
 end
