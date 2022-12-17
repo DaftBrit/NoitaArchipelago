@@ -10,6 +10,8 @@
 -- cheatgui (for reference) probable-basilisk/cheatgui
 -- sqlite FFI ColonelThirtyTwo/lsqlite3-ffi
 
+-- TODO: We need to make sure we sync items per https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
+
 -- GLOBAL STUFF
 local libPath = "mods/archipelago/files/libraries/"
 dofile(libPath .. "noita-api/compatibility.lua")(libPath)
@@ -22,6 +24,10 @@ _G.item_check = 0
 local TRANSLATIONS_FILE = "data/translations/common.csv"
 local translations = ModTextFileGetContent(TRANSLATIONS_FILE) .. ModTextFileGetContent("data/translations/ap_common.csv")
 ModTextFileSetContent(TRANSLATIONS_FILE, translations)
+
+-- SCRIPT EXTENSIONS
+ModLuaFileAppend("data/scripts/biomes/temple_altar.lua", "data/archipelago/scripts/extend_temple_altar.lua")
+ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "data/archipelago/scripts/extend_temple_altar.lua")
 
 --LIBS
 local pollnet = require("pollnet.init")
@@ -50,9 +56,10 @@ local chest_counter = 0
 local last_death_time = 0
 local death_link = false
 local Games = {}
-local players = {}
+local player_slot_to_name = {}
 local check_list = {}
 local item_id_to_name = {}
+local current_player_slot = -1
 
 local TRAP_STR = "TRAP"
 local item_table = {
@@ -86,13 +93,19 @@ local item_table = {
 }
 --Item table names are weird because there was intent to do something like 
 --item_table[item_id][1](item_table[item_id][2]) for spawning stuff, but it didn't work
+
+-- Locations:
+-- 110000-110499 Chests
+-- 111000-111034 Holy mountain shops (5 each)
+-- 111035-111038 Secret shop below the hourglass room by the Hiisi Base
+
 local sock = nil
 
 -- Traps
 local function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
 	dofile("mods/archipelago/files/scripts/ap_badtimes.lua")
-	math.randomseed(os.time())
+	math.randomseed(os.time()) -- TODO use Noita's random instead of Lua random
 	local event_id = math.random(1, #streaming_events)
 	for i,v in pairs( streaming_events ) do
 		if i == event_id then
@@ -167,11 +180,18 @@ end
 local function RecvMsgConnected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
-	slot_number = msg["slot"]
-	check_list = msg["missing_locations"]
-	slot_number = msg["slot"]
+	current_player_slot = msg["slot"]
+
+	-- Retrieve all chest location ids the server is considering
+	check_list = {}
+	for _, location in ipairs(msg["missing_locations"]) do
+		if location >= 110000 or location <= 110500 then
+			table.insert(check_list, location)
+		end
+	end
+
 	for k, plr in pairs(msg["players"]) do
-		players[plr["slot"]] = plr["name"]
+		player_slot_to_name[plr["slot"]] = plr["name"]
 	end
 
 	for key, val in pairs(msg["slot_info"]) do
@@ -179,6 +199,7 @@ local function RecvMsgConnected(msg)
 	end
 	SendCmd("GetDataPackage", { games = Games })
 
+	-- Enable deathlink if the setting on the server said so
 	death_link = msg["slot_data"]["deathLink"] == 1
 	SetDeathLinkEnabled(death_link)
 
@@ -193,7 +214,7 @@ local function RecvMsgReceivedItems(msg)
 --	if ModSettingGet("archipelago.redeliver_items") then -- disabled for testing
 		for key, val in pairs(msg["items"]) do
 			local item_id = tostring(msg["items"][key]["item"])
-			if tostring(msg["items"][key]["player"]) == tostring(slot_number) then
+			if tostring(msg["items"][key]["player"]) == tostring(current_player_slot) then
 				print("Don't resend own items")
 			else
 				if item_table[item_id][1] == TRAP_STR then
@@ -216,23 +237,31 @@ local function RecvMsgReceivedItems(msg)
 end
 
 local function RecvMsgDataPackage(msg)
-	for i, g in pairs(msg["data"]["games"]) do
+	for i, _ in pairs(msg["data"]["games"]) do
 		for item_name, item_id in pairs(msg["data"]["games"][i]["item_name_to_id"]) do
-			item_id_to_name[tostring(item_id)] = item_name
+			-- Some games like Hollow Knight use underscores for whatever reason
+			item_id_to_name[tostring(item_id)] = string.gsub(item_name, "_", " ")
 		end
 	end
+
+	-- Request items we need to display (i.e. shops)
+	local locations = {}
+	for i=111000,111034 do
+		table.insert(locations, i)
+	end
+	SendCmd("LocationScouts", { locations = locations })
 end
 
 local function RecvMsgPrintJSON(msg)
 	if msg["type"] == "ItemSend" then
-		local player = players[msg["item"]["player"]]
+		local player = player_slot_to_name[msg["item"]["player"]]
 		--print("player "..player)
 		local item_string = msg["data"][2]["text"]
 		--print("item string"..item_string)
 		local item_id = msg["data"][3]["text"]
 		--print("item id "..item_id)
 		local item_name = item_id_to_name[item_id]
-		local player_to = players[msg["receiving"]]
+		local player_to = player_slot_to_name[msg["receiving"]]
 		local sender = msg["data"][1]["text"]
 		local location_id = msg["data"][5]["text"]
 		if item_string == " found their " then
@@ -259,7 +288,7 @@ local function RecvMsgPrintJSON(msg)
 			end
 		end
 		-- Item Spawning
-		if msg["receiving"] == slot_number then
+		if msg["receiving"] == current_player_slot then
 			if item_table[item_id][1] == TRAP_STR then
 				BadTimes()
 				print("bad times spawned from recvmsgprintjson")
@@ -335,13 +364,59 @@ local function RecvMsgBounced(msg)
 	end
 end
 
+local ITEM_FLAG_TRAP = 4
+local TRAP_ITEM_NAMES = {
+	"Infinite Lives",
+	"Godmode",
+	"9999 Rupees",
+	"Debug Mode",
+	"Instant Victory",
+	"Unlimited Resources",
+	"Unlimited Power",
+	"Infinite Energy",
+	"Unlimited Food",
+	"The Best Item Ever"
+}
+local function GetItemName(player, item, flags)
+	local item_name = item_id_to_name[item]
+	if bit.band(flags, ITEM_FLAG_TRAP) ~= 0 then
+		SetRandomSeed(tonumber(item), flags)
+		item_name = TRAP_ITEM_NAMES[Random(1, #TRAP_ITEM_NAMES)]
+	end
+
+	if player == current_player_slot then
+		-- TODO item name localization too?
+		return GameTextGet("$ap_your_shopitem_name", item_name)
+	end
+
+	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player], item_name)
+end
+
+-- Set global shop item names to share with the shop lua context
+local function RecvMsgLocationInfo(msg)
+	for _, net_item in ipairs(msg["locations"]) do
+		local item = tostring(net_item.item)
+		local location = tostring(net_item.location)
+
+		GlobalsSetValue("AP_SHOPITEM_NAME_" .. location, GetItemName(net_item.player, item, net_item.flags))
+		GlobalsSetValue("AP_SHOPITEM_FLAGS_" .. location, net_item.flags)
+		GlobalsSetValue("AP_SHOPITEM_ITEM_ID_" .. location, item)
+
+		-- We need a way to determine whether the item is meant for us or a different Noita instance
+		if (net_item.player == current_player_slot) then
+			GlobalsSetValue("AP_SHOPITEM_IS_OURS_" .. location, "1")
+		end
+	end
+end
+
 local recv_msg_table = {
 	["Connected"] = RecvMsgConnected,
 	["ReceivedItems"] = RecvMsgReceivedItems,
 	["DataPackage"] = RecvMsgDataPackage,
 	["PrintJSON"] = RecvMsgPrintJSON,
 	["Print"] = RecvMsgPrint,
-	["Bounced"] = RecvMsgBounced
+	["Bounced"] = RecvMsgBounced,
+	["LocationInfo"] = RecvMsgLocationInfo,
 }
 
 local function ProcessMsg(msg)
@@ -374,11 +449,26 @@ local function CheckVictoryConditionFlag()
 	end
 end
 
+
+local function CheckComponentItemsUnlocked()
+	local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
+	GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", "")
+
+	local locations = {}
+	for item in string.gmatch(purchase_queue, "[^,]+") do
+		table.insert(locations, tonumber(item))
+	end
+	if #locations > 0 then
+		SendCmd("LocationChecks", { locations = locations })
+	end
+end
+
 local function AsyncThread()
 	while sock:poll() do
 		-- Message read loop and variable set
 
 		CheckVictoryConditionFlag()
+		CheckComponentItemsUnlocked()
 
 		local msg = GetNextMessage()
 		if msg then

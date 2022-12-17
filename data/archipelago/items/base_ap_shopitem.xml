@@ -1,0 +1,14 @@
+<Entity tags="teleportable_NOT,item">
+  <!-- I think we need this so the item can drop (stealing from the shop) -->
+  <!-- https://noita.wiki.gg/wiki/Documentation:_VelocityComponent -->
+  <VelocityComponent/>
+
+  <!-- This makes the entity into an item that can be picked up/shopped and hover -->
+  <!-- https://noita.wiki.gg/wiki/Documentation:_ItemComponent -->
+  <ItemComponent
+    _tags="enabled_in_world"
+    item_name=""
+    ui_description=""
+    play_hover_animation="1"/>
+
+</Entity>
