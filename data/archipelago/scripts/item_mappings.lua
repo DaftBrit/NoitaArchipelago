@@ -1,3 +1,5 @@
+-- Keeping this slim to prevent conflicts when included in patch files
+
 local function init_item(shopitems)
   return {
     shop = shopitems
@@ -10,7 +12,7 @@ return {
 	[110001] = init_item({ "data/entities/items/pickup/heart.xml" }),
 	[110002] = init_item({ "data/entities/items/pickup/spell_refresh.xml" }),
 	[110003] = init_item({ "data/entities/items/pickup/potion.xml" }) ,
- 
+
 	[110004] = init_item({ "data/entities/items/pickup/goldnugget_10.xml" }),
 	[110005] = init_item({ "data/entities/items/pickup/goldnugget_50.xml" }),
 	[110006] = init_item({ "data/entities/items/pickup/goldnugget_200.xml" }),
@@ -31,4 +33,6 @@ return {
 	[110019] = init_item({ perk = "EDIT_WANDS_EVERYWHERE" }),
 	[110020] = init_item({ perk = "REMOVE_FOG_OF_WAR" }),
 	[110021] = init_item({ perk = "RESPAWN" }),
+
+	[110022] = init_item({ "data/archipelago/entities/items/ap_orb_base_quiet.xml" })
 }
