@@ -122,9 +122,9 @@ local function ap_extend_temple_altar()
     local is_our_item = get_is_our_item(y)
 
     if is_our_item and item and item.shop and item_id ~= AP.TRAP_ID then
-      return create_our_item_entity(item, x, y)
+      return create_our_item_entity(item, x, y), false
     else
-      return create_foreign_item_entity(x, y)
+      return create_foreign_item_entity(x, y), true
     end
   end -- generate_ap_shop_item_entity
 
@@ -134,7 +134,7 @@ local function ap_extend_temple_altar()
     local biomeid = get_shop_num(y)
     local price = generate_item_price(biomeid, cheap_item)
 
-    local entity_id = generate_ap_shop_item_entity(x, y)
+    local entity_id, is_foreign_item = generate_ap_shop_item_entity(x, y)
 
     -- We add a custom component to store the id that we are unlocking when the item is purchased,
     -- as well as some other things
@@ -145,6 +145,7 @@ local function ap_extend_temple_altar()
         location_id = get_shop_location_id_str(y),
         price = price,
         sale = cheap_item,
+        is_ap_item = is_foreign_item,
       })
     })
 
