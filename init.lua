@@ -10,7 +10,7 @@
 -- cheatgui (for reference) probable-basilisk/cheatgui
 -- sqlite FFI ColonelThirtyTwo/lsqlite3-ffi
 
--- TODO: We need to make sure we sync items per 
+-- TODO: We need to make sure we sync items per
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 
 -- GLOBAL STUFF
@@ -58,6 +58,7 @@ local item_id_to_name = {}
 local location_id_to_name = {}
 local current_player_slot = -1
 local sock = nil
+delivered_items = {}
 
 -- Locations:
 -- 110000-110499 Chests
@@ -178,12 +179,26 @@ end
 
 -- Function names must match corresponding command name
 local RECV_MSG = {}
-
+local LOAD_KEY = "archipelago_first_load_done"
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
 	current_player_slot = msg["slot"]
+	ap_seed = msg["slot_data"]["seed"]
+
+	if GlobalsGetValue(LOAD_KEY) ~= "1" then
+		-- on new game started
+		GlobalsSetValue(LOAD_KEY, "1")
+		local f = io.open("mods/archipelago/cache/delivered_" .. ap_seed, "w+")
+		f:close()
+		give_debug_items()
+	else
+		-- on continued game
+		local f = io.open("mods/archipelago/cache/delivered_" .. ap_seed, "r")
+		delivered_items = JSON:decode(f:read("*a"))
+		f:close()
+end
 
 	-- Retrieve all chest location ids the server is considering
 	check_list = {}
@@ -215,9 +230,19 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(msg)
-	for _, item in pairs(msg["items"]) do
-		if ShouldDeliverItem(item) then
-			SpawnItem(item["item"], true)
+	-- the received items message has an index of 0 for full item list, and otherwise the appearance number
+	if msg["index"] ~= 0 then
+		print("don't double deliver")
+	else
+		for key, val in pairs(msg["items"]) do
+			local item_id = msg["items"][key]["item"]
+			local sender = tostring(msg["items"][key]["player"])
+			local location_id = tostring(msg["items"][key]["location"])
+			local sender_location_pair = tostring(sender) .. "|" .. tostring(location_id)
+			if not delivered_items[sender_location_pair] and is_redeliverable_item[item_id] then
+				UpdateDeliveredItems(sender_location_pair)
+				SpawnItem(item_id, false)
+			end
 		end
 	end
 end
@@ -274,7 +299,8 @@ function RECV_MSG.PrintJSON(msg)
 		local destination_player_id = msg["receiving"]
 		local source_player_id = msg["item"]["player"]
 		local item_id = msg["item"]["item"]
-
+		local location_id = msg["data"][5]["text"]
+		local sender_location_pair = tostring(source_player_id) .. "|" .. tostring(location_id)
 		-- Build the message
 		local msg_str = ""
 		for _, part in ipairs(msg["data"]) do
@@ -289,11 +315,14 @@ function RECV_MSG.PrintJSON(msg)
 		else
 			GamePrint(msg_str)
 		end
+		if msg["receiving"] == current_player_slot then
+			UpdateDeliveredItems(sender_location_pair)
+			SpawnItem(item_id, true)
+		end
 	else
 		Log.Warn("Unsupported PrintJSON type " .. msg["type"])
 	end
 end
-
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Print
 function RECV_MSG.Print(msg)
@@ -507,19 +536,9 @@ function OnPlayerDied(player)
 end
 
 
-local LOAD_KEY = "archipelago_first_load_done"
+
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned
 function OnPlayerSpawned(player)
 	game_is_paused = false
-	
 	InitializeArchipelagoThread()
-	-- ask the game if it's a new game. If no, end here. If yes, do the below actions, which includes marking it as not a new game.
-	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
-		Log.Info("you loaded")
-		return
-	end
-	GlobalsSetValue(LOAD_KEY, "1")
-
-	-- For debugging
-	give_debug_items()
 end
