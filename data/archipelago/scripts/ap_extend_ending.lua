@@ -22,7 +22,7 @@ function ap_extend_ending()
             local distance_from_mountain = 1000
 
             if(#endpoint_mountain > 0) then
-                local ex, ey = EntityGetTransform(endpoint_mountaion[1])
+                local ex, ey = EntityGetTransform(endpoint_mountain[1])
                 distance_from_mountain = math.abs(ap_x - ex) + math.abs(ap_y-ey)
             end
 
