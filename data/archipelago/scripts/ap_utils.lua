@@ -105,6 +105,33 @@ function DecreaseExtraLife(entity_id)
 	return false
 end
 
+local function get_player()
+	return EntityGetWithTag("player_unit")[1]
+end
+
+-- health and money functions from the cheatgui mod
+local function get_health()
+	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
+	return ComponentGetValue(dm, "hp"), ComponentGetValue(dm, "max_hp")
+end
+
+local function set_health(cur_hp, max_hp)
+	local damagemodels = EntityGetComponent(get_player(), "DamageModelComponent")
+	for _, damagemodel in ipairs(damagemodels or {}) do
+		ComponentSetValue(damagemodel, "max_hp", max_hp)
+		ComponentSetValue(damagemodel, "hp", cur_hp)
+	end
+end
+
+function fully_heal()
+	local _, max_hp = get_health()
+	set_health(max_hp, max_hp)
+end
+
+local function set_money(amt)
+	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
+	ComponentSetValue2(wallet, "money", amt)
+end
 
 function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
@@ -119,16 +146,6 @@ function give_debug_items()
 	give_perk("MOVEMENT_FASTER") -- for testing
 	give_perk("HOVER_BOOST") -- for testing
 	give_perk("FASTER_LEVITATION") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing we're rich we're rich
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/goldnugget_200000.xml") -- for testing
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
-	EntityLoadAtPlayer("data/entities/items/pickup/heart_better.xml")
+	set_money(100000000)
+	set_health(80, 80)
 end

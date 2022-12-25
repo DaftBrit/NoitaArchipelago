@@ -24,7 +24,7 @@ is_redeliverable_item = {
     [110018] = true,
     [110019] = true,
     [110020] = true,
-    [110021] = true, -- this is the respawn perk, whether to redeliver or not is still up for discussion
+    [110021] = false, -- this is the respawn perk, whether to redeliver or not is still up for discussion
     [110022] = true,
 }
 
@@ -52,10 +52,13 @@ function SpawnItem(item_id, traps)
   if item_id == AP.TRAP_ID then
     if not traps then return end
     BadTimes()
+    print("Badtimes")
   elseif item.shop.perk ~= nil then
     give_perk(item.shop.perk)
+    print("Perk spawned")
   elseif #item.shop > 0 then
     EntityLoadAtPlayer(item.shop[Random(1, #item.shop)])
+    print("Item spawned")
   else
     print_error("[AP] Item " .. tostring(item_id) .. " not properly configured")
   end
@@ -66,4 +69,55 @@ function UpdateDeliveredItems(sender_location_pair)
 	local f = io.open("mods/archipelago/cache/delivered_" .. ap_seed, "w")
 	f:write(JSON:encode(delivered_items))
 	f:close()
+end
+
+function CheckBossLocations()
+	if GameHasFlagRun("kolmi_is_dead") then
+		SendCmd("LocationChecks", { locations = {110600,}})
+		GameRemoveFlagRun("kolmi_is_dead")
+	end
+	if GameHasFlagRun("maggot_is_dead") then
+		SendCmd("LocationChecks", { locations = {110610,}})
+		GameRemoveFlagRun("maggot_is_dead")
+	end
+	if GameHasFlagRun("dragon_is_dead") then
+		SendCmd("LocationChecks", { locations = {110620,}})
+		GameRemoveFlagRun("dragon_is_dead")
+	end
+	if GameHasFlagRun("koipi_is_dead") then
+		SendCmd("LocationChecks", { locations = {110630,}})
+		GameRemoveFlagRun("koipi_is_dead")
+	end
+	if GameHasFlagRun("squidward_is_dead") then
+		SendCmd("LocationChecks", { locations = {110640,}})
+		GameRemoveFlagRun("squidward_is_dead")
+	end
+	if GameHasFlagRun("leviathan_is_dead") then
+		SendCmd("LocationChecks", { locations = {110650,}})
+		GameRemoveFlagRun("leviathan_is_dead")
+	end
+	if GameHasFlagRun("triangle_is_dead") then
+		SendCmd("LocationChecks", { locations = {110660,}})
+		GameRemoveFlagRun("triangle_is_dead")
+	end
+	if GameHasFlagRun("skull_is_dead") then
+		SendCmd("LocationChecks", { locations = {110670,}})
+		GameRemoveFlagRun("skull_is_dead")
+	end
+	if GameHasFlagRun("friend_is_dead") then
+		SendCmd("LocationChecks", { locations = {110680,}})
+		GameRemoveFlagRun("friend_is_dead")
+	end
+	if GameHasFlagRun("mestari_is_dead") then
+		SendCmd("LocationChecks", { locations = {110690,}})
+		GameRemoveFlagRun("mestari_is_dead")
+	end
+	if GameHasFlagRun("alchemist_is_dead") then
+		SendCmd("LocationChecks", { locations = {110700,}})
+		GameRemoveFlagRun("alchemist_is_dead")
+	end
+	if GameHasFlagRun("mecha_is_dead") then
+		SendCmd("LocationChecks", { locations = {110710,}})
+		GameRemoveFlagRun("mecha_is_dead")
+	end
 end

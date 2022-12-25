@@ -59,7 +59,8 @@ local location_id_to_name = {}
 local current_player_slot = -1
 local sock = nil
 delivered_items = {}
-
+picked_up_items = {}
+testorb = 0
 -- Locations:
 -- 110000-110499 Chests
 -- 111000-111034 Holy mountain shops (5 each)
@@ -115,7 +116,6 @@ local function CheckVictoryConditionFlag()
 	end
 end
 
-
 ----------------------------------------------------------------------------------------------------
 -- SHOP AND ITEM MANAGEMENT
 ----------------------------------------------------------------------------------------------------
@@ -153,22 +153,28 @@ end
 local function CheckComponentItemsUnlocked()
 	local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
 	GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", "")
-
 	local locations = {}
 	for item in string.gmatch(purchase_queue, "[^,]+") do
 		table.insert(locations, tonumber(item))
+		picked_up_items[item] = true
 	end
 	if #locations > 0 then
 		SendCmd("LocationChecks", { locations = locations })
 	end
 end
 
+--local function ShouldDeliverItem(item)
+--	-- Was it sent by us, to us?
+--	if item["player"] == current_player_slot then
+--		-- Was it in a chest? Then we are relying on this.
+--		return item["location"] >= AP.FIRST_CHEST_LOCATION_ID and item["location"] <= AP.LAST_CHEST_LOCATION_ID
+--	end
+--	return true
+--end
 
 local function ShouldDeliverItem(item)
-	-- Was it sent by us, to us?
 	if item["player"] == current_player_slot then
-		-- Was it in a chest? Then we are relying on this.
-		return item["location"] >= AP.FIRST_CHEST_LOCATION_ID and item["location"] <= AP.LAST_CHEST_LOCATION_ID
+		return picked_up_items[tostring(item["location"])] ~= true
 	end
 	return true
 end
@@ -186,19 +192,20 @@ function RECV_MSG.Connected(msg)
 	GamePrint("$ap_connected_to_server")
 	current_player_slot = msg["slot"]
 	ap_seed = msg["slot_data"]["seed"]
-
 	if GlobalsGetValue(LOAD_KEY) ~= "1" then
-		-- on new game started
+		print("new game has been started")
 		GlobalsSetValue(LOAD_KEY, "1")
 		local f = io.open("mods/archipelago/cache/delivered_" .. ap_seed, "w+")
 		f:close()
 		give_debug_items()
+		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	else
-		-- on continued game
+		print("continued the game")
 		local f = io.open("mods/archipelago/cache/delivered_" .. ap_seed, "r")
 		delivered_items = JSON:decode(f:read("*a"))
 		f:close()
 end
+
 
 	-- Retrieve all chest location ids the server is considering
 	check_list = {}
@@ -229,24 +236,45 @@ end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
-function RECV_MSG.ReceivedItems(msg)
-	-- the received items message has an index of 0 for full item list, and otherwise the appearance number
-	if msg["index"] ~= 0 then
-		print("don't double deliver")
-	else
-		for key, val in pairs(msg["items"]) do
-			local item_id = msg["items"][key]["item"]
-			local sender = tostring(msg["items"][key]["player"])
-			local location_id = tostring(msg["items"][key]["location"])
-			local sender_location_pair = tostring(sender) .. "|" .. tostring(location_id)
-			if not delivered_items[sender_location_pair] and is_redeliverable_item[item_id] then
-				UpdateDeliveredItems(sender_location_pair)
-				SpawnItem(item_id, false)
-			end
-		end
-	end
-end
 
+--function RECV_MSG.ReceivedItems(msg)
+--	if msg["index"] ~= 0 then
+--		print("don't double deliver")
+--	else
+--		for key, val in pairs(msg["items"]) do
+--			local item_id = msg["items"][key]["item"]
+--			local sender = tostring(msg["items"][key]["player"])
+--			local location_id = tostring(msg["items"][key]["location"])
+--			local sender_location_pair = tostring(sender) .. "|" .. tostring(location_id)
+--			if not delivered_items[sender_location_pair] and is_redeliverable_item[item_id] then
+--				UpdateDeliveredItems(sender_location_pair)
+--				SpawnItem(item_id, false)
+--			end
+--		end
+--	end
+--end
+
+function RECV_MSG.ReceivedItems(msg)
+    for _, item in pairs(msg["items"]) do
+        local item_id = item["item"]
+        local sender = item["player"]
+        local location_id = item["location"]
+        local sender_location_pair = tostring(sender) .. "|" .. tostring(location_id)
+        if not delivered_items[sender_location_pair] then
+			if is_redeliverable_item[item_id] and msg["index"] == 0 then
+				UpdateDeliveredItems(sender_location_pair)
+				if ShouldDeliverItem(item) then
+					SpawnItem(item_id, false)
+				end
+			elseif msg["index"] ~= 0 then
+				UpdateDeliveredItems(sender_location_pair)
+				if ShouldDeliverItem(item) then
+					SpawnItem(item_id, true)
+				end
+			end
+        end
+    end
+end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
 function RECV_MSG.DataPackage(msg)
@@ -315,10 +343,15 @@ function RECV_MSG.PrintJSON(msg)
 		else
 			GamePrint(msg_str)
 		end
-		if msg["receiving"] == current_player_slot then
-			UpdateDeliveredItems(sender_location_pair)
-			SpawnItem(item_id, true)
-		end
+		--if msg["receiving"] == current_player_slot then
+		--	UpdateDeliveredItems(sender_location_pair)
+		--	--print("step one complete")
+		--	--print(ShouldDeliverItem(item_id, destination_player_id, location_id))
+		--	--if ShouldDeliverItem(item_id, destination_player_id, location_id) then
+		--	--	print("step two complete")
+		--	--SpawnItem(item_id, true)
+		--	--end
+		--end
 	else
 		Log.Warn("Unsupported PrintJSON type " .. msg["type"])
 	end
@@ -448,6 +481,7 @@ local function AsyncThread()
 	while sock:poll() do
 		CheckVictoryConditionFlag()
 		CheckComponentItemsUnlocked()
+		CheckBossLocations()
 
 		local msg = GetNextMessage()
 		if msg then

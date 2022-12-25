@@ -34,5 +34,5 @@ return {
 	[110020] = init_item({ perk = "REMOVE_FOG_OF_WAR" }),
 	[110021] = init_item({ perk = "RESPAWN" }),
 
-	[110022] = init_item({ "data/archipelago/entities/items/ap_orb_base_quiet.xml" })
+	[110022] = init_item({ "data/archipelago/entities/items/orbs/ap_orb.xml" })
 }

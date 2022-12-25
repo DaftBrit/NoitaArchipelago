@@ -2,6 +2,7 @@
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/archipelago/lib/json.lua")
 
+purchased_items = {}
 
 local function get_transferred_values(entity_id)
   local component = get_variable_storage_component(entity_id, "ap_shop_data")
@@ -76,7 +77,6 @@ function item_pickup(entity_item, entity_who_picked, name)
 
   local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
   GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", purchase_queue .. "," .. data.location_id)
-
   if data.is_ap_item then
     EntityKill(entity_item)
   end
