@@ -38,6 +38,7 @@ dofile_once("data/archipelago/scripts/ap_utils.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/lib/mod_settings.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
+dofile_once("data/archipelago/scripts/item_cache.lua")
 
 local Log = dofile("data/archipelago/scripts/logger.lua")
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
@@ -60,7 +61,8 @@ local current_player_slot = -1
 local sock = nil
 delivered_items = {}
 picked_up_items = {}
-testorb = 0
+
+
 -- Locations:
 -- 110000-110499 Chests
 -- 111000-111034 Holy mountain shops (5 each)
@@ -163,14 +165,6 @@ local function CheckComponentItemsUnlocked()
 	end
 end
 
---local function ShouldDeliverItem(item)
---	-- Was it sent by us, to us?
---	if item["player"] == current_player_slot then
---		-- Was it in a chest? Then we are relying on this.
---		return item["location"] >= AP.FIRST_CHEST_LOCATION_ID and item["location"] <= AP.LAST_CHEST_LOCATION_ID
---	end
---	return true
---end
 
 local function ShouldDeliverItem(item)
 	if item["player"] == current_player_slot then
@@ -178,6 +172,22 @@ local function ShouldDeliverItem(item)
 	end
 	return true
 end
+
+-- replace the naturally spawning orbs before they spawn in
+-- TODO: Replace them with ap_orb_random instead of deer after ap_orb_random works the way we want it to
+-- also maybe move this to item_utils or something, depending on whether it funcitons correctly
+local function ReplaceOrbs()
+	local nxml = dofile_once("data/archipelago/lib/nxml.lua")
+	local content = ModTextFileGetContent("data/entities/animals/deer.xml")
+	local xml = nxml.parse(content)
+	local i = 0
+	repeat
+		ModTextFileSetContent("data/entities/items/orbs/orb_0" .. i .. ".xml", tostring(xml))
+		i = i + 1
+	until i > 10
+	ModTextFileSetContent("data/entities/items/orbs/orb_10.xml", tostring(xml))
+end
+ReplaceOrbs()
 
 ----------------------------------------------------------------------------------------------------
 -- SPECIFIC MESSAGE HANDLING
@@ -195,15 +205,13 @@ function RECV_MSG.Connected(msg)
 	if GlobalsGetValue(LOAD_KEY) ~= "1" then
 		print("new game has been started")
 		GlobalsSetValue(LOAD_KEY, "1")
-		local f = io.open("mods/archipelago/cache/delivered_" .. ap_seed, "w+")
-		f:close()
+		ResetCache(ap_seed)
 		give_debug_items()
+		ResetOrbID()
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	else
 		print("continued the game")
-		local f = io.open("mods/archipelago/cache/delivered_" .. ap_seed, "r")
-		delivered_items = JSON:decode(f:read("*a"))
-		f:close()
+		ContinueCache(ap_seed)
 end
 
 
@@ -236,24 +244,7 @@ end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
-
---function RECV_MSG.ReceivedItems(msg)
---	if msg["index"] ~= 0 then
---		print("don't double deliver")
---	else
---		for key, val in pairs(msg["items"]) do
---			local item_id = msg["items"][key]["item"]
---			local sender = tostring(msg["items"][key]["player"])
---			local location_id = tostring(msg["items"][key]["location"])
---			local sender_location_pair = tostring(sender) .. "|" .. tostring(location_id)
---			if not delivered_items[sender_location_pair] and is_redeliverable_item[item_id] then
---				UpdateDeliveredItems(sender_location_pair)
---				SpawnItem(item_id, false)
---			end
---		end
---	end
---end
-
+-- TODO: fix it so that index isn't checked, and trap/potion delivery is based on time since spawning
 function RECV_MSG.ReceivedItems(msg)
     for _, item in pairs(msg["items"]) do
         local item_id = item["item"]
@@ -343,15 +334,6 @@ function RECV_MSG.PrintJSON(msg)
 		else
 			GamePrint(msg_str)
 		end
-		--if msg["receiving"] == current_player_slot then
-		--	UpdateDeliveredItems(sender_location_pair)
-		--	--print("step one complete")
-		--	--print(ShouldDeliverItem(item_id, destination_player_id, location_id))
-		--	--if ShouldDeliverItem(item_id, destination_player_id, location_id) then
-		--	--	print("step two complete")
-		--	--SpawnItem(item_id, true)
-		--	--end
-		--end
 	else
 		Log.Warn("Unsupported PrintJSON type " .. msg["type"])
 	end
@@ -568,7 +550,6 @@ function OnPlayerDied(player)
 		}
 	})
 end
-
 
 
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned

@@ -26,7 +26,18 @@ is_redeliverable_item = {
     [110020] = true,
     [110021] = false, -- this is the respawn perk, whether to redeliver or not is still up for discussion
     [110022] = true,
+	[110023] = false,
+	[110024] = false,
+	[110025] = true,
+	[110026] = true,
+	[110027] = true,
+	[110028] = true,
+	[110029] = true,
+	[110030] = true,
+	[110031] = true,
+	[110032] = true,
 }
+
 
 -- Traps
 local function BadTimes()
@@ -39,29 +50,42 @@ local function BadTimes()
 	_streaming_run_event(event.id)
 end
 
+
+function ResetOrbID()
+	GlobalsSetValue("ap_orb_id", 20)
+end
+
+
+orb_id = GlobalsGetValue("ap_orb_id")
+
 function SpawnItem(item_id, traps)
-  print("item spawning shortly")
-  local item = item_table[item_id]
+	print("item spawning shortly")
+	local item = item_table[item_id]
 	if item == nil then
 		print_error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
 		return
 	end
 
-  SeedRandom()
+	SeedRandom()
 
-  if item_id == AP.TRAP_ID then
-    if not traps then return end
-    BadTimes()
-    print("Badtimes")
-  elseif item.shop.perk ~= nil then
-    give_perk(item.shop.perk)
-    print("Perk spawned")
-  elseif #item.shop > 0 then
-    EntityLoadAtPlayer(item.shop[Random(1, #item.shop)])
-    print("Item spawned")
-  else
-    print_error("[AP] Item " .. tostring(item_id) .. " not properly configured")
-  end
+	if item_id == AP.TRAP_ID then
+		if not traps then return end
+		BadTimes()
+		print("Badtimes")
+	elseif item.shop.perk ~= nil then
+		give_perk(item.shop.perk)
+		print("Perk spawned")
+	elseif item.shop.orb ~= nil then
+		EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression_" .. orb_id .. ".xml")
+		orb_id = orb_id + 1
+		print("Orb " .. orb_id .. " spawned")
+		GlobalsSetValue("ap_orb_id", orb_id)
+	elseif #item.shop > 0 then
+		EntityLoadAtPlayer(item.shop[Random(1, #item.shop)])
+		print("Item spawned")
+	else
+		print_error("[AP] Item " .. tostring(item_id) .. " not properly configured")
+	end
 end
 
 function UpdateDeliveredItems(sender_location_pair)
@@ -71,53 +95,28 @@ function UpdateDeliveredItems(sender_location_pair)
 	f:close()
 end
 
+
+local BossLocations = {
+	[110600] = "kolmi_is_dead",
+	[110610] = "maggot_is_dead",
+	[110620] = "dragon_is_dead",
+	[110630] = "koipi_is_dead",
+	[110640] = "squidward_is_dead",
+	[110650] = "leviathan_is_dead",
+	[110660] = "triangle_is_dead",
+	[110670] = "skull_is_dead",
+	[110680] = "friend_is_dead",
+	[110690] = "mestari_is_dead",
+	[110700] = "alchemist_is_dead",
+	[110710] = "mecha_is_dead",
+}
+
+
 function CheckBossLocations()
-	if GameHasFlagRun("kolmi_is_dead") then
-		SendCmd("LocationChecks", { locations = {110600,}})
-		GameRemoveFlagRun("kolmi_is_dead")
-	end
-	if GameHasFlagRun("maggot_is_dead") then
-		SendCmd("LocationChecks", { locations = {110610,}})
-		GameRemoveFlagRun("maggot_is_dead")
-	end
-	if GameHasFlagRun("dragon_is_dead") then
-		SendCmd("LocationChecks", { locations = {110620,}})
-		GameRemoveFlagRun("dragon_is_dead")
-	end
-	if GameHasFlagRun("koipi_is_dead") then
-		SendCmd("LocationChecks", { locations = {110630,}})
-		GameRemoveFlagRun("koipi_is_dead")
-	end
-	if GameHasFlagRun("squidward_is_dead") then
-		SendCmd("LocationChecks", { locations = {110640,}})
-		GameRemoveFlagRun("squidward_is_dead")
-	end
-	if GameHasFlagRun("leviathan_is_dead") then
-		SendCmd("LocationChecks", { locations = {110650,}})
-		GameRemoveFlagRun("leviathan_is_dead")
-	end
-	if GameHasFlagRun("triangle_is_dead") then
-		SendCmd("LocationChecks", { locations = {110660,}})
-		GameRemoveFlagRun("triangle_is_dead")
-	end
-	if GameHasFlagRun("skull_is_dead") then
-		SendCmd("LocationChecks", { locations = {110670,}})
-		GameRemoveFlagRun("skull_is_dead")
-	end
-	if GameHasFlagRun("friend_is_dead") then
-		SendCmd("LocationChecks", { locations = {110680,}})
-		GameRemoveFlagRun("friend_is_dead")
-	end
-	if GameHasFlagRun("mestari_is_dead") then
-		SendCmd("LocationChecks", { locations = {110690,}})
-		GameRemoveFlagRun("mestari_is_dead")
-	end
-	if GameHasFlagRun("alchemist_is_dead") then
-		SendCmd("LocationChecks", { locations = {110700,}})
-		GameRemoveFlagRun("alchemist_is_dead")
-	end
-	if GameHasFlagRun("mecha_is_dead") then
-		SendCmd("LocationChecks", { locations = {110710,}})
-		GameRemoveFlagRun("mecha_is_dead")
+	for num, boss in pairs(BossLocations) do
+		if GameHasFlagRun(boss) then
+			SendCmd("LocationChecks", { locations = {num,}})
+			GameRemoveFlagRun(boss)
+		end
 	end
 end

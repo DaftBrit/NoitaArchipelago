@@ -115,6 +115,7 @@ local function get_health()
 	return ComponentGetValue(dm, "hp"), ComponentGetValue(dm, "max_hp")
 end
 
+-- Note that these hp values get mulitplied by 25 by the game. Setting it to 80 means 2,000 health
 local function set_health(cur_hp, max_hp)
 	local damagemodels = EntityGetComponent(get_player(), "DamageModelComponent")
 	for _, damagemodel in ipairs(damagemodels or {}) do
@@ -137,15 +138,20 @@ function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
 	add_items_to_inventory({"data/entities/items/wand_level_10.xml"})
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 20 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 40 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 60 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 80 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 100 ) -- for testing
-	give_perk("MOVEMENT_FASTER") -- for testing gotta go fast
-	give_perk("MOVEMENT_FASTER") -- for testing
-	give_perk("HOVER_BOOST") -- for testing
-	give_perk("FASTER_LEVITATION") -- for testing
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 20 )
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 40 )
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 60 )
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 80 )
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 100 )
+	give_perk("MOVEMENT_FASTER")
+	give_perk("MOVEMENT_FASTER")
+	give_perk("HOVER_BOOST")
+	give_perk("FASTER_LEVITATION")
+	give_perk("UNLIMITED_SPELLS")
 	set_money(100000000)
 	set_health(80, 80)
+	EntityLoadAtPlayer("data/entities/items/wands/custom/digger_01.xml", -20) -- good for digging
+	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/pw_teleporter.xml", -40)
+	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world and vice versa
+	-- don't aim other directions. the linear arc means it snaps to 8 directions
 end

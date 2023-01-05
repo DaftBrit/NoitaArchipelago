@@ -11,4 +11,3 @@ function ContinueCache(ap_seed)
     delivered_items = JSON:decode(f:read("*a"))
     f:close()
 end
-

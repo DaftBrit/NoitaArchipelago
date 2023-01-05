@@ -1,0 +1,13 @@
+<Entity tags="hittable,teleportable_NOT">
+	<Base file="data/archipelago/entities/items/orbs/ap_orb_base_progression.xml">
+		<OrbComponent orb_id="34" />
+		<SpriteComponent image_file="data/archipelago/entities/items/orbs/porb.xml" />
+		<VariableStorageComponent name="card_name" value_string="FIREWORK" />
+	</Base>
+	<Entity>
+		<InheritTransformComponent>
+			<Transform position.x="0" position.y="-11" />
+		</InheritTransformComponent>
+		<Base file="data/entities/items/orbs/orb_particles_base.xml" />
+	</Entity>
+</Entity>
