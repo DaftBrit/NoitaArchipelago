@@ -56,8 +56,6 @@ function ResetOrbID()
 end
 
 
-orb_id = GlobalsGetValue("ap_orb_id")
-
 function SpawnItem(item_id, traps)
 	print("item spawning shortly")
 	local item = item_table[item_id]
@@ -75,11 +73,6 @@ function SpawnItem(item_id, traps)
 	elseif item.shop.perk ~= nil then
 		give_perk(item.shop.perk)
 		print("Perk spawned")
-	elseif item.shop.orb ~= nil then
-		EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression_" .. orb_id .. ".xml")
-		orb_id = orb_id + 1
-		print("Orb " .. orb_id .. " spawned")
-		GlobalsSetValue("ap_orb_id", orb_id)
 	elseif #item.shop > 0 then
 		EntityLoadAtPlayer(item.shop[Random(1, #item.shop)])
 		print("Item spawned")

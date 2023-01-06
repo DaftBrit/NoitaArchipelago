@@ -67,11 +67,11 @@ local function ap_extend_temple_altar()
     if item.shop.perk ~= nil then
       -- our item is a perk (dont_remove_other_perks = true)
       return perk_spawn(x, y, item.shop.perk, true)
-    elseif item.shop.orb ~= nil then
-      orb_id = orb_id + 1
-      print("Orb " .. orb_id .. " spawned in the shop")
-      GlobalsSetValue("ap_orb_id", orb_id)
-      return EntityLoad("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression_" .. orb_id .. ".xml", x, y)
+    --elseif item.shop.orb ~= nil then
+    --  orb_id = orb_id + 1
+    --  print("Orb " .. orb_id .. " spawned in the shop")
+    --  GlobalsSetValue("ap_orb_id", orb_id)
+    --  return EntityLoad("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression_" .. orb_id .. ".xml", x, y)
     elseif #item.shop > 0 then
       -- our item is something else (random choice)
       return EntityLoad(item.shop[Random(1, #item.shop)], x, y)

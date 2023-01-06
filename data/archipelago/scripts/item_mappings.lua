@@ -34,7 +34,7 @@ return {
 	[110020] = init_item({ perk = "REMOVE_FOG_OF_WAR" }),
 	[110021] = init_item({ perk = "RESPAWN" }), -- extra life
 -- todo: figure out how to make orbs spawn based on their orb file number
-	[110022] = init_item({ orb = "data/archipelago/entities/items/orbs/ap_orb_progression.xml" }),
+	[110022] = init_item({ "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression.xml" }),
 
 	[110023] = init_item({ "data/entities/items/pickup/potion_random_material.xml" }), -- random potion
 	[110024] = init_item({ "data/entities/items/pickup/potion_secret.xml" }), -- secret potion

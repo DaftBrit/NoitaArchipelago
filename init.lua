@@ -178,7 +178,7 @@ end
 -- also maybe move this to item_utils or something, depending on whether it funcitons correctly
 local function ReplaceOrbs()
 	local nxml = dofile_once("data/archipelago/lib/nxml.lua")
-	local content = ModTextFileGetContent("data/entities/animals/deer.xml")
+	local content = ModTextFileGetContent("data/entities/animals/elk.xml")
 	local xml = nxml.parse(content)
 	local i = 0
 	repeat
@@ -205,9 +205,9 @@ function RECV_MSG.Connected(msg)
 	if GlobalsGetValue(LOAD_KEY) ~= "1" then
 		print("new game has been started")
 		GlobalsSetValue(LOAD_KEY, "1")
+		ResetOrbID()
 		ResetCache(ap_seed)
 		give_debug_items()
-		ResetOrbID()
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	else
 		print("continued the game")
@@ -557,3 +557,6 @@ function OnPlayerSpawned(player)
 	game_is_paused = false
 	InitializeArchipelagoThread()
 end
+
+
+
