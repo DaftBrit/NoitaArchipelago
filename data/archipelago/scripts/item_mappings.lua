@@ -32,7 +32,18 @@ return {
 	[110018] = init_item({ perk = "PROTECTION_ELECTRICITY" }),
 	[110019] = init_item({ perk = "EDIT_WANDS_EVERYWHERE" }),
 	[110020] = init_item({ perk = "REMOVE_FOG_OF_WAR" }),
-	[110021] = init_item({ perk = "RESPAWN" }),
+	[110021] = init_item({ perk = "RESPAWN" }), -- extra life
+-- todo: figure out how to make orbs spawn based on their orb file number
+	[110022] = init_item({ "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression.xml" }),
 
-	[110022] = init_item({ "data/archipelago/entities/items/orbs/ap_orb.xml" })
+	[110023] = init_item({ "data/entities/items/pickup/potion_random_material.xml" }), -- random potion
+	[110024] = init_item({ "data/entities/items/pickup/potion_secret.xml" }), -- secret potion
+	[110025] = init_item({ "data/entities/items/pickup/physics_die.xml" }), -- chaos die
+	[110026] = init_item({ "data/entities/items/pickup/physics_greed_die.xml" }), -- greed die
+	[110027] = init_item({ "data/entities/items/pickup/safe_haven.xml" }), -- kammi
+	[110028] = init_item({ "data/entities/items/pickup/gourd.xml" }), -- gourd
+	[110029] = init_item({ "data/entities/items/pickup/beamstone.xml" }), -- sadekivi
+	[110030] = init_item({ "data/entities/items/pickup/broken_wand.xml" }), -- broken wand
+	[110031] = init_item({ "data/entities/items/pickup/powder_stash.xml" }), -- powder pouch
+	[110032] = init_item({ perk = "MAP" }) -- spatial awareness perk, for runs including toveri boss
 }
