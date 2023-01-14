@@ -1,6 +1,7 @@
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
 dofile_once("data/archipelago/lib/json.lua")
+dofile_once("data/archipelago/scripts/item_utils.lua")
 
 local function ap_extend_temple_altar()
   local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
@@ -60,11 +61,17 @@ local function ap_extend_temple_altar()
     return math.floor(price)
   end -- generate_item_price
 
+  -- todo: shop orb spawning doesn't work right now, figure out how to fix this properly
   -- Spawn in an item or perk entity for the shop
   local function create_our_item_entity(item, x, y)
     if item.shop.perk ~= nil then
       -- our item is a perk (dont_remove_other_perks = true)
       return perk_spawn(x, y, item.shop.perk, true)
+    --elseif item.shop.orb ~= nil then
+    --  orb_id = orb_id + 1
+    --  print("Orb " .. orb_id .. " spawned in the shop")
+    --  GlobalsSetValue("ap_orb_id", orb_id)
+    --  return EntityLoad("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression_" .. orb_id .. ".xml", x, y)
     elseif #item.shop > 0 then
       -- our item is something else (random choice)
       return EntityLoad(item.shop[Random(1, #item.shop)], x, y)

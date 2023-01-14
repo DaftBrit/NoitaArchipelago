@@ -115,6 +115,7 @@ local function get_health()
 	return ComponentGetValue(dm, "hp"), ComponentGetValue(dm, "max_hp")
 end
 
+-- Note that these hp values get mulitplied by 25 by the game. Setting it to 80 means 2,000 health
 local function set_health(cur_hp, max_hp)
 	local damagemodels = EntityGetComponent(get_player(), "DamageModelComponent")
 	for _, damagemodel in ipairs(damagemodels or {}) do
@@ -133,19 +134,83 @@ local function set_money(amt)
 	ComponentSetValue2(wallet, "money", amt)
 end
 
+-- from the wiki
+function addNewInternalVariable(entity_id, variable_name, variable_type, initial_value)
+	if(variable_type == "value_int") then
+		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			name=variable_name,
+			value_int=initial_value
+		})
+	elseif(variable_type == "value_string") then
+		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			name=variable_name,
+			value_string=initial_value
+		})
+	elseif(variable_type == "value_float") then
+		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			name=variable_name,
+			value_float=initial_value
+		})
+	elseif(variable_type == "value_bool") then
+		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			name=variable_name,
+			value_bool=initial_value
+		})
+	end
+end
+
+
+-- from the wiki
+function getInternalVariableValue(entity_id, variable_name, variable_type)
+	local value = nil
+	local components = EntityGetComponent( entity_id, "VariableStorageComponent" )
+	if ( components ~= nil ) then
+		for key,comp_id in pairs(components) do
+			local var_name = ComponentGetValue2( comp_id, "name" )
+			if(var_name == variable_name) then
+				value = ComponentGetValue2(comp_id, variable_type)
+			end
+		end
+	end
+	return value
+end
+
+
+-- from the wiki
+local function getInternalVariableValue(entity_id, variable_name, variable_type)
+	local value = nil
+	local components = EntityGetComponent( entity_id, "VariableStorageComponent" )
+	if ( components ~= nil ) then
+		for _, comp_id in pairs(components) do
+			local var_name = ComponentGetValue2( comp_id, "name" )
+			if(var_name == variable_name) then
+				value = ComponentGetValue2(comp_id, variable_type)
+			end
+		end
+	end
+	return value
+end
+
+
 function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
 	add_items_to_inventory({"data/entities/items/wand_level_10.xml"})
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 20 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 40 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 60 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 80 ) -- for testing
-	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 100 ) -- for testing
-	give_perk("MOVEMENT_FASTER") -- for testing gotta go fast
-	give_perk("MOVEMENT_FASTER") -- for testing
-	give_perk("HOVER_BOOST") -- for testing
-	give_perk("FASTER_LEVITATION") -- for testing
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 20 )
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 40 )
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 60 )
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 80 )
+	EntityLoadAtPlayer( "data/entities/items/pickup/chest_random.xml", 100 )
+	give_perk("MOVEMENT_FASTER")
+	give_perk("MOVEMENT_FASTER")
+	give_perk("HOVER_BOOST")
+	give_perk("FASTER_LEVITATION")
+	give_perk("UNLIMITED_SPELLS")
 	set_money(100000000)
 	set_health(80, 80)
+	EntityLoadAtPlayer("data/entities/items/wands/custom/digger_01.xml", -20) -- good for digging
+	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/pw_teleporter.xml", -40)
+	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world
+	-- don't aim other directions. the linear arc means it snaps to 8 directions
+	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression.xml", -80)
 end

@@ -22,3 +22,6 @@ ModLuaFileAppend("data/entities/animals/boss_wizard/death.lua", "data/archipelag
 ModLuaFileAppend("data/entities/animals/boss_ghost/death.lua", "data/archipelago/scripts/bosses/ap_skull_death.lua")
 ModLuaFileAppend("data/entities/animals/boss_pit/boss_pit_death.lua", "data/archipelago/scripts/bosses/ap_squidward_death.lua")
 ModLuaFileAppend("data/entities/animals/boss_gate/gate_monster_death.lua", "data/archipelago/scripts/bosses/ap_triangle_death.lua")
+
+ModLuaFileAppend("data/scripts/items/orb_init.lua", "data/archipelago/scripts/ap_orb_init_random.lua")
+ModLuaFileAppend("data/scripts/items/orb_pickup.lua", "data/archipelago/scripts/ap_orb_pickup_random.lua")

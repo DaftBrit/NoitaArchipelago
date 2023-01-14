@@ -1,16 +1,18 @@
 <Entity tags="hittable,teleportable_NOT">
 	
-	<Base file="data/archipelago/entities/items/orbs/ap_orb_base_quiet.xml">
+	<Base file="data/archipelago/entities/items/orbs/ap_orb_base_random.xml">
 
 		<OrbComponent
-			orb_id="8" >
+			orb_id="55" >
 		</OrbComponent>
 		
 		<SpriteComponent 
 			image_file="data/archipelago/entities/items/orbs/porb.xml"
 			>
 		</SpriteComponent>
-		
+
+<!--		todo: figure out how to put something here to based on a lua script?-->
+
 		<VariableStorageComponent
 			name="card_name"
 			value_string="FIREWORK"
