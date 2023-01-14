@@ -11,6 +11,11 @@ function item_pickup( entity_item, entity_who_picked, item_name )
 	--for key,comp_id in pairs(orbcomp) do
 	--	orb_id = ComponentGetValueInt( comp_id, "orb_id" )
 	--end
+	print("orb has been picked up")
+
+	local biome_name = BiomeMapGetName(pos_x, pos_y)
+
+	print(biome_name)
 
 	local message_title = "$itempickup_orb_discovered"
 	local message_desc = "$itempickupdesc_orb_discovered"

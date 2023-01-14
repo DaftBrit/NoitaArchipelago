@@ -61,7 +61,7 @@ local current_player_slot = -1
 local sock = nil
 delivered_items = {}
 picked_up_items = {}
-
+-- todo: get rid of picked_up_items, make it as it was before basically
 
 -- Locations:
 -- 110000-110499 Chests
@@ -173,21 +173,6 @@ local function ShouldDeliverItem(item)
 	return true
 end
 
--- replace the naturally spawning orbs before they spawn in
--- TODO: Replace them with ap_orb_random instead of deer after ap_orb_random works the way we want it to
--- also maybe move this to item_utils or something, depending on whether it funcitons correctly
-local function ReplaceOrbs()
-	local nxml = dofile_once("data/archipelago/lib/nxml.lua")
-	local content = ModTextFileGetContent("data/entities/animals/elk.xml")
-	local xml = nxml.parse(content)
-	local i = 0
-	repeat
-		ModTextFileSetContent("data/entities/items/orbs/orb_0" .. i .. ".xml", tostring(xml))
-		i = i + 1
-	until i > 10
-	ModTextFileSetContent("data/entities/items/orbs/orb_10.xml", tostring(xml))
-end
-ReplaceOrbs()
 
 ----------------------------------------------------------------------------------------------------
 -- SPECIFIC MESSAGE HANDLING
@@ -266,6 +251,7 @@ function RECV_MSG.ReceivedItems(msg)
         end
     end
 end
+
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
 function RECV_MSG.DataPackage(msg)
@@ -464,6 +450,7 @@ local function AsyncThread()
 		CheckVictoryConditionFlag()
 		CheckComponentItemsUnlocked()
 		CheckBossLocations()
+		CheckOrbLocations()
 
 		local msg = GetNextMessage()
 		if msg then

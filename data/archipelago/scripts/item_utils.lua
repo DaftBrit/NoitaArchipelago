@@ -108,8 +108,32 @@ local BossLocations = {
 function CheckBossLocations()
 	for num, boss in pairs(BossLocations) do
 		if GameHasFlagRun(boss) then
-			SendCmd("LocationChecks", { locations = {num,}})
+			SendCmd("LocationChecks", { locations = {num}})
 			GameRemoveFlagRun(boss)
+		end
+	end
+end
+
+
+local OrbLocations = {
+	[110501] = "orb_0",
+	[110502] = "orb_1",
+	[110503] = "orb_2",
+	[110504] = "orb_3",
+	[110505] = "orb_4",
+	[110506] = "orb_5",
+	[110507] = "orb_6",
+	[110508] = "orb_7",
+	[110509] = "orb_8",
+	[110510] = "orb_9",
+	[110511] = "orb_10",
+}
+
+function CheckOrbLocations()
+	for num, orb in pairs(OrbLocations) do
+		if GameHasFlagRun(orb) then
+			SendCmd("LocationChecks", { locations = {num}})
+			GameRemoveFlagRun(orb)
 		end
 	end
 end

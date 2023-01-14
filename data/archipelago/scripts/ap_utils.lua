@@ -134,6 +134,64 @@ local function set_money(amt)
 	ComponentSetValue2(wallet, "money", amt)
 end
 
+-- from the wiki
+function addNewInternalVariable(entity_id, variable_name, variable_type, initial_value)
+	if(variable_type == "value_int") then
+		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			name=variable_name,
+			value_int=initial_value
+		})
+	elseif(variable_type == "value_string") then
+		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			name=variable_name,
+			value_string=initial_value
+		})
+	elseif(variable_type == "value_float") then
+		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			name=variable_name,
+			value_float=initial_value
+		})
+	elseif(variable_type == "value_bool") then
+		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			name=variable_name,
+			value_bool=initial_value
+		})
+	end
+end
+
+
+-- from the wiki
+function getInternalVariableValue(entity_id, variable_name, variable_type)
+	local value = nil
+	local components = EntityGetComponent( entity_id, "VariableStorageComponent" )
+	if ( components ~= nil ) then
+		for key,comp_id in pairs(components) do
+			local var_name = ComponentGetValue2( comp_id, "name" )
+			if(var_name == variable_name) then
+				value = ComponentGetValue2(comp_id, variable_type)
+			end
+		end
+	end
+	return value
+end
+
+
+-- from the wiki
+local function getInternalVariableValue(entity_id, variable_name, variable_type)
+	local value = nil
+	local components = EntityGetComponent( entity_id, "VariableStorageComponent" )
+	if ( components ~= nil ) then
+		for _, comp_id in pairs(components) do
+			local var_name = ComponentGetValue2( comp_id, "name" )
+			if(var_name == variable_name) then
+				value = ComponentGetValue2(comp_id, variable_type)
+			end
+		end
+	end
+	return value
+end
+
+
 function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
