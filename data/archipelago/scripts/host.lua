@@ -6,5 +6,5 @@ PORT = ModSettingGet("archipelago.server_port")
 WS_HOST_URL = "ws://"..HOST..":"..PORT
 
 function get_ws_host_url()
-  return WS_HOST_URL
+	return WS_HOST_URL
 end

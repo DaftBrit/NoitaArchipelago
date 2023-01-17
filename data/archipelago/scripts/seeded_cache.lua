@@ -4,7 +4,7 @@ local Globals = dofile("data/archipelago/scripts/globals.lua")
 local SeededCache = Cache:extend()
 
 function SeededCache:new(cache_name)
-  SeededCache.super.new(self, cache_name)
+	SeededCache.super.new(self, cache_name)
 end
 
 function SeededCache:get_filename()

@@ -4,7 +4,7 @@ local JSON = dofile("data/archipelago/lib/json.lua")
 local GlobalComplex = Global:extend()
 
 function GlobalComplex:new(key_name)
-  GlobalComplex.super.new(self, key_name)
+	GlobalComplex.super.new(self, key_name)
 end
 
 function GlobalComplex:getTable(default_value)
