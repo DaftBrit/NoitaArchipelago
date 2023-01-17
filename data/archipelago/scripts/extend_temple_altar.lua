@@ -1,11 +1,12 @@
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
-dofile_once("data/archipelago/lib/json.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
 
 local function ap_extend_temple_altar()
+  local JSON = dofile("data/archipelago/lib/json.lua")
   local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
   local AP = dofile("data/archipelago/scripts/constants.lua")
+  local Globals = dofile("data/archipelago/scripts/globals.lua")
 
   local remaining_ap_items = 0
   local total_remaining_items = 0
@@ -24,29 +25,9 @@ local function ap_extend_temple_altar()
   end
 
   -- Gets the location id for the shop based on the y coordinate and number of AP items already placed (assuming max 5)
-  local function get_shop_location_id_str(y)
-    return tostring(AP.FIRST_SHOPITEM_LOCATION_ID + (get_shop_num(y)-1) * 5 + num_ap_items)
-  end
-
-  -- Gets the actual name of the item to be put into the shop
-  local function get_item_name(y)
-    return GlobalsGetValue("AP_SHOPITEM_NAME_" .. get_shop_location_id_str(y))
-  end
-
-  -- Gets the flags of the item to be put into the shop
-  -- For a list of flags, see
-  -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#networkitem 
-  local function get_item_flags(y)
-    return tonumber(GlobalsGetValue("AP_SHOPITEM_FLAGS_" .. get_shop_location_id_str(y), "0"))
-  end
-
-  -- Gets the item ID associated with the shop location
-  local function get_item_id(y)
-    return tonumber(GlobalsGetValue("AP_SHOPITEM_ITEM_ID_" .. get_shop_location_id_str(y)))
-  end
-
-  local function get_is_our_item(y)
-    return GlobalsGetValue("AP_SHOPITEM_IS_OURS_" .. get_shop_location_id_str(y)) == "1"
+  -- TODO: Use x for parallel worlds in the future
+  local function get_shop_location_id(x, y)
+    return AP.FIRST_SHOPITEM_LOCATION_ID + (get_shop_num(y)-1) * 5 + num_ap_items
   end
 
   -- Uses vanilla wand price calculation, copied from the actual shop code.
@@ -64,17 +45,17 @@ local function ap_extend_temple_altar()
   -- todo: shop orb spawning doesn't work right now, figure out how to fix this properly
   -- Spawn in an item or perk entity for the shop
   local function create_our_item_entity(item, x, y)
-    if item.shop.perk ~= nil then
+    if item.perk ~= nil then
       -- our item is a perk (dont_remove_other_perks = true)
-      return perk_spawn(x, y, item.shop.perk, true)
+      return perk_spawn(x, y, item.perk, true)
     --elseif item.shop.orb ~= nil then
     --  orb_id = orb_id + 1
     --  print("Orb " .. orb_id .. " spawned in the shop")
     --  GlobalsSetValue("ap_orb_id", orb_id)
     --  return EntityLoad("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression_" .. orb_id .. ".xml", x, y)
-    elseif #item.shop > 0 then
+    elseif #item.items > 0 then
       -- our item is something else (random choice)
-      return EntityLoad(item.shop[Random(1, #item.shop)], x, y)
+      return EntityLoad(item.items[Random(1, #item.items)], x, y)
     else -- error?
       -- TODO
       print_error("Failed to load our own shopitem!")
@@ -89,8 +70,8 @@ local function ap_extend_temple_altar()
   end
 
   -- Basically chooses the item graphic depending on the generated item's flags
-  local function create_ap_entity_from_flags(x, y)
-    local flags = get_item_flags(y)
+  local function create_ap_entity_from_flags(location, x, y)
+    local flags = location.item_flags
 
     if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
       return create_trap_item_entity(x, y)
@@ -111,9 +92,9 @@ local function ap_extend_temple_altar()
   end
 
   -- Spawns in an AP item (our own entity to represent items that don't exist in this game)
-  local function create_foreign_item_entity(x, y)
-    local entity_id, description = create_ap_entity_from_flags(x, y)
-    local name = get_item_name(y)
+  local function create_foreign_item_entity(location, x, y)
+    local entity_id, description = create_ap_entity_from_flags(location, x, y)
+    local name = location.item_name
 
     -- Change item name
     change_entity_ingame_name(entity_id, name, description)
@@ -122,16 +103,14 @@ local function ap_extend_temple_altar()
 
   -- Generates an items and creates the entity used to make the shop item
   local function generate_ap_shop_item_entity(x, y)
-    local item_id = get_item_id(y)
+    local location = Globals.ShopLocations:getKey(get_shop_location_id(x, y))
+    local item_id = location.item_id
     local item = item_table[item_id]
-    local flags = get_item_flags(y)
-    local name = get_item_name(y)
-    local is_our_item = get_is_our_item(y)
 
-    if is_our_item and item and item.shop and item_id ~= AP.TRAP_ID then
+    if location.is_our_item and item and item.items and item_id ~= AP.TRAP_ID then
       return create_our_item_entity(item, x, y), false
     else
-      return create_foreign_item_entity(x, y), true
+      return create_foreign_item_entity(location, x, y), true
     end
   end -- generate_ap_shop_item_entity
 
@@ -149,7 +128,7 @@ local function ap_extend_temple_altar()
       _tags="archipelago,enabled_in_world",
       name="ap_shop_data",
       value_string=JSON:encode({
-        location_id = get_shop_location_id_str(y),
+        location_id = get_shop_location_id(x, y),
         price = price,
         sale = cheap_item,
         is_ap_item = is_foreign_item,
@@ -188,7 +167,7 @@ local function ap_extend_temple_altar()
     EntityLoad( "data/entities/buildings/shop_hitbox.xml", x, y )
 
     SetRandomSeed(x, y)
-    -- this is the "Extra Item In Holy Mountain" perk
+    -- this is the "Extra Item In Holy Mountain" perk, not an AP global
     local count = tonumber( GlobalsGetValue( "TEMPLE_SHOP_ITEM_COUNT", "5" ) )
     local width = 132
     local item_width = width / count
