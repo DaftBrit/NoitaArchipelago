@@ -53,7 +53,7 @@ local function ap_extend_temple_altar()
 		--	print("Orb " .. orb_id .. " spawned in the shop")
 		--	GlobalsSetValue("ap_orb_id", orb_id)
 		--	return EntityLoad("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression_" .. orb_id .. ".xml", x, y)
-		elseif #item.items > 0 then
+		elseif item.items ~= nil and #item.items > 0 then
 			-- our item is something else (random choice)
 			return EntityLoad(item.items[Random(1, #item.items)], x, y)
 		else -- error?
@@ -107,7 +107,7 @@ local function ap_extend_temple_altar()
 		local item_id = location.item_id
 		local item = item_table[item_id]
 
-		if location.is_our_item and item and item.items and item_id ~= AP.TRAP_ID then
+		if location.is_our_item and item and item_id ~= AP.TRAP_ID then
 			return create_our_item_entity(item, x, y), false
 		else
 			return create_foreign_item_entity(location, x, y), true
