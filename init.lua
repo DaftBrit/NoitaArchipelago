@@ -24,6 +24,7 @@ dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
 --LIBS
 local pollnet = require("pollnet.init")
 local sqlite = require("sqlite.init")
+local Log = dofile("data/archipelago/scripts/logger.lua")
 
 local JSON = dofile("data/archipelago/lib/json.lua")
 function JSON:onDecodeError(message, text, location, etc)
@@ -39,7 +40,6 @@ dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/lib/mod_settings.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
 
-local Log = dofile("data/archipelago/scripts/logger.lua")
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
 
