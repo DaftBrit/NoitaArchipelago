@@ -58,8 +58,6 @@ local death_link = false
 local Games = {}
 local player_slot_to_name = {}
 local check_list = {}
-local item_id_to_name = {}
-local location_id_to_name = {}
 local current_player_slot = -1
 local sock = nil
 
@@ -136,9 +134,9 @@ local TRAP_ITEM_NAMES = {
 
 -- Creates a name based on the player_id, item_id, and flags to be presented as the name of an AP item
 local function GetItemName(player_id, item_id, flags)
-	local item_name = item_id_to_name[item_id]
+	local item_name = Cache.ItemNames:get(item_id)
 	if item_name == nil then
-		error("item_id is nil")
+		error("item_name is nil")
 	end
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
@@ -157,7 +155,7 @@ end
 
 -- Used to check and report any locations that have been discovered by external lua components
 local function CheckComponentItemsUnlocked()
-	local locations = Globals.LocationUnlockQueue:getTable()
+	local locations = Globals.LocationUnlockQueue:get_table()
 	if #locations > 0 then
 		SendCmd("LocationChecks", { locations = locations })
 	end
@@ -172,6 +170,42 @@ local function ShouldDeliverItem(item)
 		end
 	end
 	return true
+end
+
+
+----------------------------------------------------------------------------------------------------
+-- CACHE SETUP
+----------------------------------------------------------------------------------------------------
+-- Share location scouts with other Lua contexts via Noita globals
+-- This workaround is necessary because the `io` module isn't accessible in other scripts.
+local function ShareLocationScouts()
+	local cache = Cache.LocationInfo:reference()
+	print_error("WTF?? " .. JSON:encode(cache))
+	Globals.ShopLocations:set_table(cache)
+end
+
+-- Request items we need to display (i.e. shops)
+local function SetupLocationScouts()
+	if Cache.LocationInfo:is_empty() then
+		local locations = {}
+		for i = AP.FIRST_SHOPITEM_LOCATION_ID, AP.LAST_SHOPITEM_LOCATION_ID do
+			table.insert(locations, i)
+		end
+		SendCmd("LocationScouts", { locations = locations })
+	else
+		Log.Info("Restored LocationInfo from cache")
+		ShareLocationScouts()
+	end
+end
+
+
+local function SetupDataPackage()
+	if Cache.ItemNames:is_empty() or Cache.LocationNames:is_empty() then
+		SendCmd("GetDataPackage", { games = Games })
+	else
+		Log.Info("Restored DataPackage from cache")
+		SetupLocationScouts()
+	end
 end
 
 
@@ -200,7 +234,6 @@ function RECV_MSG.Connected(msg)
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	else
 		print("continued the game")
-		Cache.ItemDelivery:restore()
 	end
 
 
@@ -219,7 +252,11 @@ function RECV_MSG.Connected(msg)
 	for key, val in pairs(msg["slot_info"]) do
 		table.insert(Games, val["game"])
 	end
-	SendCmd("GetDataPackage", { games = Games })
+
+
+	-- Request DataPackage
+	SetupDataPackage()
+
 
 	-- Enable deathlink if the setting on the server said so
 	death_link = msg["slot_data"]["deathLink"] == 1
@@ -259,23 +296,23 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
 function RECV_MSG.DataPackage(msg)
+	local item_names = Cache.ItemNames:reference()
+	local location_names = Cache.LocationNames:reference()
+
 	for _, game in pairs(msg["data"]["games"]) do
 		for item_name, item_id in pairs(game["item_name_to_id"]) do
 			-- Some games like Hollow Knight use underscores for whatever reason
-			item_id_to_name[item_id] = string.gsub(item_name, "_", " ")
+			item_names[item_id] = string.gsub(item_name, "_", " ")
 		end
 
 		for location_name, location_id in pairs(game["location_name_to_id"]) do
-			location_id_to_name[location_id] = string.gsub(location_name, "_", " ")
+			location_names[location_id] = string.gsub(location_name, "_", " ")
 		end
 	end
 
-	-- Request items we need to display (i.e. shops)
-	local locations = {}
-	for i = AP.FIRST_SHOPITEM_LOCATION_ID, AP.LAST_SHOPITEM_LOCATION_ID do
-		table.insert(locations, i)
-	end
-	SendCmd("LocationScouts", { locations = locations })
+	Cache.ItemNames:write()
+	Cache.LocationNames:write()
+	SetupLocationScouts()
 end
 
 
@@ -284,9 +321,9 @@ function ParseJSONPart(part)
 	if part["type"] == "player_id" then
 		result = player_slot_to_name[tonumber(part["text"])]
 	elseif part["type"] == "item_id" then
-		result = item_id_to_name[tonumber(part["text"])]
+		result = Cache.ItemNames:get(tonumber(part["text"]))
 	elseif part["type"] == "location_id" then
-		result = location_id_to_name[tonumber(part["text"])]
+		result = Cache.LocationNames:get(tonumber(part["text"]))
 	elseif part["type"] == "color" then
 		Log.Info("Found colour in message: " .. part["color"])
 		result = ""	-- TODO color not supported
@@ -320,7 +357,8 @@ function RECV_MSG.PrintJSON(msg)
 		local is_source_player = source_player_id == current_player_slot
 
 		if (is_destination_player or is_source_player) and destination_player_id ~= source_player_id then
-			GamePrintImportant(item_id_to_name[item_id], msg_str)
+			local item_name = Cache.ItemNames:get(item_id)
+			GamePrintImportant(item_name, msg_str)
 		else
 			GamePrint(msg_str)
 		end
@@ -366,19 +404,24 @@ end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#LocationInfo
+-- This is the reply to the LocationScouts request
 function RECV_MSG.LocationInfo(msg)
+	local cache = Cache.LocationInfo:reference()
+
 	-- Set global shop item names to share with the shop lua context
 	for _, net_item in ipairs(msg["locations"]) do
 		local item_id = net_item.item
 
-		Globals.ShopLocations:addKey(net_item.location, {
+		cache[net_item.location] = {
 			item_name = GetItemName(net_item.player, item_id, net_item.flags),
 			item_flags = net_item.flags,
 			item_id = item_id,
 			-- Differentiate between our items and items for other Noita worlds
 			is_our_item = net_item.player == current_player_slot
-		})
+		}
 	end
+	Cache.LocationInfo:write()
+	ShareLocationScouts()
 end
 
 ----------------------------------------------------------------------------------------------------

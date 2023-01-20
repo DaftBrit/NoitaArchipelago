@@ -7,6 +7,7 @@ local function ap_extend_temple_altar()
 	local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 	local AP = dofile("data/archipelago/scripts/constants.lua")
 	local Globals = dofile("data/archipelago/scripts/globals.lua")
+	local Log = dofile("data/archipelago/scripts/logger.lua")
 
 	local remaining_ap_items = 0
 	local total_remaining_items = 0
@@ -103,7 +104,11 @@ local function ap_extend_temple_altar()
 
 	-- Generates an items and creates the entity used to make the shop item
 	local function generate_ap_shop_item_entity(x, y)
-		local location = Globals.ShopLocations:getKey(get_shop_location_id(x, y))
+		local location = Globals.ShopLocations:get_key(get_shop_location_id(x, y))
+		if location == nil then
+			Log.Error("Failed to retrieve shopitem info from cache")
+		end
+
 		local item_id = location.item_id
 		local item = item_table[item_id]
 

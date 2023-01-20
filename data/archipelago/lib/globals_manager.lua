@@ -12,7 +12,7 @@ function GlobalImpl:get(default_value)
 end
 
 -- Gets a global, returned as a number.
-function GlobalImpl:getNum(default_value)
+function GlobalImpl:get_num(default_value)
 	return tonumber(self:get(default_value))
 end
 
@@ -23,6 +23,10 @@ end
 
 function GlobalImpl:reset()
 	GlobalsSetValue(self.key, "")
+end
+
+function GlobalImpl:is_set()
+	return self:get() ~= ""
 end
 
 return GlobalImpl

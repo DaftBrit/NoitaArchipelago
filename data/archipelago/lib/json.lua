@@ -1286,7 +1286,7 @@ local function object_or_array(self, T, etc)
          table.insert(string_keys, key)
       elseif type(key) == 'number' then
          table.insert(number_keys, key)
-         if key <= 0 or key >= math.huge then
+         if key <= 0 or key > 65535 then
             number_keys_must_be_strings = true
          elseif not maximum_number_key or key > maximum_number_key then
             maximum_number_key = key
