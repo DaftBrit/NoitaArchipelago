@@ -180,7 +180,6 @@ end
 -- This workaround is necessary because the `io` module isn't accessible in other scripts.
 local function ShareLocationScouts()
 	local cache = Cache.LocationInfo:reference()
-	print_error("WTF?? " .. JSON:encode(cache))
 	Globals.ShopLocations:set_table(cache)
 end
 
