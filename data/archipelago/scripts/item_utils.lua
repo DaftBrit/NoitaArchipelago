@@ -2,42 +2,7 @@ dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
-
-is_redeliverable_item = {
-    [110001] = true,
-    [110002] = true,
-    [110003] = false, -- don't redeliver potions
-    [110004] = true,
-    [110005] = true,
-    [110006] = true,
-    [110007] = true,
-    [110008] = true,
-    [110009] = true,
-    [110010] = true,
-    [110011] = true,
-    [110012] = true,
-    [110013] = true,
-    [110014] = true,
-    [110015] = true,
-    [110016] = true,
-    [110017] = true,
-    [110018] = true,
-    [110019] = true,
-    [110020] = true,
-    [110021] = false, -- this is the respawn perk, whether to redeliver or not is still up for discussion
-    [110022] = true,
-	[110023] = false,
-	[110024] = false,
-	[110025] = true,
-	[110026] = true,
-	[110027] = true,
-	[110028] = true,
-	[110029] = true,
-	[110030] = true,
-	[110031] = true,
-	[110032] = true,
-}
-
+local Log = dofile("data/archipelago/scripts/logger.lua")
 
 -- Traps
 local function BadTimes()
@@ -57,10 +22,10 @@ end
 
 
 function SpawnItem(item_id, traps)
-	print("item spawning shortly")
+	Log.Info("item spawning shortly")
 	local item = item_table[item_id]
 	if item == nil then
-		print_error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
+		Log.Error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
 		return
 	end
 
@@ -69,27 +34,31 @@ function SpawnItem(item_id, traps)
 	if item_id == AP.TRAP_ID then
 		if not traps then return end
 		BadTimes()
-		print("Badtimes")
-	elseif item.shop.perk ~= nil then
-		give_perk(item.shop.perk)
-		print("Perk spawned")
-	elseif #item.shop > 0 then
-		EntityLoadAtPlayer(item.shop[Random(1, #item.shop)])
-		print("Item spawned")
+		Log.Info("Badtimes")
+	elseif item.perk ~= nil then
+		give_perk(item.perk)
+		Log.Info("Perk spawned")
+	elseif #item.items > 0 then
+		EntityLoadAtPlayer(item.items[Random(1, #item.items)])
+		Log.Info("Item spawned")
 	else
-		print_error("[AP] Item " .. tostring(item_id) .. " not properly configured")
+		Log.Error("[AP] Item " .. tostring(item_id) .. " not properly configured")
 	end
 end
 
-function UpdateDeliveredItems(sender_location_pair)
-	delivered_items[sender_location_pair] = true
-	local f = io.open("mods/archipelago/cache/delivered_" .. ap_seed, "w")
-	f:write(JSON:encode(delivered_items))
-	f:close()
-end
+local LocationFlags = {
+	[110501] = "orb_0",
+	[110502] = "orb_1",
+	[110503] = "orb_2",
+	[110504] = "orb_3",
+	[110505] = "orb_4",
+	[110506] = "orb_5",
+	[110507] = "orb_6",
+	[110508] = "orb_7",
+	[110509] = "orb_8",
+	[110510] = "orb_9",
+	[110511] = "orb_10",
 
-
-local BossLocations = {
 	[110600] = "kolmi_is_dead",
 	[110610] = "maggot_is_dead",
 	[110620] = "dragon_is_dead",
@@ -104,36 +73,15 @@ local BossLocations = {
 	[110710] = "mecha_is_dead",
 }
 
-
-function CheckBossLocations()
-	for num, boss in pairs(BossLocations) do
-		if GameHasFlagRun(boss) then
-			SendCmd("LocationChecks", { locations = {num}})
-			GameRemoveFlagRun(boss)
+function CheckLocationFlags()
+	local locations_checked = {}
+	for location_id, flag in pairs(LocationFlags) do
+		if GameHasFlagRun(flag) then
+			table.insert(locations_checked, location_id)
+			GameRemoveFlagRun(flag)
 		end
 	end
-end
-
-
-local OrbLocations = {
-	[110501] = "orb_0",
-	[110502] = "orb_1",
-	[110503] = "orb_2",
-	[110504] = "orb_3",
-	[110505] = "orb_4",
-	[110506] = "orb_5",
-	[110507] = "orb_6",
-	[110508] = "orb_7",
-	[110509] = "orb_8",
-	[110510] = "orb_9",
-	[110511] = "orb_10",
-}
-
-function CheckOrbLocations()
-	for num, orb in pairs(OrbLocations) do
-		if GameHasFlagRun(orb) then
-			SendCmd("LocationChecks", { locations = {num}})
-			GameRemoveFlagRun(orb)
-		end
+	if #locations_checked > 0 then
+		SendCmd("LocationChecks", { locations = locations_checked })
 	end
 end

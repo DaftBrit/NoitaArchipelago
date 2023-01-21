@@ -24,8 +24,9 @@ dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
 --LIBS
 local pollnet = require("pollnet.init")
 local sqlite = require("sqlite.init")
+local Log = dofile("data/archipelago/scripts/logger.lua")
 
-dofile_once("data/archipelago/lib/json.lua")
+local JSON = dofile("data/archipelago/lib/json.lua")
 function JSON:onDecodeError(message, text, location, etc)
 	Log.Error(message)
 end
@@ -38,11 +39,13 @@ dofile_once("data/archipelago/scripts/ap_utils.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/lib/mod_settings.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
-dofile_once("data/archipelago/scripts/item_cache.lua")
 
-local Log = dofile("data/archipelago/scripts/logger.lua")
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
+
+-- Modules
+local Globals = dofile("data/archipelago/scripts/globals.lua")
+local Cache = dofile("data/archipelago/scripts/caches.lua")
 
 -- CURRENT PROBLEMS:
 -- Orbs are noisy
@@ -59,9 +62,6 @@ local item_id_to_name = {}
 local location_id_to_name = {}
 local current_player_slot = -1
 local sock = nil
-delivered_items = {}
-picked_up_items = {}
--- todo: get rid of picked_up_items, make it as it was before basically
 
 -- Locations:
 -- 110000-110499 Chests
@@ -137,6 +137,10 @@ local TRAP_ITEM_NAMES = {
 -- Creates a name based on the player_id, item_id, and flags to be presented as the name of an AP item
 local function GetItemName(player_id, item_id, flags)
 	local item_name = item_id_to_name[item_id]
+	if item_name == nil then
+		error("item_id is nil")
+	end
+
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
 		SetRandomSeed(item_id, flags)
 		item_name = TRAP_ITEM_NAMES[Random(1, #TRAP_ITEM_NAMES)]
@@ -153,22 +157,19 @@ end
 
 -- Used to check and report any locations that have been discovered by external lua components
 local function CheckComponentItemsUnlocked()
-	local purchase_queue = GlobalsGetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE")
-	GlobalsSetValue("AP_COMPONENT_ITEM_UNLOCK_QUEUE", "")
-	local locations = {}
-	for item in string.gmatch(purchase_queue, "[^,]+") do
-		table.insert(locations, tonumber(item))
-		picked_up_items[item] = true
-	end
+	local locations = Globals.LocationUnlockQueue:getTable()
 	if #locations > 0 then
 		SendCmd("LocationChecks", { locations = locations })
 	end
+	Globals.LocationUnlockQueue:reset()
 end
 
 
 local function ShouldDeliverItem(item)
 	if item["player"] == current_player_slot then
-		return picked_up_items[tostring(item["location"])] ~= true
+		if item["location"] >= AP.FIRST_SHOPITEM_LOCATION_ID and item["location"] <= AP.LAST_SHOPITEM_LOCATION_ID then
+			return false	-- Don't deliver shopitems, they are given locally
+		end
 	end
 	return true
 end
@@ -180,24 +181,27 @@ end
 
 -- Function names must match corresponding command name
 local RECV_MSG = {}
-local LOAD_KEY = "archipelago_first_load_done"
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
 	current_player_slot = msg["slot"]
-	ap_seed = msg["slot_data"]["seed"]
-	if GlobalsGetValue(LOAD_KEY) ~= "1" then
+	
+	local ap_seed = msg["slot_data"]["seed"]
+	Globals.Seed:set(ap_seed)
+
+	if Globals.LoadKey:get() ~= "1" then
 		print("new game has been started")
-		GlobalsSetValue(LOAD_KEY, "1")
+		Globals.LoadKey:set("1")
+		Cache.ItemDelivery:reset()
 		ResetOrbID()
-		ResetCache(ap_seed)
 		give_debug_items()
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	else
 		print("continued the game")
-		ContinueCache(ap_seed)
-end
+		Cache.ItemDelivery:restore()
+	end
 
 
 	-- Retrieve all chest location ids the server is considering
@@ -227,29 +231,29 @@ end
 	bosses_as_checks = msg["slot_data"]["bossesAsChecks"]
 end
 
-
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 -- TODO: fix it so that index isn't checked, and trap/potion delivery is based on time since spawning
 function RECV_MSG.ReceivedItems(msg)
-    for _, item in pairs(msg["items"]) do
-        local item_id = item["item"]
-        local sender = item["player"]
-        local location_id = item["location"]
-        local sender_location_pair = tostring(sender) .. "|" .. tostring(location_id)
-        if not delivered_items[sender_location_pair] then
-			if is_redeliverable_item[item_id] and msg["index"] == 0 then
-				UpdateDeliveredItems(sender_location_pair)
-				if ShouldDeliverItem(item) then
-					SpawnItem(item_id, false)
+		for _, item in pairs(msg["items"]) do
+				local item_id = item["item"]
+				local sender = item["player"]
+				local location_id = item["location"]
+
+				local cache_key = Cache.make_key(sender, location_id)
+				if not Cache.ItemDelivery:is_set(cache_key) then
+					if item_table[item_id].redeliverable and msg["index"] == 0 then
+						Cache.ItemDelivery:set(cache_key)
+						if ShouldDeliverItem(item) then
+							SpawnItem(item_id, false)
+						end
+					elseif msg["index"] ~= 0 then
+						Cache.ItemDelivery:set(cache_key)
+						if ShouldDeliverItem(item) then
+							SpawnItem(item_id, true)
+						end
+					end
 				end
-			elseif msg["index"] ~= 0 then
-				UpdateDeliveredItems(sender_location_pair)
-				if ShouldDeliverItem(item) then
-					SpawnItem(item_id, true)
-				end
-			end
-        end
-    end
+		end
 end
 
 
@@ -365,17 +369,15 @@ end
 function RECV_MSG.LocationInfo(msg)
 	-- Set global shop item names to share with the shop lua context
 	for _, net_item in ipairs(msg["locations"]) do
-		local item = net_item.item
-		local location = tostring(net_item.location)
+		local item_id = net_item.item
 
-		GlobalsSetValue("AP_SHOPITEM_NAME_" .. location, GetItemName(net_item.player, item, net_item.flags))
-		GlobalsSetValue("AP_SHOPITEM_FLAGS_" .. location, net_item.flags)
-		GlobalsSetValue("AP_SHOPITEM_ITEM_ID_" .. location, tostring(item))
-
-		-- We need a way to determine whether the item is meant for us or a different Noita instance
-		if (net_item.player == current_player_slot) then
-			GlobalsSetValue("AP_SHOPITEM_IS_OURS_" .. location, "1")
-		end
+		Globals.ShopLocations:addKey(net_item.location, {
+			item_name = GetItemName(net_item.player, item_id, net_item.flags),
+			item_flags = net_item.flags,
+			item_id = item_id,
+			-- Differentiate between our items and items for other Noita worlds
+			is_our_item = net_item.player == current_player_slot
+		})
 	end
 end
 
@@ -446,51 +448,54 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local function AsyncThread()
-	while sock:poll() do
-		CheckVictoryConditionFlag()
-		CheckComponentItemsUnlocked()
-		CheckBossLocations()
-		CheckOrbLocations()
+	-- Wrap this in pcall, this is similar to try/catch, if not for this any errors would be ignored
+	local status,err = pcall(function()
+		while sock:poll() do
+			CheckVictoryConditionFlag()
+			CheckComponentItemsUnlocked()
+			CheckLocationFlags()
 
-		local msg = GetNextMessage()
-		if msg then
-			ProcessMsg(msg)
+			local msg = GetNextMessage()
+			if msg then
+				ProcessMsg(msg)
 
-			if check_list[1] then
-				next_item = check_list[1]
+				if check_list[1] then
+					next_item = check_list[1]
+				end
+			else
+				wait(1)
 			end
-		else
-			wait(1)
-		end
 
-		-- TODO move these chest shenanigans out of here into a remote item_pickup script
+			-- TODO move these chest shenanigans out of here into a remote item_pickup script
 
-		-- Item check and message send
-		if next_item then
-			for i, p in ipairs(get_players()) do
-				local x, y = EntityGetTransform(p)
-				local radius = 15
-				local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
-				if pickup[1] then
-					SendCmd("LocationChecks", { locations = { next_item } })
-					EntityKill( pickup[1] )
-					table.remove(check_list, 1)
+			-- Item check and message send
+			if next_item then
+				for i, p in ipairs(get_players()) do
+					local x, y = EntityGetTransform(p)
+					local radius = 15
+					local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
+					if pickup[1] then
+						SendCmd("LocationChecks", { locations = { next_item } })
+						EntityKill( pickup[1] )
+						table.remove(check_list, 1)
+					end
+				end
+			end
+
+			-- Spawn chest on X kills
+			if ModSettingGet("archipelago.kill_count") > 0 then
+				local kills = StatsGetValue("enemies_killed")
+				local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
+				local count = (kills / per_kill) - chest_counter
+				if count == 1 then
+					EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
+					GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
+					chest_counter = chest_counter + 1
 				end
 			end
 		end
-
-		-- Spawn chest on X kills
-		if ModSettingGet("archipelago.kill_count") > 0 then
-			local kills = StatsGetValue("enemies_killed")
-			local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
-			local count = (kills / per_kill) - chest_counter
-			if count == 1 then
-				EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
-				GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
-				chest_counter = chest_counter + 1
-			end
-		end
-	end
+	end)
+	Log.Warn("Exit with status: " .. tostring(status) .. "\nERR = " .. tostring(err))
 end
 
 

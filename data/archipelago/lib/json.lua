@@ -1592,8 +1592,8 @@ function OBJDEF:new(args)
    return setmetatable(new, OBJDEF)
 end
 
-JSON = OBJDEF:new() -- Noita expects to just dofile everything :(
---return OBJDEF:new()
+--JSON = OBJDEF:new() -- Noita expects to just dofile everything :(
+return OBJDEF:new()
 
 --
 -- Version history:

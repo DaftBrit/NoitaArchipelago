@@ -3,14 +3,14 @@ dofile_once("data/scripts/perks/perk.lua")
 
 
 function contains_element(tbl, elem)
-  for _, v in ipairs(tbl) do
-    if v == elem then return true end
-  end
-  return false
+	for _, v in ipairs(tbl) do
+		if v == elem then return true end
+	end
+	return false
 end
 
 function not_empty(s)
-  return s ~= nil and s ~= ''
+	return s ~= nil and s ~= ''
 end
 
 --Function to spawn a perk at the player and then have the player automatically pick it up
@@ -32,23 +32,23 @@ function add_items_to_inventory(items)
 		else
 			print_error("Error: Couldn't load the item [" .. path .. "]!")
 		end
-  end
+	end
 end
 
 
 -- Uses the player's position to initialize the random seed
 function SeedRandom()
 	for i, p in ipairs(get_players()) do
-    local x, y = EntityGetTransform(p)
+		local x, y = EntityGetTransform(p)
 		SetRandomSeed(x, y)
-  end
+	end
 end
 
 function EntityLoadAtPlayer(filename, xoff, yoff)
-  for i, p in ipairs(get_players()) do
-    local x, y = EntityGetTransform(p)
-    EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
-  end
+	for i, p in ipairs(get_players()) do
+		local x, y = EntityGetTransform(p)
+		EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
+	end
 end
 
 function GetCauseOfDeath()
