@@ -1,6 +1,7 @@
 
 local function prep_log_msg(msg)
-	return os.date("%H:%M:%S") .. " [AP] " .. msg
+	local _, _, _, hour, minute, second = GameGetDateAndTimeLocal()
+	return string.format("%02d:%02d:%02d", hour, minute, second) .. " [AP] " .. msg
 end
 
 local Logger = {}
