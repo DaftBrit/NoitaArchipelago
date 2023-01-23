@@ -7,4 +7,5 @@ return {
 	LoadKey = Global("ARCHIPELAGO_FIRST_LOAD_DONE"),
 
 	ShopLocations = GlobalComplex("AP_SHOPLOCATION_DATA"),
+	MissingLocationsSet = GlobalComplex("AP_MISSING_LOCATIONS"),
 }

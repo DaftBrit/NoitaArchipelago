@@ -32,6 +32,8 @@ end -- get_cost_x_offset
 -- Called when the entity gets created
 function init(entity_id)
 	local data = get_transferred_values(entity_id)
+	if data.price <= 0 then return end
+
 	local x, y = EntityGetTransform(entity_id)
 
 	-- These are typical shopitem components that would get added in Noita's vanilla shopitem file
