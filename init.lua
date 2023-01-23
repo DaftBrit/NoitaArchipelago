@@ -51,13 +51,15 @@ local Cache = dofile("data/archipelago/scripts/caches.lua")
 -- Orbs are noisy
 -- Double item spawns when being sent items
 
+-- See Options.py on the AP-side
+-- Can also use to indicate whether AP sent the connected packet
+local slot_options = nil
 
 local chest_counter = 0
 local last_death_time = 0
-local slot_options = nil	-- See Options.py
 local Games = {}
 local player_slot_to_name = {}
-local check_list = nil
+local check_list = {}
 local current_player_slot = -1
 local sock = nil
 
@@ -478,15 +480,46 @@ end
 ----------------------------------------------------------------------------------------------------
 -- ASYNC THREAD
 ----------------------------------------------------------------------------------------------------
+local function CheckChests()
+	-- TODO move these chest shenanigans out of here into a remote item_pickup script
+	local next_item = nil
+	if check_list[1] then
+		next_item = check_list[1]
+	end
 
+	-- Item check and message send
+	if next_item then
+		for _, player in ipairs(get_players()) do
+			local x, y = EntityGetTransform(player)
+			local radius = 15
+			local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
+			if pickup[1] then
+				SendCmd("LocationChecks", { locations = { next_item } })
+				EntityKill( pickup[1] )
+				table.remove(check_list, 1)
+			end
+		end
+	end
+
+	-- Spawn chest on X kills
+	if ModSettingGet("archipelago.kill_count") > 0 then
+		local kills = StatsGetValue("enemies_killed")
+		local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
+		local count = (kills / per_kill) - chest_counter
+		if count == 1 then
+			EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
+			GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
+			chest_counter = chest_counter + 1
+		end
+	end
+end
+
+-- NOTE: This isn't actually async, it's just using coroutines
+-- We can probably get rid of the coroutines and just do a pcall in OnWorldPostUpdate to simplify it
 local function AsyncThread()
 	-- Wrap this in pcall, this is similar to try/catch, if not for this any errors would be ignored
 	local status,err = pcall(function()
 		while sock:poll() do
-			CheckVictoryConditionFlag()
-			CheckComponentItemsUnlocked()
-			CheckLocationFlags()
-
 			local msg = GetNextMessage()
 			if msg then
 				ProcessMsg(msg)
@@ -494,36 +527,11 @@ local function AsyncThread()
 				wait(1)
 			end
 
-			-- TODO move these chest shenanigans out of here into a remote item_pickup script
-			local next_item = nil
-			if check_list[1] then
-				next_item = check_list[1]
-			end
-
-			-- Item check and message send
-			if next_item then
-				for _, player in ipairs(get_players()) do
-					local x, y = EntityGetTransform(player)
-					local radius = 15
-					local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
-					if pickup[1] then
-						SendCmd("LocationChecks", { locations = { next_item } })
-						EntityKill( pickup[1] )
-						table.remove(check_list, 1)
-					end
-				end
-			end
-
-			-- Spawn chest on X kills
-			if ModSettingGet("archipelago.kill_count") > 0 then
-				local kills = StatsGetValue("enemies_killed")
-				local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
-				local count = (kills / per_kill) - chest_counter
-				if count == 1 then
-					EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
-					GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
-					chest_counter = chest_counter + 1
-				end
+			if slot_options ~= nil then
+				CheckVictoryConditionFlag()
+				CheckComponentItemsUnlocked()
+				CheckLocationFlags()
+				CheckChests()
 			end
 		end
 	end)
