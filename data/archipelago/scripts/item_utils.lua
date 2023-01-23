@@ -10,8 +10,7 @@ local function BadTimes()
 	dofile("data/archipelago/scripts/ap_badtimes.lua")
 
 	local event = streaming_events[Random(1, #streaming_events)]
-	local event_description = event.id:gsub("_", " ")
-	GamePrintImportant("$ap_bad_times", event_description)
+	GamePrintImportant(event.ui_name, event.ui_description)
 	_streaming_run_event(event.id)
 end
 

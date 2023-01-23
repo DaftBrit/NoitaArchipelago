@@ -54,10 +54,10 @@ local Cache = dofile("data/archipelago/scripts/caches.lua")
 
 local chest_counter = 0
 local last_death_time = 0
-local death_link = false
+local slot_options = nil	-- See Options.py
 local Games = {}
 local player_slot_to_name = {}
-local check_list = {}
+local check_list = nil
 local current_player_slot = -1
 local sock = nil
 
@@ -72,8 +72,6 @@ local sock = nil
 
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
-	death_link = enabled
-
 	local conn_tags = { "AP", "WebHost" }
 	if enabled then
 		table.insert(conn_tags, "DeathLink")
@@ -105,13 +103,13 @@ end
 
 
 local function CheckVictoryConditionFlag()
-	if victory_condition == 0 then
+	if slot_options.victory_condition == 0 then
 		CheckVictoryConditionFor("ap_greed_ending", "we're rich")
-	elseif victory_condition == 1 then
+	elseif slot_options.victory_condition == 1 then
 		CheckVictoryConditionFor("ap_pure_ending", "we're rich and alive")
-	elseif victory_condition == 2 then
+	elseif slot_options.victory_condition == 2 then
 		CheckVictoryConditionFor("ap_peaceful_ending", "I love nature")
-	elseif victory_condition == 3 then
+	elseif slot_options.victory_condition == 3 then
 		CheckVictoryConditionFor("ap_yendor_ending", "red pixel pog")
 	end
 end
@@ -220,9 +218,9 @@ function RECV_MSG.Connected(msg)
 	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
 	current_player_slot = msg["slot"]
-	
-	local ap_seed = msg["slot_data"]["seed"]
-	Globals.Seed:set(ap_seed)
+	slot_options = msg["slot_data"]
+
+	Globals.Seed:set(slot_options.seed)
 
 	if Globals.LoadKey:get() ~= "1" then
 		print("new game has been started")
@@ -252,19 +250,11 @@ function RECV_MSG.Connected(msg)
 		table.insert(Games, val["game"])
 	end
 
-
 	-- Request DataPackage
 	SetupDataPackage()
 
-
 	-- Enable deathlink if the setting on the server said so
-	death_link = msg["slot_data"]["deathLink"] == 1
-	SetDeathLinkEnabled(death_link)
-
-	bad_effects = msg["slot_data"]["badEffects"]
-	victory_condition = msg["slot_data"]["victoryCondition"]
-	orbs_as_checks = msg["slot_data"]["orbsAsChecks"]
-	bosses_as_checks = msg["slot_data"]["bossesAsChecks"]
+	SetDeathLinkEnabled(slot_options.death_link)
 end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
@@ -385,7 +375,7 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
 function RECV_MSG.Bounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
-		if not death_link or not UpdateDeathTime() then return end
+		if not slot_options.death_link or not UpdateDeathTime() then return end
 
 		GamePrintImportant(GameTextGet("$ap_died", msg["data"]["source"]), msg["data"]["cause"])
 
@@ -500,20 +490,20 @@ local function AsyncThread()
 			local msg = GetNextMessage()
 			if msg then
 				ProcessMsg(msg)
-
-				if check_list[1] then
-					next_item = check_list[1]
-				end
 			else
 				wait(1)
 			end
 
 			-- TODO move these chest shenanigans out of here into a remote item_pickup script
+			local next_item = nil
+			if check_list[1] then
+				next_item = check_list[1]
+			end
 
 			-- Item check and message send
 			if next_item then
-				for i, p in ipairs(get_players()) do
-					local x, y = EntityGetTransform(p)
+				for _, player in ipairs(get_players()) do
+					local x, y = EntityGetTransform(player)
 					local radius = 15
 					local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
 					if pickup[1] then
@@ -571,7 +561,7 @@ end
 
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-	if not sock or not death_link or game_is_paused or not UpdateDeathTime() then return end
+	if not sock or not slot_options.death_link or game_is_paused or not UpdateDeathTime() then return end
 
 	local death_msg = GetCauseOfDeath()
 	local slotname = ModSettingGet("archipelago.slot_name")
