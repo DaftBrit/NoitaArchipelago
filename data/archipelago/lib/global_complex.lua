@@ -27,13 +27,25 @@ function GlobalComplex:add_key(key, value)
 	self:set_table(data)
 end
 
-function GlobalComplex:get_key(key, default_value)
+function GlobalComplex:get_key_raw(key)
 	local data = self:get_table()
 	local result = data[key]
 	if result == nil and type(key) == "number" then
 		result = data[tostring(key)]
 	end
-	return result or default_value or {}
+	return result
+end
+
+function GlobalComplex:get_key(key, default_value)
+	return self:get_key_raw(key) or default_value or {}
+end
+
+function GlobalComplex:has_key(key)
+	return self:get_key_raw(key) ~= nil
+end
+
+function GlobalComplex:remove_key(key)
+	self:add_key(key, nil)
 end
 
 function GlobalComplex:reset()

@@ -235,14 +235,16 @@ function RECV_MSG.Connected(msg)
 		print("continued the game")
 	end
 
-
 	-- Retrieve all chest location ids the server is considering
 	check_list = {}
+	local missing_locations_set = {}
 	for _, location in ipairs(msg["missing_locations"]) do
+		missing_locations_set[location] = true
 		if location >= AP.FIRST_CHEST_LOCATION_ID and location <= AP.LAST_CHEST_LOCATION_ID then
 			table.insert(check_list, location)
 		end
 	end
+	Globals.MissingLocationsSet:set_table(missing_locations_set)
 
 	for k, plr in pairs(msg["players"]) do
 		player_slot_to_name[plr["slot"]] = plr["name"]
@@ -262,26 +264,26 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 -- TODO: fix it so that index isn't checked, and trap/potion delivery is based on time since spawning
 function RECV_MSG.ReceivedItems(msg)
-		for _, item in pairs(msg["items"]) do
-				local item_id = item["item"]
-				local sender = item["player"]
-				local location_id = item["location"]
+	for _, item in pairs(msg["items"]) do
+		local item_id = item["item"]
+		local sender = item["player"]
+		local location_id = item["location"]
 
-				local cache_key = Cache.make_key(sender, location_id)
-				if not Cache.ItemDelivery:is_set(cache_key) then
-					if item_table[item_id].redeliverable and msg["index"] == 0 then
-						Cache.ItemDelivery:set(cache_key)
-						if ShouldDeliverItem(item) then
-							SpawnItem(item_id, false)
-						end
-					elseif msg["index"] ~= 0 then
-						Cache.ItemDelivery:set(cache_key)
-						if ShouldDeliverItem(item) then
-							SpawnItem(item_id, true)
-						end
-					end
+		local cache_key = Cache.make_key(sender, location_id)
+		if not Cache.ItemDelivery:is_set(cache_key) then
+			if item_table[item_id].redeliverable and msg["index"] == 0 then
+				Cache.ItemDelivery:set(cache_key)
+				if ShouldDeliverItem(item) then
+					SpawnItem(item_id, false)
 				end
+			elseif msg["index"] ~= 0 then
+				Cache.ItemDelivery:set(cache_key)
+				if ShouldDeliverItem(item) then
+					SpawnItem(item_id, true)
+				end
+			end
 		end
+	end
 end
 
 

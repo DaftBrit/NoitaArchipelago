@@ -150,18 +150,26 @@ local function ap_extend_temple_altar()
 		})
 	end -- generate_shop_item
 
-	-- Spawns either an AP item or spell shop item randomly, based on 
+	-- Spawns either an AP item or spell shop item randomly. If an AP item was already obtained, replace it with a
+	-- normal shop item.
 	local function spawn_either(x, y, is_sale, is_wand_shop)
-		if remaining_ap_items > 0 and Randomf() <= remaining_ap_items / total_remaining_items then
+		local location_id = get_shop_location_id(x, y)
+		local is_not_obtained = Globals.MissingLocationsSet:has_key(location_id)
+		local is_ap_shopitem = remaining_ap_items > 0 and Randomf() <= remaining_ap_items / total_remaining_items
+
+		if is_not_obtained and is_ap_shopitem then
 			generate_ap_shop_item(x, y, is_sale)
-			remaining_ap_items = remaining_ap_items - 1
-			num_ap_items = num_ap_items + 1
 		else
 			if is_wand_shop then
 				generate_shop_wand(x, y, is_sale)
 			else
 				generate_shop_item(x, y, is_sale, nil, true)
 			end
+		end
+
+		if is_ap_shopitem then
+			remaining_ap_items = remaining_ap_items - 1
+			num_ap_items = num_ap_items + 1
 		end
 		total_remaining_items = total_remaining_items - 1
 	end -- spawn_either
