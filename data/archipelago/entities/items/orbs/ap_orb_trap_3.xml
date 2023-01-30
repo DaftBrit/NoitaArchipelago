@@ -1,10 +1,10 @@
-<Sprite
-	filename="data/archipelago/entities/items/orbs/ap_orb_progression.png"
-	offset_x="20"
+<Sprite 
+	filename="data/archipelago/entities/items/orbs/ap_orb_trap_3.png"
+	offset_x="20" 
 	offset_y="48"
 	default_animation="default"
 	>
-
+	
 	<RectAnimation
 		name="default"
 		pos_x="0"

@@ -1,5 +1,5 @@
 <Entity tags="hittable,teleportable_NOT,polymorphable_NOT">
-
+	
 	<VelocityComponent>
 	</VelocityComponent>
 
@@ -59,7 +59,7 @@
 		_enabled="0"
 		_tags="enabled_in_world,orb_undiscovered" 
 		alpha="1"
-		image_file="data/archipelago/entities/items/orbs/porb.xml"
+		image_file="data/archipelago/entities/items/orbs/ap_orb_woah.xml"
 		next_rect_animation=""
 		rect_animation="" 
 		emissive="0"
@@ -102,12 +102,12 @@
         _enabled="1"
         execute_on_added="1"
         remove_after_executed="1"
-        script_source_file="data/archipelago/scripts/ap_orb_init.lua"
+        script_source_file="data/archipelago/scripts/ap_orb_init_randomizer_spawned.lua"
 	>
     </LuaComponent>
 
 	<LuaComponent
-		script_item_picked_up="data/archipelago/scripts/ap_orb_pickup_random.lua" >
+		script_item_picked_up="data/archipelago/scripts/ap_orb_pickup_randomizer_spawned.lua" >
 	</LuaComponent>
 
 </Entity>

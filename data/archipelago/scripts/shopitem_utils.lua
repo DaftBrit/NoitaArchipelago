@@ -27,17 +27,10 @@ function ShopItems.generate_item_price(biomeid, cheap_item)
 end -- generate_item_price
 
 
--- todo: shop orb spawning doesn't work right now, figure out how to fix this properly
 -- Spawn in an item or perk entity for the shop
 function ShopItems.create_our_item_entity(item, x, y)
   if item.perk ~= nil then
-    -- our item is a perk (dont_remove_other_perks = true)
     return perk_spawn(x, y, item.perk, true)
-  --elseif item.shop.orb ~= nil then
-  --	orb_id = orb_id + 1
-  --	print("Orb " .. orb_id .. " spawned in the shop")
-  --	GlobalsSetValue("ap_orb_id", orb_id)
-  --	return EntityLoad("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression_" .. orb_id .. ".xml", x, y)
   elseif item.items ~= nil and #item.items > 0 then
     -- our item is something else (random choice)
     return EntityLoad(item.items[Random(1, #item.items)], x, y)
@@ -92,7 +85,7 @@ end
 
 -- Generates an items and creates the entity used to make the shop item
 function ShopItems.generate_ap_shop_item_entity(location_id, x, y)
-  local location = Globals.ShopLocations:get_key(location_id)
+  local location = Globals.LocationScouts:get_key(location_id)
   if location == nil then
     Log.Error("Failed to retrieve shopitem info from cache")
   end

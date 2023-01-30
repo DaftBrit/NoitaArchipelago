@@ -32,7 +32,7 @@ mod_settings_version = 1 -- This is a magic global that can be used to migrate s
 mod_settings = 
 {
 	{
-		image_filename = "data/archipelago/logo.png",
+		image_filename = "mods/archipelago/logo.png",
 		ui_fn = mod_setting_image,
 	},
 	{
