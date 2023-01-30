@@ -1,0 +1,90 @@
+<Entity
+    name="spawned_timer" >
+
+    <LifetimeComponent
+        fade_sprites="0"
+        kill_all_parents="0"
+        kill_parent="0"
+        lifetime="30"
+        randomize_lifetime.min="0"
+        randomize_lifetime.max="0" />
+
+
+    <LuaComponent
+        call_init_function="0"
+        enable_coroutines="0"
+        execute_every_n_frame="1"
+        execute_on_added="0"
+        execute_on_removed="0"
+        execute_times="0"
+        mLastExecutionFrame="41299"
+        mModAppendsDone="1"
+        remove_after_executed="0"
+        script_audio_event_dead=""
+        script_collision_trigger_hit=""
+        script_collision_trigger_timer_finished=""
+        script_damage_about_to_be_received=""
+        script_damage_received=""
+        script_death=""
+        script_electricity_receiver_electrified=""
+        script_electricity_receiver_switched=""
+        script_enabled_changed=""
+        script_inhaled_material=""
+        script_interacting=""
+        script_item_picked_up=""
+        script_kick=""
+        script_material_area_checker_failed=""
+        script_material_area_checker_success=""
+        script_physics_body_modified=""
+        script_portal_teleport_used=""
+        script_pressure_plate_change=""
+        script_shot=""
+        script_source_file="data/archipelago/scripts/ap_spawned_timer_update.lua"
+        script_teleported=""
+        script_throw_item=""
+        script_wand_fired=""
+        vm_type="SHARED_BY_MANY_COMPONENTS" />
+
+    <LuaComponent
+        call_init_function="0"
+        enable_coroutines="0"
+        execute_every_n_frame="-1"
+        execute_on_added="0"
+        execute_on_removed="1"
+        execute_times="0"
+        mLastExecutionFrame="-1"
+        mModAppendsDone="0"
+        remove_after_executed="0"
+        script_audio_event_dead=""
+        script_collision_trigger_hit=""
+        script_collision_trigger_timer_finished=""
+        script_damage_about_to_be_received=""
+        script_damage_received=""
+        script_death=""
+        script_electricity_receiver_electrified=""
+        script_electricity_receiver_switched=""
+        script_enabled_changed=""
+        script_inhaled_material=""
+        script_interacting=""
+        script_item_picked_up=""
+        script_kick=""
+        script_material_area_checker_failed=""
+        script_material_area_checker_success=""
+        script_physics_body_modified=""
+        script_portal_teleport_used=""
+        script_pressure_plate_change=""
+        script_shot=""
+        script_source_file="data/archipelago/scripts/ap_spawned_timer_finish.lua"
+        script_teleported=""
+        script_throw_item=""
+        script_wand_fired=""
+        vm_type="SHARED_BY_MANY_COMPONENTS" />
+
+    <VariableStorageComponent
+        name="lifetime"
+        value_bool="0"
+        value_float="0"
+        value_int="30"
+        value_string="" />
+
+</Entity>

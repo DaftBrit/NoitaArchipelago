@@ -181,7 +181,7 @@ end
 -- This workaround is necessary because the `io` module isn't accessible in other scripts.
 local function ShareLocationScouts()
 	local cache = Cache.LocationInfo:reference()
-	Globals.ShopLocations:set_table(cache)
+	Globals.LocationScouts:set_table(cache)
 end
 
 -- Request items we need to display (i.e. shops)
@@ -189,6 +189,9 @@ local function SetupLocationScouts()
 	if Cache.LocationInfo:is_empty() then
 		local locations = {}
 		for i = AP.FIRST_ITEM_LOCATION_ID, AP.LAST_ITEM_LOCATION_ID do
+			table.insert(locations, i)
+		end
+		for i = AP.FIRST_ORB_LOCATION_ID, AP.LAST_ORB_LOCATION_ID do
 			table.insert(locations, i)
 		end
 		SendCmd("LocationScouts", { locations = locations })

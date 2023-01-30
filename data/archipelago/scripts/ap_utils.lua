@@ -176,22 +176,6 @@ function getInternalVariableValue(entity_id, variable_name, variable_type)
 end
 
 
--- from the wiki
-local function getInternalVariableValue(entity_id, variable_name, variable_type)
-	local value = nil
-	local components = EntityGetComponent( entity_id, "VariableStorageComponent" )
-	if ( components ~= nil ) then
-		for _, comp_id in pairs(components) do
-			local var_name = ComponentGetValue2( comp_id, "name" )
-			if(var_name == variable_name) then
-				value = ComponentGetValue2(comp_id, variable_type)
-			end
-		end
-	end
-	return value
-end
-
-
 function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
@@ -212,5 +196,5 @@ function give_debug_items()
 	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/pw_teleporter.xml", -40)
 	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world
 	-- don't aim other directions. the linear arc means it snaps to 8 directions
-	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression.xml", -80)
+	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml", -80)
 end

@@ -6,6 +6,6 @@ return {
 	Seed = Global("ARCHIPELAGO_SEED"),
 	LoadKey = Global("ARCHIPELAGO_FIRST_LOAD_DONE"),
 
-	ShopLocations = GlobalComplex("AP_SHOPLOCATION_DATA"),
+	LocationScouts = GlobalComplex("AP_LOCATIONSCOUTS_DATA"),
 	MissingLocationsSet = GlobalComplex("AP_MISSING_LOCATIONS"),
 }
