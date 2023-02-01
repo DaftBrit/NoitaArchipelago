@@ -189,10 +189,14 @@ local function SetupLocationScouts()
 	if Cache.LocationInfo:is_empty() then
 		local locations = {}
 		for i = AP.FIRST_ITEM_LOCATION_ID, AP.LAST_ITEM_LOCATION_ID do
-			table.insert(locations, i)
+			if Globals.MissingLocationsSet:has_key(i) then
+				table.insert(locations, i)
+			end
 		end
 		for i = AP.FIRST_ORB_LOCATION_ID, AP.LAST_ORB_LOCATION_ID do
-			table.insert(locations, i)
+			if Globals.MissingLocationsSet:has_key(i) then
+				table.insert(locations, i)
+			end
 		end
 		SendCmd("LocationScouts", { locations = locations })
 	else
