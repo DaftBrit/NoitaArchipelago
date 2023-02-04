@@ -5,8 +5,6 @@ return {
 	-- Location IDs
 	FIRST_CHEST_LOCATION_ID = 110000,
 	LAST_CHEST_LOCATION_ID = 110500,
-	FIRST_SHOPITEM_LOCATION_ID = 111000,
-	LAST_SHOPITEM_LOCATION_ID = 111034,
 	-- Bosses, possibly find a way to make the last_location_id dependent on a slider or something
 	FIRST_KOLMI_LOCATION_ID = 110600,
 	LAST_KOLMI_LOCATION_ID = 110609,
@@ -33,7 +31,12 @@ return {
 	FIRST_MECHA_LOCATION_ID = 110710,
 	LAST_MECHA_LOCATION_ID = 110719,
 	-- todo: orbs
-
+	FIRST_ITEM_LOCATION_ID = 111000,
+	FIRST_SPELL_REFRESH_LOCATION_ID = 111035,
+	LAST_SPELL_REFRESH_LOCATION_ID = 111041,
+	FIRST_SECRET_SHOP_LOCATION_ID = 111042,
+	LAST_SECRET_SHOP_LOCATION_ID = 111045,
+	LAST_ITEM_LOCATION_ID = 111045,
 
 	-- Item flag constants.
 	-- See https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#networkitem

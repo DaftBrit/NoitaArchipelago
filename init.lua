@@ -62,6 +62,7 @@ local player_slot_to_name = {}
 local check_list = {}
 local current_player_slot = -1
 local sock = nil
+local game_is_paused = true
 
 -- Locations:
 -- 110000-110499 Chests
@@ -165,7 +166,7 @@ end
 
 local function ShouldDeliverItem(item)
 	if item["player"] == current_player_slot then
-		if item["location"] >= AP.FIRST_SHOPITEM_LOCATION_ID and item["location"] <= AP.LAST_SHOPITEM_LOCATION_ID then
+		if item["location"] >= AP.FIRST_ITEM_LOCATION_ID and item["location"] <= AP.LAST_ITEM_LOCATION_ID then
 			return false	-- Don't deliver shopitems, they are given locally
 		end
 	end
@@ -187,7 +188,7 @@ end
 local function SetupLocationScouts()
 	if Cache.LocationInfo:is_empty() then
 		local locations = {}
-		for i = AP.FIRST_SHOPITEM_LOCATION_ID, AP.LAST_SHOPITEM_LOCATION_ID do
+		for i = AP.FIRST_ITEM_LOCATION_ID, AP.LAST_ITEM_LOCATION_ID do
 			table.insert(locations, i)
 		end
 		SendCmd("LocationScouts", { locations = locations })

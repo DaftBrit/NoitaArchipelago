@@ -15,10 +15,10 @@ end
 local function get_cost_x_offset(price)
 	local text = tostring(price)
 	local textwidth = 0
-	
+
 	for i=1,#text do
 		local l = string.sub( text, i, i )
-		
+
 		if ( l ~= "1" ) then
 			textwidth = textwidth + 6
 		else
@@ -56,13 +56,13 @@ function init(entity_id)
 
 	-- https://noita.wiki.gg/wiki/Documentation:_ItemCostComponent
 	EntityAddComponent(entity_id, "ItemCostComponent", { 
-		_tags="shop_cost,enabled_in_world", 
+		_tags="shop_cost,enabled_in_world",
 		cost=data.price,
 		stealable="1"
 	})
 
 	-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent
-	EntityAddComponent(entity_id, "LuaComponent", { 
+	EntityAddComponent(entity_id, "LuaComponent", {
 		script_item_picked_up="data/scripts/items/shop_effect.lua"
 	})
 
