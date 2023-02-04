@@ -21,7 +21,7 @@ function drop_reward( x, y, entity_id, rand_x, rand_y, set_rnd_  )
 	local count = 1
 	while( count > 0 ) do
 		count = count - 1
-		table.insert( entities, { "data/archipelago/entities/banner.xml" } )
+		table.insert( entities, { "data/archipelago/entities/items/pickup/banner.xml" } )
 	end
 
 	for i,entity in ipairs(entities) do
