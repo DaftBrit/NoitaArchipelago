@@ -26,3 +26,5 @@ ModLuaFileAppend("data/entities/animals/boss_gate/gate_monster_death.lua", "data
 
 ModLuaFileAppend("data/scripts/items/orb_init.lua", "data/archipelago/scripts/ap_orb_init_random.lua")
 ModLuaFileAppend("data/scripts/items/orb_pickup.lua", "data/archipelago/scripts/ap_orb_pickup_random.lua")
+
+ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/ap_heart_replacer.lua")
