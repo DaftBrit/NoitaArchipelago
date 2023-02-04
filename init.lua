@@ -517,7 +517,7 @@ local function CheckChests()
 		local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
 		local count = (kills / per_kill) - chest_counter
 		if count == 1 then
-			EntityLoadAtPlayer("data/entities/items/pickup/chest_random.xml", 20, 0)
+			EntityLoadAtPlayer("data/archipelago/entities/items/pickup/ap_chest_random.xml", 20, 0)
 			GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
 			chest_counter = chest_counter + 1
 		end
