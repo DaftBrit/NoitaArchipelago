@@ -6,7 +6,7 @@
 
 	<SpriteComponent 
 		z_index="1"
-		image_file="data/archipelago/props_gfx/banner.xml" 
+		image_file="data/archipelago/props_gfx/banner_gfx.xml"
 		offset_x="0"
 		offset_y="0" >
 	</SpriteComponent>
