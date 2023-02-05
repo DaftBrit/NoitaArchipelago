@@ -279,17 +279,24 @@ function RECV_MSG.ReceivedItems(msg)
 
 		local cache_key = Cache.make_key(sender, location_id)
 		if not Cache.ItemDelivery:is_set(cache_key) then
-			if item_table[item_id].redeliverable and msg["index"] == 0 then
-				Cache.ItemDelivery:set(cache_key)
-				if ShouldDeliverItem(item) then
+			if ShouldDeliverItem(item) then
+				if not GameHasFlagRun("spawned_timer_finished") and item_table[item_id].redeliverable then
 					SpawnItem(item_id, false)
-				end
-			elseif msg["index"] ~= 0 then
-				Cache.ItemDelivery:set(cache_key)
-				if ShouldDeliverItem(item) then
+				elseif GameHasFlagRun("spawned_timer_finished") then
 					SpawnItem(item_id, true)
 				end
 			end
+			--if item_table[item_id].redeliverable and msg["index"] == 0 then
+			--	Cache.ItemDelivery:set(cache_key)
+			--	if ShouldDeliverItem(item) then
+			--		SpawnItem(item_id, false)
+			--	end
+			--elseif msg["index"] ~= 0 then
+			--	Cache.ItemDelivery:set(cache_key)
+			--	if ShouldDeliverItem(item) then
+			--		SpawnItem(item_id, true)
+			--	end
+			--end
 		end
 	end
 end
@@ -598,6 +605,7 @@ end
 function OnPlayerSpawned(player)
 	game_is_paused = false
 	InitializeArchipelagoThread()
+	SetTimeOut(30, "data/archipelago/scripts/ap_spawned_timer_finish.lua")
 end
 
 
