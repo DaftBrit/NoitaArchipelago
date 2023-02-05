@@ -605,7 +605,7 @@ end
 function OnPlayerSpawned(player)
 	game_is_paused = false
 	InitializeArchipelagoThread()
-	SetTimeOut(30, "data/archipelago/scripts/ap_spawned_timer_finish.lua")
+	SetTimeOut(.5, "data/archipelago/scripts/ap_spawned_timer_finish.lua")
 end
 
 
