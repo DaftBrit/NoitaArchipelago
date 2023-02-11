@@ -280,9 +280,9 @@ function RECV_MSG.ReceivedItems(msg)
 		local cache_key = Cache.make_key(sender, location_id)
 		if not Cache.ItemDelivery:is_set(cache_key) then
 			if ShouldDeliverItem(item) then
-				if not GameHasFlagRun("spawned_timer_finished") and item_table[item_id].redeliverable then
+				if not GameHasFlagRun("ap_spawned_timer_finished") and item_table[item_id].redeliverable then
 					SpawnItem(item_id, false)
-				elseif GameHasFlagRun("spawned_timer_finished") then
+				elseif GameHasFlagRun("ap_spawned_timer_finished") then
 					SpawnItem(item_id, true)
 				end
 			end
