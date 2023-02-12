@@ -72,7 +72,7 @@
 		_enabled="0"
 		_tags="enabled_in_world,orb_discovered" 
 		alpha="1" 
-		image_file="data/archipelago/entities/items/orbs/porb.xml"
+		image_file="data/archipelago/entities/items/orbs/ap_orb.xml"
 		next_rect_animation="" 
 		rect_animation="" 
 		emissive="0"

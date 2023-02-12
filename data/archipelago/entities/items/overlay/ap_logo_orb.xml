@@ -1,0 +1,15 @@
+<Entity tags="hittable,teleportable_NOT,glue_NOT">
+	<SpriteComponent
+		image_file="data/archipelago/entities/items/overlay/ap_logo_orb.png"
+		offset_x="7"
+		offset_y="20"
+		>
+	</SpriteComponent>
+	<InheritTransformComponent>
+		<Transform
+			position.x="0"
+			position.y="0"
+			>
+		</Transform>
+	</InheritTransformComponent>
+</Entity>

@@ -28,13 +28,12 @@ return {
 	[110020] = { perk = "REMOVE_FOG_OF_WAR", redeliverable = true },
 	[110021] = { perk = "RESPAWN" }, -- extra life
 
--- todo: figure out how to make orbs spawn based on their orb file number
-	[110022] = { items = { "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_progression.xml" }, redeliverable = true },
+	[110022] = { items = { "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml" }, redeliverable = true },
 
 	[110023] = { items = { "data/entities/items/pickup/potion_random_material.xml" } }, -- random potion
 	[110024] = { items = { "data/entities/items/pickup/potion_secret.xml" } }, -- secret potion
-	[110025] = { items = { "data/entities/items/pickup/physics_die.xml" }, redeliverable = true }, -- chaos die
-	[110026] = { items = { "data/entities/items/pickup/physics_greed_die.xml" }, redeliverable = true }, -- greed die
+	[110025] = { items = { "data/entities/items/pickup/physics_die.xml" } }, -- chaos die
+	[110026] = { items = { "data/entities/items/pickup/physics_greed_die.xml" } }, -- greed die
 	[110027] = { items = { "data/entities/items/pickup/safe_haven.xml" }, redeliverable = true }, -- kammi
 	[110028] = { items = { "data/entities/items/pickup/gourd.xml" }, redeliverable = true }, -- gourd
 	[110029] = { items = { "data/entities/items/pickup/beamstone.xml" }, redeliverable = true }, -- sadekivi

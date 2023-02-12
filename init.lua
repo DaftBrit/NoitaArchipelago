@@ -223,6 +223,8 @@ end
 -- Function names must match corresponding command name
 local RECV_MSG = {}
 
+local LOAD_KEY = "AP_FIRST_LOAD_DONE"
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected(msg)
 	SendCmd("Sync")
@@ -232,15 +234,27 @@ function RECV_MSG.Connected(msg)
 
 	Globals.Seed:set(slot_options.seed)
 
-	if Globals.LoadKey:get() ~= "1" then
+	-- todo: figure out why the below block doesn't work
+	--if Globals.LoadKey:get() ~= "1" then
+	--	print("new game has been started")
+	--	Globals.LoadKey:set("1")
+	--	Cache.ItemDelivery:reset()
+	--	ResetOrbID()
+	--	give_debug_items()
+	--	--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
+	--else
+	--	print("continued the game")
+	--end
+
+	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
+		print("continued the game")
+	else
 		print("new game has been started")
-		Globals.LoadKey:set("1")
+		GlobalsSetValue(LOAD_KEY, "1")
 		Cache.ItemDelivery:reset()
 		ResetOrbID()
 		give_debug_items()
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
-	else
-		print("continued the game")
 	end
 
 	-- Retrieve all chest location ids the server is considering
@@ -270,7 +284,6 @@ function RECV_MSG.Connected(msg)
 end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
--- TODO: fix it so that index isn't checked, and trap/potion delivery is based on time since spawning
 function RECV_MSG.ReceivedItems(msg)
 	for _, item in pairs(msg["items"]) do
 		local item_id = item["item"]
@@ -279,24 +292,14 @@ function RECV_MSG.ReceivedItems(msg)
 
 		local cache_key = Cache.make_key(sender, location_id)
 		if not Cache.ItemDelivery:is_set(cache_key) then
-			if ShouldDeliverItem(item) then
-				if not GameHasFlagRun("ap_spawned_timer_finished") and item_table[item_id].redeliverable then
-					SpawnItem(item_id, false)
-				elseif GameHasFlagRun("ap_spawned_timer_finished") then
+		Cache.ItemDelivery:set(cache_key)
+			if not GameHasFlagRun("ap_spawned_timer_finished") and item_table[item_id].redeliverable then
+				SpawnItem(item_id, false)
+			elseif GameHasFlagRun("ap_spawned_timer_finished") then
+				if ShouldDeliverItem(item) then
 					SpawnItem(item_id, true)
 				end
 			end
-			--if item_table[item_id].redeliverable and msg["index"] == 0 then
-			--	Cache.ItemDelivery:set(cache_key)
-			--	if ShouldDeliverItem(item) then
-			--		SpawnItem(item_id, false)
-			--	end
-			--elseif msg["index"] ~= 0 then
-			--	Cache.ItemDelivery:set(cache_key)
-			--	if ShouldDeliverItem(item) then
-			--		SpawnItem(item_id, true)
-			--	end
-			--end
 		end
 	end
 end
