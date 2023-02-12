@@ -1,0 +1,15 @@
+<Entity tags="hittable,teleportable_NOT,glue_NOT">
+	<SpriteComponent
+		image_file="data/archipelago/entities/items/overlay/filler_icon.png"
+		offset_x="0"
+		offset_y="10"
+		>
+	</SpriteComponent>
+	<InheritTransformComponent>
+		<Transform
+			position.x="0"
+			position.y="0"
+			>
+		</Transform>
+	</InheritTransformComponent>
+</Entity>

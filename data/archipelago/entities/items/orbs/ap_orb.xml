@@ -1,5 +1,5 @@
 <Sprite 
-	filename="data/archipelago/entities/items/orbs/ap_orb_trap_1.png"
+	filename="data/archipelago/entities/items/orbs/ap_orb.png"
 	offset_x="20" 
 	offset_y="48"
 	default_animation="default"
