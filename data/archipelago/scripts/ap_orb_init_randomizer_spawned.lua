@@ -7,6 +7,10 @@ local pos_x, pos_y = EntityGetTransform( entity_id )
 local orbcomp = EntityGetComponent( entity_id, "OrbComponent" )
 local orb_id = tonumber(GlobalsGetValue("ap_orb_id"))
 
+if orb_id == nil then
+	orb_id = 20
+end
+
 --for _, comp_id in pairs(orbcomp) do
 --	ComponentGetValue2( comp_id, "orb_id")
 --end
