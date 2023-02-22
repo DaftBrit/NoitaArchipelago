@@ -8,31 +8,21 @@
 -- pollnet library (for websocket implementation) probable-basilisk/pollnet
 -- noita-ws-api (for reference and initial websocket setup) probable-basilisk/noita-ws-api
 -- cheatgui (for reference) probable-basilisk/cheatgui
--- sqlite FFI ColonelThirtyTwo/lsqlite3-ffi
 
 -- TODO: We need to make sure we sync items per
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 
--- GLOBAL STUFF
-local libPath = "data/archipelago/lib/"
-dofile_once(libPath .. "noita-api/compatibility.lua")(libPath)
-dofile_once("data/scripts/lib/coroutines.lua") -- Loads Noita's coroutines wrapper library
-
--- Apply patches in this file
+-- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
 
 --LIBS
-local pollnet = require("pollnet.init")
-local sqlite = require("sqlite.init")
+local pollnet = dofile("data/archipelago/lib/pollnet/init.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua")
 
 local JSON = dofile("data/archipelago/lib/json.lua")
 function JSON:onDecodeError(message, text, location, etc)
 	Log.Error(message)
 end
-
---CONF
-dofile_once("data/archipelago/scripts/host.lua")
 
 -- SCRIPTS
 dofile_once("data/archipelago/scripts/ap_utils.lua")
@@ -339,8 +329,7 @@ function RECV_MSG.PrintJSON(msg)
 		local destination_player_id = msg["receiving"]
 		local source_player_id = msg["item"]["player"]
 		local item_id = msg["item"]["item"]
-		local location_id = msg["data"][5]["text"]
-		local sender_location_pair = tostring(source_player_id) .. "|" .. tostring(location_id)
+
 		-- Build the message
 		local msg_str = ""
 		for _, part in ipairs(msg["data"]) do
@@ -438,24 +427,30 @@ end
 
 -- Initializes the socket for AP communication
 function InitSocket()
+	local player_name = ModSettingGet("archipelago.slot_name")
+	local password = ModSettingGet("archipelago.passwd") or ""
+	local host = ModSettingGet("archipelago.server_address")
+	local port = ModSettingGet("archipelago.server_port")
+
+	local url = "ws://" .. host .. ":" .. port
+	Log.Info("Connecting to " .. url .. "...")
+
+	sock = pollnet.open_ws(url)
+
 	if not sock then
-		local PLAYERNAME = ModSettingGet("archipelago.slot_name")
-		local PASSWD = ModSettingGet("archipelago.passwd") or ""
-		local url = get_ws_host_url() -- comes from data/ws/host.lua
-		if not url then return false end
-
-		sock = pollnet.open_ws(url)
-
-		SendCmd("Connect", {
-			password = PASSWD,
-			game = "Noita",
-			name = PLAYERNAME,
-			uuid = "NoitaClient",
-			tags = { "AP", "WebHost" },
-			version = { major = 0, minor = 3, build = 4, class = "Version" },
-			items_handling = 7
-		})
+		Log.Error("Failed to open socket")
+		return
 	end
+
+	SendCmd("Connect", {
+		password = password,
+		game = "Noita",
+		name = player_name,
+		uuid = "NoitaClient",
+		tags = { "AP", "WebHost" },
+		version = { major = 0, minor = 3, build = 4, class = "Version" },
+		items_handling = 7
+	})
 end
 
 
@@ -517,38 +512,34 @@ local function CheckChests()
 	end
 end
 
--- NOTE: This isn't actually async, it's just using coroutines
--- We can probably get rid of the coroutines and just do a pcall in OnWorldPostUpdate to simplify it
-local function AsyncThread()
-	-- Wrap this in pcall, this is similar to try/catch, if not for this any errors would be ignored
-	local status,err = pcall(function()
-		while sock:poll() do
-			local msg = GetNextMessage()
-			if msg then
-				ProcessMsg(msg)
-			else
-				wait(1)
-			end
 
-			if slot_options ~= nil then
-				CheckVictoryConditionFlag()
-				CheckComponentItemsUnlocked()
-				CheckLocationFlags()
-				CheckChests()
-			end
-		end
-	end)
-	Log.Warn("Exit with status: " .. tostring(status) .. "\nERR = " .. tostring(err))
+-- Gets network messages waiting on the socket and processes them
+local function CheckNetworkMessages()
+	while sock:poll() do
+		local msg = GetNextMessage()
+		if msg == nil then break end
+		ProcessMsg(msg)
+	end
+end
+
+
+-- Checks data toggled by external lua scripts that init.lua doesn't have access to
+local function CheckGlobalsAndFlags()
+	if slot_options ~= nil then
+		CheckVictoryConditionFlag()
+		CheckComponentItemsUnlocked()
+		CheckLocationFlags()
+		CheckChests()
+	end
 end
 
 
 function InitializeArchipelagoThread()
-	-- main function wrapper
-	InitSocket()
-	if sock then
-		async(AsyncThread)
-	else
-		Log.Error("Unable to establish Archipelago connection")
+	if not sock then
+		InitSocket()
+		if not sock then
+			Log.Error("Unable to establish Archipelago connection")
+		end
 	end
 end
 
@@ -556,12 +547,17 @@ end
 -- NOITA CALLBACKS
 ----------------------------------------------------------------------------------------------------
 
+-- Called every update frame in Noita
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
-	wake_up_waiting_threads(1)
+	if sock ~= nil then
+		CheckNetworkMessages()
+		CheckGlobalsAndFlags()
+	end
 end
 
 
+-- Called when the game is paused or unpaused
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPausedChanged
 function OnPausedChanged(is_paused, is_inventory_pause)
 	-- Workaround: When the player creates a new game, OnPlayerDied gets called (triggers DeathLink).
@@ -570,6 +566,7 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 end
 
 
+-- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
 	if not sock or not slot_options.death_link or game_is_paused or not UpdateDeathTime() then return end
@@ -587,6 +584,7 @@ function OnPlayerDied(player)
 end
 
 
+-- Called when the player spawns
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned
 function OnPlayerSpawned(player)
 	game_is_paused = false
