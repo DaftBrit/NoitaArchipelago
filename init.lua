@@ -135,8 +135,7 @@ local function GetItemName(player_id, item_id, flags)
 	end
 
 	if player_id == current_player_slot then
-		-- TODO item name localization too?
-		return GameTextGet("$ap_your_shopitem_name", item_name)
+		return item_name
 	end
 
 	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player_id], item_name)
