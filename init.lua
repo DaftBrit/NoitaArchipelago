@@ -131,7 +131,6 @@ local function GetItemName(player_id, item_id, flags)
 	end
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
-		SetRandomSeed(item_id, flags)
 		item_name = TRAP_ITEM_NAMES[Random(1, #TRAP_ITEM_NAMES)]
 	end
 

@@ -58,7 +58,7 @@ function init(entity_id)
 	EntityAddComponent(entity_id, "ItemCostComponent", { 
 		_tags="shop_cost,enabled_in_world",
 		cost=data.price,
-		stealable="1"
+		stealable=BiomeMapGetName(x, y) == "$biome_holymountain"
 	})
 
 	-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent
