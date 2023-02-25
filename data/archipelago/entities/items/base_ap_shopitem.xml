@@ -9,6 +9,7 @@
     _tags="enabled_in_world"
     item_name=""
     ui_description=""
+    ui_display_description_on_pick_up_hint="1"
     play_hover_animation="1"/>
 
 </Entity>

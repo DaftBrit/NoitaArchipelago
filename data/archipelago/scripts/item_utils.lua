@@ -38,8 +38,9 @@ function SpawnItem(item_id, traps)
 		give_perk(item.perk)
 		Log.Info("Perk spawned")
 	elseif #item.items > 0 then
-		EntityLoadAtPlayer(item.items[Random(1, #item.items)])
-		Log.Info("Item spawned" .. item.items[Random(1, #item.items)])
+		local item_to_spawn = item.items[Random(1, #item.items)]
+		EntityLoadAtPlayer(item_to_spawn)
+		Log.Info("Item spawned" .. item_to_spawn)
 	else
 		Log.Error("[AP] Item " .. tostring(item_id) .. " not properly configured")
 	end
