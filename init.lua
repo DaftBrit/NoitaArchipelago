@@ -66,7 +66,7 @@ local game_is_paused = true
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
 	local conn_tags = { "AP", "WebHost" }
-	if enabled then
+	if enabled ~= 0 and enabled ~= nil then
 		table.insert(conn_tags, "DeathLink")
 	end
 	SendCmd("ConnectUpdate", { tags = conn_tags })
