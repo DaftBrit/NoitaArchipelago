@@ -1,4 +1,3 @@
-<!-- NOTE: Right now this file replaces the vanilla chest -->
 <Entity tags="teleportable_NOT,item_physics,chest,item_pickup,effectable_prop">
     <UIInfoComponent
             name="$item_chest_treasure"
@@ -24,7 +23,7 @@
     <PhysicsImageShapeComponent
             body_id="1"
             centered="1"
-            image_file="data/archipelago/entities/items/pickup/ap_chest_random.png"
+            image_file="data/archipelago/entities/items/icons/ap_logo_bigger.png"
             material="wood_prop"
     ></PhysicsImageShapeComponent>
 
