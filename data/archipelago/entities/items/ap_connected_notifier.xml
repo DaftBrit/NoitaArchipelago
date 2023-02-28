@@ -1,0 +1,9 @@
+<Entity tags="teleportable_NOT">
+
+    <SpriteComponent
+            _tags="enabled_in_world"
+            visible="1"
+            image_file="data/archipelago/entities/items/icons/ap_logo_bigger.png"
+    ></SpriteComponent>
+
+</Entity>
