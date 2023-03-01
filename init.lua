@@ -241,7 +241,9 @@ function RECV_MSG.Connected(msg)
 		GlobalsSetValue(LOAD_KEY, "1")
 		Cache.ItemDelivery:reset()
 		ResetOrbID()
-		if slot_options.give_debug_items ~= 0 then
+		print("modsettingget below")
+		print(ModSettingGet("archipelago.debug_items"))
+		if ModSettingGet("archipelago.debug_items") == true then
 			give_debug_items()
 		end
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
