@@ -68,8 +68,6 @@ function item_pickup( entity_item, entity_who_picked, name )
 end
 
 function physics_body_modified( is_destroyed )
-	-- GamePrint( "A chest was broken open" )
-	-- GameTriggerMusicCue( "item" )
 	local entity_item = GetUpdatedEntityID()
 	
 	on_open( entity_item )

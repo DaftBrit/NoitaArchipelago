@@ -1,0 +1,14 @@
+<Materials>
+
+  <CellData
+    name="ap_chest"
+    ui_name="$mat_ap_chest"
+    tags="[box2d],[solid],[matter_eater_ignore_list],[sunbaby_ignore_list]"
+    wang_color="ff223443"
+    durability="18"
+    audio_physics_material_solid="wood"
+    platform_type="1"
+    >
+  </CellData>
+
+</Materials>

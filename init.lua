@@ -14,6 +14,7 @@
 
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
+ModMaterialsFileAdd("mods/archipelago/data/archipelago/entities/items/pickup/ap_chest_material.xml")
 
 --LIBS
 local pollnet = dofile("data/archipelago/lib/pollnet/init.lua")
