@@ -14,7 +14,7 @@
 
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
-ModMaterialsFileAdd("mods/archipelago/data/archipelago/entities/items/pickup/ap_chest_material.xml")
+ModMaterialsFileAdd("mods/archipelago/materials.xml")
 
 --LIBS
 local pollnet = dofile("data/archipelago/lib/pollnet/init.lua")
@@ -242,8 +242,6 @@ function RECV_MSG.Connected(msg)
 		GlobalsSetValue(LOAD_KEY, "1")
 		Cache.ItemDelivery:reset()
 		ResetOrbID()
-		print("modsettingget below")
-		print(ModSettingGet("archipelago.debug_items"))
 		if ModSettingGet("archipelago.debug_items") == true then
 			give_debug_items()
 		end
