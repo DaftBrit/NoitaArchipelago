@@ -28,3 +28,9 @@
 "ap_shopdescription_trap6","It looks so friendly. Do not resist. Don’t struggle.",,,,,,,,,,,,Subnautica reference to Mesmer enemy.
 "ap_shopdescription_trap7","You are so lucky that you found this most valuable artifact.",,,,,,,,,,,,Satisfactory reference to Mercer Sphere object.
 "ap_shopdescription_trap8","The most fulfilling of lives is that in which you can buy anything!",,,,,,,,,,,,Slay the Spire reference to The Ssssserpent event.
+"ap_chest_random","Archipelago Chest",,,,,,,,,,,,,
+"mat_ap_chest","Archipelago Chest Material",,,,,,,,,,,,,
+"ap_connected_notifier","Archipelago",,,,,,,,,,,,,
+"ap_not_connected_notifier","Archipelago Error",,,,,,,,,,,,,
+"ap_connected_desc","Connected to Archipelago.",,,,,,,,,,,,,
+"ap_not_connected_desc","Archipelago Connection Failed, please check your mod settings and reboot your game.",,,,,,,,,,,,,
