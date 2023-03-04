@@ -1,0 +1,25 @@
+<Entity tags="teleportable_NOT">
+
+    <SpriteComponent
+            _tags="enabled_in_world"
+            visible="1"
+            image_file="data/archipelago/entities/items/icons/ap_logo_startup.png"
+            offset_x="21"
+            offset_y="9"
+    />
+
+    <LifetimeComponent
+            lifetime="1200"
+            fade_sprites="1"
+    />
+
+    <LightComponent
+            _tags="enabled_in_world"
+            r="255"
+            g="255"
+            b="255"
+            radius="64"
+            fade_out_time="0.75" >
+    </LightComponent>
+
+</Entity>

@@ -14,6 +14,7 @@
 
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
+ModMaterialsFileAdd("data/archipelago/materials.xml")
 
 --LIBS
 local pollnet = dofile("data/archipelago/lib/pollnet/init.lua")
@@ -221,7 +222,7 @@ function RECV_MSG.Connected(msg)
 	slot_options = msg["slot_data"]
 
 	Globals.Seed:set(slot_options.seed)
-
+	EntityLoadAtPlayer("data/archipelago/entities/items/ap_connected_notifier.xml", 0, -30)
 	-- todo: figure out why the below block doesn't work
 	--if Globals.LoadKey:get() ~= "1" then
 	--	print("new game has been started")
@@ -241,7 +242,9 @@ function RECV_MSG.Connected(msg)
 		GlobalsSetValue(LOAD_KEY, "1")
 		Cache.ItemDelivery:reset()
 		ResetOrbID()
-		give_debug_items()
+		if ModSettingGet("archipelago.debug_items") == true then
+			give_debug_items()
+		end
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	end
 

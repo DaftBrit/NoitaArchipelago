@@ -1,4 +1,5 @@
-<Entity tags="teleportable_NOT,item_physics,chest,item_pickup,effectable_prop">
+<Entity tags="teleportable_NOT,item_physics,chest,item_pickup,indestructible">
+<!--    todo: change the name and whatever calls it to something else-->
     <UIInfoComponent
             name="$item_chest_treasure"
     >
@@ -18,14 +19,14 @@
             hax_fix_going_through_ground="1"
             on_death_leave_physics_body="0"
             on_death_really_leave_body="0"
-    ></PhysicsBodyComponent>
+    />
 
     <PhysicsImageShapeComponent
             body_id="1"
             centered="1"
             image_file="data/archipelago/entities/items/icons/ap_logo_bigger.png"
-            material="wood_prop"
-    ></PhysicsImageShapeComponent>
+            material="ap_chest"
+    />
 
     <ItemComponent
             item_name="$item_chest_treasure"
@@ -34,12 +35,6 @@
             custom_pickup_string="$itempickup_open"
             play_pick_sound="0" >
     </ItemComponent>
-
-    <LuaComponent
-            script_physics_body_modified="data/archipelago/scripts/items/ap_chest_random.lua"
-            execute_times="1"
-    >
-    </LuaComponent>
 
     <LuaComponent
             script_item_picked_up="data/archipelago/scripts/items/ap_chest_random.lua" >
