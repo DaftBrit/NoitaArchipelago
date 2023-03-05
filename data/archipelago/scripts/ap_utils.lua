@@ -176,6 +176,44 @@ function getInternalVariableValue(entity_id, variable_name, variable_type)
 end
 
 
+function RemoveAPConnectionNotifier()
+    -- for things in ui list, kill things with tag "ap_connection"
+    for _, entity_id in ipairs(EntityGetWithTag("ap_connection")) do
+        EntityKill(entity_id)
+    end
+end
+
+function APConnectedNotifier()
+    RemoveAPConnectionNotifier()
+    local player = get_players()[1]
+    local entity_ui = EntityCreateNew("")
+    EntityAddTag(entity_ui, "ap_connection")
+    EntityAddComponent(entity_ui, "UIIconComponent",
+            {
+                name = "$ap_connected_notifier",
+                description = "$ap_connected_desc",
+                icon_sprite_file = "data/archipelago/entities/items/icons/ap_perk.png",
+            }
+    )
+    EntityAddChild(player, entity_ui)
+end
+
+function APNotConnectedNotifier()
+    RemoveAPConnectionNotifier()
+    local player = get_players()[1]
+    local entity_ui = EntityCreateNew("")
+    EntityAddTag(entity_ui, "ap_connection")
+    EntityAddComponent(entity_ui, "UIIconComponent",
+            {
+                name = "$ap_not_connected_notifier",
+                description = "$ap_not_connected_desc",
+                icon_sprite_file = "data/archipelago/entities/items/icons/ap_perk_x.png",
+            }
+    )
+    EntityAddChild(player, entity_ui)
+end
+
+
 function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")

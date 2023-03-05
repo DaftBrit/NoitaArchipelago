@@ -38,9 +38,6 @@ local AP = dofile("data/archipelago/scripts/constants.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 local Cache = dofile("data/archipelago/scripts/caches.lua")
 
--- CURRENT PROBLEMS:
--- Orbs are noisy
--- Double item spawns when being sent items
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
@@ -222,7 +219,6 @@ function RECV_MSG.Connected(msg)
 	slot_options = msg["slot_data"]
 
 	Globals.Seed:set(slot_options.seed)
-	EntityLoadAtPlayer("data/archipelago/entities/items/ap_connected_notifier.xml", 0, -30)
 	-- todo: figure out why the below block doesn't work
 	--if Globals.LoadKey:get() ~= "1" then
 	--	print("new game has been started")
@@ -236,15 +232,14 @@ function RECV_MSG.Connected(msg)
 	--end
 
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
-		print("continued the game")
 	else
-		print("new game has been started")
 		GlobalsSetValue(LOAD_KEY, "1")
 		Cache.ItemDelivery:reset()
 		ResetOrbID()
 		if ModSettingGet("archipelago.debug_items") == true then
 			give_debug_items()
 		end
+		APConnectedNotifier()
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	end
 
@@ -607,8 +602,6 @@ end
 function OnPlayerSpawned(player)
 	game_is_paused = false
 	InitializeArchipelagoThread()
+	APNotConnectedNotifier()
 	SetTimeOut(.5, "data/archipelago/scripts/ap_spawned_timer_finish.lua")
 end
-
-
-

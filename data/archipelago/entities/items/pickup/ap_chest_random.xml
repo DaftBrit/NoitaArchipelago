@@ -1,7 +1,7 @@
 <Entity tags="teleportable_NOT,item_physics,chest,item_pickup,indestructible">
 <!--    todo: change the name and whatever calls it to something else-->
     <UIInfoComponent
-            name="$item_chest_treasure"
+            name="$ap_chest_random"
     >
     </UIInfoComponent>
 
@@ -29,7 +29,7 @@
     />
 
     <ItemComponent
-            item_name="$item_chest_treasure"
+            item_name="$ap_chest_random"
             play_spinning_animation="0"
             stats_count_as_item_pick_up="0"
             custom_pickup_string="$itempickup_open"
