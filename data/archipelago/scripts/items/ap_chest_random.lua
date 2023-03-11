@@ -13,11 +13,8 @@ function on_open(entity_item)
 		if biome_comp_name == biome_data.name then
 			for i = biome_data.first_hc, biome_data.first_hc + 19 do
 				if Globals.MissingLocationsSet:has_key(i) then
-					print("missing locations set has that location")
 					Globals.LocationUnlockQueue:append(i)
-					print("appending location unlock queue")
 					Globals.MissingLocationsSet:remove_key(i)
-					print("removing location from missing locations set")
 					local location = Globals.LocationScouts:get_key(i)
 					if location == nil then
 						Log.Error("ap_chest_random failed to retrieve info from cache")
