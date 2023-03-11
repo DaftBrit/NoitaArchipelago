@@ -10,12 +10,31 @@
     platform_type="1"
     cell_type="solid"
     >
-
-<!--    <StatusEffects>-->
-<!--      <Ingestion>-->
-<!--        <StatusEffect type="TRIP" amount = "0.5" />-->
-<!--      </Ingestion>-->
-<!--    </StatusEffects>-->
   </CellData>
+
+  <CellDataChild
+    _parent="ap_chest"
+    name="ap_chest_liquid"
+    ui_name="$mat_ap_chest"
+    cell_type="liquid"
+    wang_color="ff223444"
+    >
+    <Graphics
+      texture_file="data/materials_gfx/ap_material_gfx.png"
+      >
+    </Graphics>
+    <StatusEffects>
+      <Ingestion>
+        <StatusEffect type="TRIP" amount = "0.5" />
+      </Ingestion>
+    </StatusEffects>
+  </CellDataChild>
+
+  <Reaction
+    probability="20"
+    input_cell1="ap_chest" input_cell2="[fire]"
+    output_cell1="ap_chest" output_cell2="ap_chest_liquid"
+    >
+  </Reaction>
 
 </Materials>
