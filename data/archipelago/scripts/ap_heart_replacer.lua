@@ -8,30 +8,29 @@ local function APHeartReplacer()
     local function ap_replace_heart(x, y)
         local biome_name = BiomeMapGetName(x, y)
         -- check if the biome has checks left, if not then just spawn a chest/heart as normal
-        for _, biome_data in pairs(Biomes) do
-            if biome_name == biome_data.name then
-                for i = biome_data.first_hc, biome_data.first_hc + 19 do
-                    if Globals.MissingLocationsSet:has_key(i) then
-                        -- spawn the chest, set ap_chest_id equal to its entity ID
-                        local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml", x, y)
-                        EntityAddComponent(ap_chest_id, "VariableStorageComponent",
-                                {
-                                    name = "biome_name",
-                                    value_string = biome_name,
-                                })
+        if Biomes[biome_name] ~= nil then
+            local biome_data = Biomes[biome_name]
+            for i = biome_data.first_hc, biome_data.first_hc + 19 do
+                if Globals.MissingLocationsSet:has_key(i) then
+                    -- spawn the chest, set ap_chest_id equal to its entity ID
+                    local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml", x, y)
+                    EntityAddComponent(ap_chest_id, "VariableStorageComponent",
+                            {
+                                name = "biome_name",
+                                value_string = biome_name,
+                            })
 
-                        -- if the chest manages to spawn outside of a biome, just kill it and spawn a normal heart or chest instead
-                        if biome_name == "_EMPTY_" then
-                            EntityKill(ap_chest_id)
-                            ap_old_spawn_heart(x, y)
-                        end
-                        break
-
-                        -- do nothing, continue with the script
-                    else
+                    -- if the chest manages to spawn outside of a biome, just kill it and spawn a normal heart or chest instead
+                    if biome_name == "_EMPTY_" then
+                        EntityKill(ap_chest_id)
                         ap_old_spawn_heart(x, y)
-                        break
                     end
+                    break
+
+                    -- do nothing, continue with the script
+                else
+                    ap_old_spawn_heart(x, y)
+                    break
                 end
             end
         end

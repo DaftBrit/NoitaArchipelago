@@ -186,7 +186,7 @@ local function SetupLocationScouts()
 				table.insert(locations, i)
 			end
 		end
-		for biome_name, biome_data in pairs(Biomes) do
+		for _, biome_data in pairs(Biomes) do
 			for i = biome_data.first_hc, biome_data.first_hc + 19 do
 				if Globals.MissingLocationsSet:has_key(i) then
 					table.insert(locations, i)

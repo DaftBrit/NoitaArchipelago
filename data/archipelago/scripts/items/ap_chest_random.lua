@@ -8,24 +8,22 @@ dofile_once("data/archipelago/scripts/item_utils.lua")
 
 function on_open(entity_item)
 	local biome_comp_id = EntityGetFirstComponent(entity_item, "VariableStorageComponent")
-	local biome_comp_name = ComponentGetValue2(biome_comp_id, "value_string")
-	for biome_name, biome_data in pairs(Biomes) do
-		if biome_comp_name == biome_data.name then
-			for i = biome_data.first_hc, biome_data.first_hc + 19 do
-				if Globals.MissingLocationsSet:has_key(i) then
-					Globals.LocationUnlockQueue:append(i)
-					Globals.MissingLocationsSet:remove_key(i)
-					local location = Globals.LocationScouts:get_key(i)
-					if location == nil then
-						Log.Error("ap_chest_random failed to retrieve info from cache")
-					end
-					local item_id = location.item_id
-					if location.is_our_item then
-						SpawnItem(item_id, true)
-					end
-
-					break
+	local biome_name = ComponentGetValue2(biome_comp_id, "value_string")
+	if Biomes[biome_name] ~= nil then
+		local biome_data = Biomes[biome_name]
+		for i = biome_data.first_hc, biome_data.first_hc + 19 do
+			if Globals.MissingLocationsSet:has_key(i) then
+				Globals.LocationUnlockQueue:append(i)
+				Globals.MissingLocationsSet:remove_key(i)
+				local location = Globals.LocationScouts:get_key(i)
+				if location == nil then
+					Log.Error("ap_chest_random failed to retrieve info from cache")
 				end
+				local item_id = location.item_id
+				if location.is_our_item then
+					SpawnItem(item_id, true)
+				end
+				break
 			end
 		end
 	end
