@@ -3,18 +3,19 @@
   <CellData
     name="ap_chest"
     ui_name="$mat_ap_chest"
-    tags="[box2d],[matter_eater_ignore_list],[sunbaby_ignore_list],[indestructible][meltable_to_lava]"
+    tags="[box2d],[matter_eater_ignore_list],[sunbaby_ignore_list],[indestructible]"
     wang_color="ff223443"
     durability="18"
     audio_physics_material_solid="wood"
     platform_type="1"
+    cell_type="solid"
     >
 
-    <StatusEffects>
-      <Ingestion>
-        <StatusEffect type="TRIP" amount = "0.5" />
-      </Ingestion>
-    </StatusEffects>
+<!--    <StatusEffects>-->
+<!--      <Ingestion>-->
+<!--        <StatusEffect type="TRIP" amount = "0.5" />-->
+<!--      </Ingestion>-->
+<!--    </StatusEffects>-->
   </CellData>
 
 </Materials>

@@ -24,10 +24,10 @@ local function APHeartReplacer()
                     break
                 end
             end
-            -- chest spawned in non-applicable biome or no more chests for that biome, spawn heart/chest normally
-            if has_spawned ~= true then
-                ap_old_spawn_heart(x, y)
-            end
+        end
+        -- chest spawned in non-applicable biome or no more chests for that biome, spawn heart/chest normally
+        if has_spawned ~= true then
+            ap_old_spawn_heart(x, y)
         end
     end
 
