@@ -24,6 +24,9 @@ end
 function GlobalComplex:add_key(key, value)
 	local data = self:get_table()
 	data[key] = value
+	if value == nil then
+		data[tostring(key)] = value
+	end
 	self:set_table(data)
 end
 

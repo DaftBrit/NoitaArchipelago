@@ -1,25 +1,40 @@
+local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua")
 
 local function APHeartReplacer()
     -- sets a function for the old version of spawn_heart
     local ap_old_spawn_heart = spawn_heart
 
-    local remaining_checks_in_biome = 5  -- rename, make the value dependent on an options slider probably
-
     local function ap_replace_heart(x, y)
-        EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml", x, y)
-        -- todo: change this item, make it spawn a chest or heart if remaining_checks_in_biome == 0
-        -- todo: make something actually increment remaining_checks_in_biome
-        -- should we make the chests have the corresponding item type icon?
-        -- that would mean each chest would need to specifically correspond to the check in it
-        -- and currently it just spawns the next flag in the list
+        local biome_name = BiomeMapGetName(x, y)
+        local has_spawned = false
+        -- check if the biome has checks left, if not then just spawn a chest/heart as normal
+        if Biomes[biome_name] ~= nil then
+            local biome_data = Biomes[biome_name]
+            for i = biome_data.first_hc, biome_data.first_hc + 19 do
+                if Globals.MissingLocationsSet:has_key(i) then
+                    -- spawn the chest, set ap_chest_id equal to its entity ID
+                    local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml", x, y)
+                    has_spawned = true
+                    EntityAddComponent(ap_chest_id, "VariableStorageComponent",
+                            {
+                                name = "biome_name",
+                                value_string = biome_name,
+                            })
+                    break
+                end
+            end
+        end
+        -- chest spawned in non-applicable biome or no more chests for that biome, spawn heart/chest normally
+        if has_spawned ~= true then
+            ap_old_spawn_heart(x, y)
+        end
     end
 
+
+    -- this makes the spawn_heart the game calls for redirect to ap_replace_heart
     spawn_heart = function(x, y)
-        if remaining_checks_in_biome == 0 then
-            ap_old_spawn_heart(x, y)
-        else
-            ap_replace_heart(x, y)
-        end
+        ap_replace_heart(x, y)
     end
 end
 

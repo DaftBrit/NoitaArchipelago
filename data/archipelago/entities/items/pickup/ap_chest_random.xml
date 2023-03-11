@@ -1,5 +1,4 @@
-<Entity tags="teleportable_NOT,item_physics,chest,item_pickup,indestructible">
-<!--    todo: change the name and whatever calls it to something else-->
+<Entity tags="teleportable_NOT,item_physics,chest,item_pickup,indestructible,ap_chest">
     <UIInfoComponent
             name="$ap_chest_random"
     >

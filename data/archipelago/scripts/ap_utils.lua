@@ -218,11 +218,6 @@ function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
 	add_items_to_inventory({"data/entities/items/wand_level_10.xml"})
-	EntityLoadAtPlayer( "data/archipelago/entities/items/pickup/ap_chest_random.xml", 20 )
-	EntityLoadAtPlayer( "data/archipelago/entities/items/pickup/ap_chest_random.xml", 40 )
-	EntityLoadAtPlayer( "data/archipelago/entities/items/pickup/ap_chest_random.xml", 60 )
-	EntityLoadAtPlayer( "data/archipelago/entities/items/pickup/ap_chest_random.xml", 80 )
-	EntityLoadAtPlayer( "data/archipelago/entities/items/pickup/ap_chest_random.xml", 100 )
 	give_perk("MOVEMENT_FASTER")
 	give_perk("MOVEMENT_FASTER")
 	give_perk("HOVER_BOOST")
@@ -230,8 +225,8 @@ function give_debug_items()
 	give_perk("UNLIMITED_SPELLS")
 	set_money(100000000)
 	set_health(80, 80)
-	EntityLoadAtPlayer("data/entities/items/wands/custom/digger_01.xml", -20) -- good for digging
-	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/pw_teleporter.xml", -40)
+	EntityLoadAtPlayer("data/entities/items/wands/custom/digger_01.xml", 60) -- good for digging
+	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/pw_teleporter.xml", 80)
 	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world
 	-- don't aim other directions. the linear arc means it snaps to 8 directions
 	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml", -80)

@@ -33,6 +33,7 @@ dofile_once("data/archipelago/scripts/item_utils.lua")
 
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
+local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 
 -- Modules
 local Globals = dofile("data/archipelago/scripts/globals.lua")
@@ -48,6 +49,7 @@ local last_death_time = 0
 local Games = {}
 local player_slot_to_name = {}
 local check_list = {}
+local hc_chest_list = {}
 local current_player_slot = -1
 local sock = nil
 local game_is_paused = true
@@ -184,6 +186,18 @@ local function SetupLocationScouts()
 				table.insert(locations, i)
 			end
 		end
+		for _, biome_data in pairs(Biomes) do
+			for i = biome_data.first_hc, biome_data.first_hc + 19 do
+				if Globals.MissingLocationsSet:has_key(i) then
+					table.insert(locations, i)
+				end
+			end
+			for i = biome_data.first_ped, biome_data.first_ped + 19 do
+				if Globals.MissingLocationsSet:has_key(i) then
+					table.insert(locations, i)
+				end
+			end
+		end
 		SendCmd("LocationScouts", { locations = locations })
 	else
 		Log.Info("Restored LocationInfo from cache")
@@ -245,11 +259,15 @@ function RECV_MSG.Connected(msg)
 
 	-- Retrieve all chest location ids the server is considering
 	check_list = {}
+	hc_chest_list = {}
 	local missing_locations_set = {}
 	for _, location in ipairs(msg["missing_locations"]) do
 		missing_locations_set[location] = true
 		if location >= AP.FIRST_CHEST_LOCATION_ID and location <= AP.LAST_CHEST_LOCATION_ID then
 			table.insert(check_list, location)
+		end
+		if location >= AP.FIRST_HC_LOCATION_ID and location <= AP.LAST_HC_LOCATION_ID then
+			table.insert(hc_chest_list, location)
 		end
 	end
 	Globals.MissingLocationsSet:set_table(missing_locations_set)
