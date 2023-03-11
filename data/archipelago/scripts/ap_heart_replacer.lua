@@ -19,12 +19,6 @@ local function APHeartReplacer()
                                 name = "biome_name",
                                 value_string = biome_name,
                             })
-
-                    -- if the chest manages to spawn outside of a biome, just kill it and spawn a normal heart or chest instead
-                    if biome_name == "_EMPTY_" then
-                        EntityKill(ap_chest_id)
-                        ap_old_spawn_heart(x, y)
-                    end
                     break
 
                     -- do nothing, continue with the script
@@ -33,6 +27,10 @@ local function APHeartReplacer()
                     break
                 end
             end
+        else
+            -- if the chest manages to spawn outside of an applicable biome, kill it and spawn a heart/chest normally
+            EntityKill(ap_chest_id)
+            ap_old_spawn_heart(x, y)
         end
     end
 
