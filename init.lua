@@ -44,7 +44,6 @@ local Cache = dofile("data/archipelago/scripts/caches.lua")
 -- Can also use to indicate whether AP sent the connected packet
 local slot_options = nil
 
-local chest_counter = 0
 local last_death_time = 0
 local Games = {}
 local player_slot_to_name = {}
@@ -267,6 +266,9 @@ function RECV_MSG.Connected(msg)
 			table.insert(check_list, location)
 		end
 		if location >= AP.FIRST_HC_LOCATION_ID and location <= AP.LAST_HC_LOCATION_ID then
+			table.insert(hc_chest_list, location)
+		end
+		if location >= AP.FIRST_PED_LOCATION_ID and location <= AP.LAST_PED_LOCATION_ID then
 			table.insert(hc_chest_list, location)
 		end
 	end
@@ -509,40 +511,6 @@ end
 ----------------------------------------------------------------------------------------------------
 -- ASYNC THREAD
 ----------------------------------------------------------------------------------------------------
-local function CheckChests()
-	-- TODO move these chest shenanigans out of here into a remote item_pickup script
-	local next_item = nil
-	if check_list[1] then
-		next_item = check_list[1]
-	end
-
-	-- Item check and message send
-	if next_item then
-		for _, player in ipairs(get_players()) do
-			local x, y = EntityGetTransform(player)
-			local radius = 15
-			local pickup = EntityGetInRadiusWithTag( x, y, radius, "archipelago")
-			if pickup[1] then
-				SendCmd("LocationChecks", { locations = { next_item } })
-				EntityKill( pickup[1] )
-				table.remove(check_list, 1)
-			end
-		end
-	end
-
-	-- Spawn chest on X kills
-	if ModSettingGet("archipelago.kill_count") > 0 then
-		local kills = StatsGetValue("enemies_killed")
-		local per_kill = math.floor(ModSettingGet("archipelago.kill_count"))
-		local count = (kills / per_kill) - chest_counter
-		if count == 1 then
-			EntityLoadAtPlayer("data/archipelago/entities/items/pickup/ap_chest_random.xml", 20, 0)
-			GamePrint(GameTextGet("$ap_kills_spawned_chest", kills))
-			chest_counter = chest_counter + 1
-		end
-	end
-end
-
 
 -- Gets network messages waiting on the socket and processes them
 local function CheckNetworkMessages()
@@ -560,7 +528,6 @@ local function CheckGlobalsAndFlags()
 		CheckVictoryConditionFlag()
 		CheckComponentItemsUnlocked()
 		CheckLocationFlags()
-		CheckChests()
 	end
 end
 
