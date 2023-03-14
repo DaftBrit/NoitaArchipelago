@@ -11,17 +11,23 @@ local function APHeartReplacer()
         -- check if the biome has checks left, if not then just spawn a chest/heart as normal
         if Biomes[biome_name] ~= nil then
             local biome_data = Biomes[biome_name]
-            for i = biome_data.first_hc, biome_data.first_hc + 19 do
-                if Globals.MissingLocationsSet:has_key(i) then
-                    -- spawn the chest, set ap_chest_id equal to its entity ID
-                    local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml", x, y)
-                    has_spawned = true
-                    EntityAddComponent(ap_chest_id, "VariableStorageComponent",
-                            {
-                                name = "biome_name",
-                                value_string = biome_name,
-                            })
-                    break
+            -- hearts/chests have a 30% chance not to spawn in the base game
+            -- the r given here should be exactly the same as the r given by ap_old_spawn_heart
+            local r = ProceduralRandom(x, y)
+            SetRandomSeed(x, y)
+            if r > 0.3 then
+                for i = biome_data.first_hc, biome_data.first_hc + 19 do
+                    if Globals.MissingLocationsSet:has_key(i) then
+                        -- spawn the chest, set ap_chest_id equal to its entity ID
+                        local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml", x, y)
+                        has_spawned = true
+                        EntityAddComponent(ap_chest_id, "VariableStorageComponent",
+                                {
+                                    name = "biome_name",
+                                    value_string = biome_name,
+                                })
+                        break
+                    end
                 end
             end
         end
