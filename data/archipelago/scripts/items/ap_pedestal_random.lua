@@ -9,12 +9,14 @@ dofile_once("data/archipelago/scripts/item_utils.lua")
 function on_open(entity_item)
 	local biome_comp_id = EntityGetFirstComponent(entity_item, "VariableStorageComponent")
 	local biome_name = ComponentGetValue2(biome_comp_id, "value_string")
+	local item_sent = nil
 	if Biomes[biome_name] ~= nil then
 		local biome_data = Biomes[biome_name]
 		for i = biome_data.first_ped, biome_data.first_ped + 19 do
 			if Globals.MissingLocationsSet:has_key(i) then
 				Globals.LocationUnlockQueue:append(i)
 				Globals.MissingLocationsSet:remove_key(i)
+				item_sent = true
 				-- for some reason, if the below is included it double spawns items? idk why
 				--local location = Globals.LocationScouts:get_key(i)
 				--if location == nil then
@@ -26,6 +28,10 @@ function on_open(entity_item)
 				--end
 				break
 			end
+		end
+		if item_sent ~= true then
+			-- if you found all of your checks for that biome but find another ap pedestal from the biome
+			-- todo: spawn random item
 		end
 	end
 	EntityLoad("data/entities/particles/image_emitters/chest_effect.xml", x, y)

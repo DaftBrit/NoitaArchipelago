@@ -28,4 +28,4 @@ ModLuaFileAppend("data/scripts/items/orb_init.lua", "data/archipelago/scripts/ap
 ModLuaFileAppend("data/scripts/items/orb_pickup.lua", "data/archipelago/scripts/ap_orb_pickup_random.lua")
 
 ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/ap_heart_replacer.lua")
-ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/ap_pedestal_replacer.lua")
+ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/ap_wand_pedestal_replacer.lua")

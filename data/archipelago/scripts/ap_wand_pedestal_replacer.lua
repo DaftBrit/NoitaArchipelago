@@ -1,5 +1,6 @@
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
+dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 local function PedestalWandReplacer()
     local ap_old_spawn_wands = spawn_wands
@@ -15,11 +16,7 @@ local function PedestalWandReplacer()
                     -- spawn the chest, set ap_chest_id equal to its entity ID
                     local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_pedestal_random.xml", x, y)
                     has_spawned = true
-                    EntityAddComponent(ap_chest_id, "VariableStorageComponent",
-                            {
-                                name = "biome_name",
-                                value_string = biome_name,
-                            })
+                    addNewInternalVariable(ap_chest_id, "biome_name", "value_string", biome_name)
                     break
                 end
             end
