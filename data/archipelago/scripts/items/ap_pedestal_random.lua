@@ -9,7 +9,7 @@ dofile_once("data/archipelago/scripts/item_utils.lua")
 function on_open(entity_item)
 	local biome_comp_id = EntityGetFirstComponent(entity_item, "VariableStorageComponent")
 	local biome_name = ComponentGetValue2(biome_comp_id, "value_string")
-	local missing_locations = []
+	local missing_locations = {}
 	if Biomes[biome_name] ~= nil then
 		local biome_data = Biomes[biome_name]
 		for i = biome_data.first_ped, biome_data.first_ped + 19 do
