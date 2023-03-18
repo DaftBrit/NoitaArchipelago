@@ -278,20 +278,19 @@ function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
 	give_perk("PROTECTION_RADIOACTIVITY")
-	add_items_to_inventory({"data/entities/items/wand_level_10.xml"})
+	add_items_to_inventory({"data/entities/items/wand_level_10.xml", "data/entities/items/wands/custom/digger_01.xml"})
 	give_perk("MOVEMENT_FASTER")
 	give_perk("MOVEMENT_FASTER")
 	give_perk("HOVER_BOOST")
 	give_perk("FASTER_LEVITATION")
 	give_perk("UNLIMITED_SPELLS")
+	give_perk("REMOVE_FOG_OF_WAR")
 	for _ = 1, 10 do
 		give_perk("GENOME_MORE_LOVE")
 	end
 	set_money(100000000)
 	set_health(80, 80)
-	EntityLoadAtPlayer("data/entities/items/wands/custom/digger_01.xml", 20) -- good for digging
 	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/pw_teleporter.xml", 60)
 	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world
 	-- don't aim other directions. the linear arc means it snaps to 8 directions
-	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml", -80)
 end

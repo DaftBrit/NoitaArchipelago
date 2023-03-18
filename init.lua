@@ -249,6 +249,7 @@ function RECV_MSG.Connected(msg)
 	--end
 
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
+		APConnectedNotifier()
 	else
 		GlobalsSetValue(LOAD_KEY, "1")
 		-- todo: instead of resetting itemdelivery, read it and deliver items in a different way

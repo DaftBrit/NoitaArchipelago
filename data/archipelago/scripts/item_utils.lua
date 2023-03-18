@@ -5,7 +5,7 @@ local AP = dofile("data/archipelago/scripts/constants.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua")
 
 -- Traps
-local function BadTimes()
+function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
 	dofile("data/archipelago/scripts/ap_badtimes.lua")
 
