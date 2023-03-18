@@ -1,8 +1,10 @@
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 dofile_once("data/archipelago/scripts/ap_utils.lua")
+local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
+local AP = dofile("data/archipelago/scripts/constants.lua")
 
-local function PedestalWandReplacer()
+local function PedestalReplacer()
     local ap_old_spawn_wands = spawn_wands
     local ap_old_spawn_potions = spawn_potions
     local replaced_pedestal = ""
@@ -14,12 +16,25 @@ local function PedestalWandReplacer()
         if Biomes[biome_name] ~= nil then
             local biome_data = Biomes[biome_name]
             for i = biome_data.first_ped, biome_data.first_ped + 19 do
-                if Globals.MissingLocationsSet:has_key(i) then
+                if Globals.MissingLocationsSet:has_key(i) and Globals.PedestalLocationsSet:has_key(i) then
                     -- spawn the pedestal item, tell it its ID
-                    local ap_pedestal_id = EntityLoad("data/archipelago/entities/items/pickup/ap_pedestal_random.xml", x, y)
+                    Globals.PedestalLocationsSet:remove_key(i)
+                    local location = Globals.LocationScouts:get_key(i)
+                    local item_id = location.item_id
+                    local item = item_table[item_id]
+                    local ap_pedestal_id
+                    if location.is_our_item and item and item_id ~= AP.TRAP_ID then
+                        ap_pedestal_id = create_our_item_entity(item, x, y), false
+                    else
+                        ap_pedestal_id = create_foreign_item_entity(location, x, y), true
+                    end
                     has_spawned = true
-                    addNewInternalVariable(ap_pedestal_id, "biome_name", "value_string", biome_name)
+                    addNewInternalVariable(ap_pedestal_id, "location", "value_int", i)
                     addNewInternalVariable(ap_pedestal_id, "pedestal_type", "value_string", replaced_pedestal)
+                    EntityAddComponent(ap_pedestal_id, "LuaComponent", {
+                        _tags="archipelago",
+                        script_item_picked_up="data/archipelago/scripts/items/ap_pedestal_processed.lua",
+                    })
                     break
                 end
             end
@@ -47,4 +62,4 @@ local function PedestalWandReplacer()
     end
 end
 
-PedestalWandReplacer()
+PedestalReplacer()

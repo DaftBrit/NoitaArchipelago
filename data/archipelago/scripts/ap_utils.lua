@@ -1,5 +1,6 @@
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
+local AP = dofile("data/archipelago/scripts/constants.lua")
 
 
 function contains_element(tbl, elem)
@@ -9,9 +10,11 @@ function contains_element(tbl, elem)
 	return false
 end
 
+
 function not_empty(s)
 	return s ~= nil and s ~= ''
 end
+
 
 --Function to spawn a perk at the player and then have the player automatically pick it up
 function give_perk(perk_name)
@@ -44,12 +47,14 @@ function SeedRandom()
 	end
 end
 
+
 function EntityLoadAtPlayer(filename, xoff, yoff)
 	for i, p in ipairs(get_players()) do
 		local x, y = EntityGetTransform(p)
 		EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
 	end
 end
+
 
 function GetCauseOfDeath()
 	local raw_death_msg = StatsGetValue("killed_by")
@@ -74,6 +79,7 @@ function GetCauseOfDeath()
 
 	return result .. StatsGetValue("killed_by_extra")
 end
+
 
 -- Modified from @Priskip in Noita Discord (https://github.com/Priskip)
 -- Removes an Extra Life perk and returns true if one exists
@@ -105,15 +111,18 @@ function DecreaseExtraLife(entity_id)
 	return false
 end
 
+
 local function get_player()
 	return EntityGetWithTag("player_unit")[1]
 end
+
 
 -- health and money functions from the cheatgui mod
 local function get_health()
 	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
 	return ComponentGetValue(dm, "hp"), ComponentGetValue(dm, "max_hp")
 end
+
 
 -- Note that these hp values get mulitplied by 25 by the game. Setting it to 80 means 2,000 health
 local function set_health(cur_hp, max_hp)
@@ -124,15 +133,18 @@ local function set_health(cur_hp, max_hp)
 	end
 end
 
+
 function fully_heal()
 	local _, max_hp = get_health()
 	set_health(max_hp, max_hp)
 end
 
+
 local function set_money(amt)
 	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
 	ComponentSetValue2(wallet, "money", amt)
 end
+
 
 -- from the wiki
 function addNewInternalVariable(entity_id, variable_name, variable_type, initial_value)
@@ -176,12 +188,59 @@ function getInternalVariableValue(entity_id, variable_name, variable_type)
 end
 
 
+function create_ap_entity_from_flags(location, x, y)
+  	local flags = location.item_flags
+
+  	local item_filename = "ap_junk_shopitem.xml"
+  	local item_description = "$ap_shopdescription_junk"
+	if flags == nil then
+		print("flags == nil")
+	elseif bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
+	    item_filename = "ap_useful_shopitem.xml"
+	    item_description = "$ap_shopdescription_useful"
+  	elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
+	    item_filename = "ap_progression_shopitem.xml"
+	    item_description = "$ap_shopdescription_progression"
+  	elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
+    	item_filename = "ap_trap_item.xml"
+    	item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
+  	end
+
+  	local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
+  	return item_entity, item_description
+end
+
+
+function create_our_item_entity(item, x, y)
+  	if item.perk ~= nil then
+    	return perk_spawn(x, y, item.perk, true)
+  	elseif item.items ~= nil and #item.items > 0 then
+    	-- our item is something else (random choice)
+    	return EntityLoad(item.items[Random(1, #item.items)], x, y)
+  	else
+    	Log.Error("Failed to load our own item!")
+  	end
+end
+
+
+-- Spawns in an AP item (our own entity to represent items that don't exist in this game)
+function create_foreign_item_entity(location, x, y)
+  local entity_id, description = create_ap_entity_from_flags(location, x, y)
+  local name = location.item_name
+
+  -- Change item name
+  change_entity_ingame_name(entity_id, name, description)
+  return entity_id
+end
+
+
 function RemoveAPConnectionNotifier()
     -- for things in ui list, kill things with tag "ap_connection"
     for _, entity_id in ipairs(EntityGetWithTag("ap_connection")) do
         EntityKill(entity_id)
     end
 end
+
 
 function APConnectedNotifier()
     RemoveAPConnectionNotifier()
@@ -197,6 +256,7 @@ function APConnectedNotifier()
     )
     EntityAddChild(player, entity_ui)
 end
+
 
 function APNotConnectedNotifier()
     RemoveAPConnectionNotifier()
