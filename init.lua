@@ -50,8 +50,6 @@ local player_slot_to_name = {}
 local current_player_slot = -1
 local sock = nil
 local game_is_paused = true
-local hc_checklist = {}
-local peds_checklist = {}
 
 -- Locations:
 -- 110000-110499 Chests
@@ -264,11 +262,9 @@ function RECV_MSG.Connected(msg)
 
 	-- Retrieve all chest location ids the server is considering
 	local missing_locations_set = {}
+	local peds_checklist = {}
 	for _, location in ipairs(msg["missing_locations"]) do
 		missing_locations_set[location] = true
-		if location >= AP.FIRST_HC_LOCATION_ID and location <= AP.LAST_HC_LOCATION_ID then
-			hc_checklist[location] = true
-		end
 		if location >= AP.FIRST_PED_LOCATION_ID and location <= AP.LAST_PED_LOCATION_ID then
 			peds_checklist[location] = true
 		end
