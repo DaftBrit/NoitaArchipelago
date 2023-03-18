@@ -6,6 +6,7 @@ return {
 	FIRST_CHEST_LOCATION_ID = 110000,
 	LAST_CHEST_LOCATION_ID = 110500,
 	-- Bosses, possibly find a way to make the last_location_id dependent on a slider or something
+	FIRST_BOSS_LOCATION_ID = 110600,
 	FIRST_KOLMI_LOCATION_ID = 110600,
 	LAST_KOLMI_LOCATION_ID = 110609,
 	FIRST_MAGGOT_LOCATION_ID = 110610,
@@ -30,6 +31,7 @@ return {
 	LAST_ALCHEMIST_LOCATION_ID = 110709,
 	FIRST_MECHA_LOCATION_ID = 110710,
 	LAST_MECHA_LOCATION_ID = 110719,
+	LAST_BOSS_LOCATION_ID = 110719,
 
 	FIRST_ORB_LOCATION_ID = 110501,
 	LAST_ORB_LOCATION_ID = 110511,
@@ -40,6 +42,7 @@ return {
 	LAST_SPELL_REFRESH_LOCATION_ID = 111041,
 	FIRST_SECRET_SHOP_LOCATION_ID = 111042,
 	LAST_SECRET_SHOP_LOCATION_ID = 111045,
+	LAST_ITEM_LOCATION_ID = 111045,
 
 	-- The below are for the hidden chests in the walls of different biomes
 	FIRST_HC_LOCATION_ID = 112000,
@@ -48,7 +51,6 @@ return {
 	FIRST_PED_LOCATION_ID = 112500,
 	LAST_PED_LOCATION_ID = 112799,
 
-	LAST_ITEM_LOCATION_ID = 112299,
 
 	-- Item flag constants.
 	-- See https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#networkitem

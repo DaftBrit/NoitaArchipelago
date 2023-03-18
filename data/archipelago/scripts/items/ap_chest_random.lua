@@ -4,11 +4,14 @@ dofile_once("data/scripts/game_helpers.lua")
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
+dofile_once("data/scripts/items/chest_random.lua")
 
 
 function on_open(entity_item)
 	local biome_comp_id = EntityGetFirstComponent(entity_item, "VariableStorageComponent")
 	local biome_name = ComponentGetValue2(biome_comp_id, "value_string")
+	local x, y = EntityGetTransform(entity_item)
+	local item_spawned = false
 	if Biomes[biome_name] ~= nil then
 		local biome_data = Biomes[biome_name]
 		for i = biome_data.first_hc, biome_data.first_hc + 19 do
@@ -23,9 +26,13 @@ function on_open(entity_item)
 				if location.is_our_item then
 					SpawnItem(item_id, true)
 				end
+				item_spawned = true
 				break
 			end
 		end
+	end
+	if item_spawned ~= true then
+		drop_random_reward(x, y, entity_item)
 	end
 	EntityLoad("data/entities/particles/image_emitters/chest_effect.xml", x, y)
 end
@@ -33,6 +40,6 @@ end
 
 function item_pickup( entity_item, entity_who_picked, name )
 	on_open( entity_item )
-	
+
 	EntityKill( entity_item )
 end

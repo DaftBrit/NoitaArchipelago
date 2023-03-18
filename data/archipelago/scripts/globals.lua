@@ -8,4 +8,5 @@ return {
 
 	LocationScouts = GlobalComplex("AP_LOCATIONSCOUTS_DATA"),
 	MissingLocationsSet = GlobalComplex("AP_MISSING_LOCATIONS"),
+	PedestalLocationsSet = GlobalComplex("AP_PEDESTAL_LOCATIONS"),
 }

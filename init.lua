@@ -47,8 +47,6 @@ local slot_options = nil
 local last_death_time = 0
 local Games = {}
 local player_slot_to_name = {}
-local check_list = {}
-local hc_chest_list = {}
 local current_player_slot = -1
 local sock = nil
 local game_is_paused = true
@@ -155,6 +153,10 @@ local function ShouldDeliverItem(item)
 	if item["player"] == current_player_slot then
 		if item["location"] >= AP.FIRST_ITEM_LOCATION_ID and item["location"] <= AP.LAST_ITEM_LOCATION_ID then
 			return false	-- Don't deliver shopitems, they are given locally
+		elseif item["location"] >= AP.FIRST_PED_LOCATION_ID and item["location"] <= AP.LAST_PED_LOCATION_ID then
+			return false	-- Don't deliver pedestal items, they are given locally
+		elseif item["location"] >= AP.FIRST_HC_LOCATION_ID and item["location"] <= AP.LAST_HC_LOCATION_ID then
+			return false
 		end
 	end
 	return true
@@ -245,8 +247,10 @@ function RECV_MSG.Connected(msg)
 	--end
 
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
+		APConnectedNotifier()
 	else
 		GlobalsSetValue(LOAD_KEY, "1")
+		-- todo: instead of resetting itemdelivery, read it and deliver items in a different way
 		Cache.ItemDelivery:reset()
 		ResetOrbID()
 		if ModSettingGet("archipelago.debug_items") == true then
@@ -257,22 +261,16 @@ function RECV_MSG.Connected(msg)
 	end
 
 	-- Retrieve all chest location ids the server is considering
-	check_list = {}
-	hc_chest_list = {}
 	local missing_locations_set = {}
+	local peds_checklist = {}
 	for _, location in ipairs(msg["missing_locations"]) do
 		missing_locations_set[location] = true
-		if location >= AP.FIRST_CHEST_LOCATION_ID and location <= AP.LAST_CHEST_LOCATION_ID then
-			table.insert(check_list, location)
-		end
-		if location >= AP.FIRST_HC_LOCATION_ID and location <= AP.LAST_HC_LOCATION_ID then
-			table.insert(hc_chest_list, location)
-		end
 		if location >= AP.FIRST_PED_LOCATION_ID and location <= AP.LAST_PED_LOCATION_ID then
-			table.insert(hc_chest_list, location)
+			peds_checklist[location] = true
 		end
 	end
 	Globals.MissingLocationsSet:set_table(missing_locations_set)
+	Globals.PedestalLocationsSet:set_table(peds_checklist)
 
 	for k, plr in pairs(msg["players"]) do
 		player_slot_to_name[plr["slot"]] = plr["name"]

@@ -1,0 +1,32 @@
+<Entity tags="teleportable_NOT">
+
+    <LuaComponent
+        script_item_picked_up="data/archipelago/scripts/items/ap_pedestal_random.lua"   >
+    </LuaComponent>
+
+    <SpriteComponent
+        image_file="data/archipelago/entities/items/icons/ap_logo_bigger.png"
+        offset_x="9"
+        offset_y="13"
+        update_transform="1"
+        update_transform_rotation="0" >
+    </SpriteComponent>
+
+    <ItemComponent
+        item_name="$ap_chest_random"
+        play_spinning_animation="0"
+        play_hover_animation="0"
+        play_pick_sound="0" >
+    </ItemComponent>
+
+    <SpriteOffsetAnimatorComponent
+        sprite_id="-1"
+        x_amount="0"
+        x_phase="0"
+        x_phase_offset="0"
+        x_speed="0"
+        y_amount="2"
+        y_speed="2" >
+    </SpriteOffsetAnimatorComponent>
+
+</Entity>

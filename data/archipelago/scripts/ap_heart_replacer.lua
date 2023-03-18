@@ -1,5 +1,6 @@
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
+dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 local function APHeartReplacer()
     -- sets a function for the old version of spawn_heart
@@ -19,13 +20,9 @@ local function APHeartReplacer()
                 for i = biome_data.first_hc, biome_data.first_hc + 19 do
                     if Globals.MissingLocationsSet:has_key(i) then
                         -- spawn the chest, set ap_chest_id equal to its entity ID
-                        local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml", x, y)
+                        local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml",x,y)
                         has_spawned = true
-                        EntityAddComponent(ap_chest_id, "VariableStorageComponent",
-                                {
-                                    name = "biome_name",
-                                    value_string = biome_name,
-                                })
+                        addNewInternalVariable(ap_chest_id, "biome_name", "value_string", biome_name)
                         break
                     end
                 end
@@ -36,7 +33,6 @@ local function APHeartReplacer()
             ap_old_spawn_heart(x, y)
         end
     end
-
 
     -- this makes the spawn_heart the game calls for redirect to ap_replace_heart
     spawn_heart = function(x, y)
