@@ -277,12 +277,16 @@ end
 function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
+	give_perk("PROTECTION_RADIOACTIVITY")
 	add_items_to_inventory({"data/entities/items/wand_level_10.xml"})
 	give_perk("MOVEMENT_FASTER")
 	give_perk("MOVEMENT_FASTER")
 	give_perk("HOVER_BOOST")
 	give_perk("FASTER_LEVITATION")
 	give_perk("UNLIMITED_SPELLS")
+	for _ = 1, 10 do
+		give_perk("GENOME_MORE_LOVE")
+	end
 	set_money(100000000)
 	set_health(80, 80)
 	EntityLoadAtPlayer("data/entities/items/wands/custom/digger_01.xml", 20) -- good for digging

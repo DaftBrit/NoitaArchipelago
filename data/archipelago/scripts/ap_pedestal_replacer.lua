@@ -26,6 +26,15 @@ local function PedestalReplacer()
                         local item_id = location.item_id
                         local item = item_table[item_id]
                         local ap_pedestal_id
+                        if item_id >= 110008 and item_id <= 110013 then
+                            y = y + 0.5
+                        end
+                        if contains_element({110003, 110023, 110024, 110031}, item_id) and replaced_pedestal == "wand" then
+                            x = x + 1.5
+                        end
+                        if item_id == 110027 and replaced_pedestal == "potion" then
+                            x = x + 0.5
+                        end
                         if location.is_our_item and item and item_id ~= AP.TRAP_ID then
                             ap_pedestal_id = create_our_item_entity(item, x, y), false
                         else
