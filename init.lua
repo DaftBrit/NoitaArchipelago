@@ -251,6 +251,7 @@ function RECV_MSG.Connected(msg)
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
 	else
 		GlobalsSetValue(LOAD_KEY, "1")
+		-- todo: instead of resetting itemdelivery, read it and deliver items in a different way
 		Cache.ItemDelivery:reset()
 		ResetOrbID()
 		if ModSettingGet("archipelago.debug_items") == true then
