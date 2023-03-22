@@ -8,7 +8,7 @@ function SeededCache:new(cache_name)
 end
 
 function SeededCache:get_filename()
-	return "mods/archipelago/cache/" .. self.cache_name .. "_" .. Globals.Seed:get() .. "_" .. Globals.Player:get() .. ".json"
+	return "mods/archipelago/cache/" .. self.cache_name .. "_" .. Globals.Seed:get() .. "_" .. Globals.PlayerSlot:get() .. ".json"
 end
 
 return SeededCache

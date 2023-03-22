@@ -234,7 +234,7 @@ function RECV_MSG.Connected(msg)
 	slot_options = msg["slot_data"]
 
 	Globals.Seed:set(slot_options.seed)
-	Globals.Player:set(current_player_slot)
+	Globals.PlayerSlot:set(current_player_slot)
 	-- todo: figure out why the below block doesn't work
 	--if Globals.LoadKey:get() ~= "1" then
 	--	print("new game has been started")
