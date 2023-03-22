@@ -8,4 +8,8 @@
     offset_y="10"
     image_file="data/archipelago/entities/items/icon-useful.png"
   />
+
+  <LuaComponent
+    script_item_picked_up="data/archipelago/scripts/items/ap_item.lua"
+  />
 </Entity>

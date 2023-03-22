@@ -1,0 +1,20 @@
+<!--todo: putting together a hint system-->
+<Entity tags="tablet,forgeable,normal_tablet">
+	<Base file="data/entities/items/books/base_book.xml">
+		<UIInfoComponent
+			name="$hintbooktitle"
+			>
+		</UIInfoComponent>
+
+		<ItemComponent
+			item_name="$hintbooktitle"
+			ui_description="$hintbookdesc"
+			>
+		</ItemComponent>
+
+		<AbilityComponent
+			ui_name="$hintbooktitle"
+			>
+		</AbilityComponent>
+	</Base>
+</Entity>

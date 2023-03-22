@@ -70,7 +70,7 @@ mod_settings =
 			{
 				id = "debug_items",
 				ui_name = "Debug Items",
-				ui_description = "Makes debug items and perks spawn when starting a new run",
+				ui_description = "Makes debug items and perks spawn when starting a new run.",
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},

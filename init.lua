@@ -234,6 +234,7 @@ function RECV_MSG.Connected(msg)
 	slot_options = msg["slot_data"]
 
 	Globals.Seed:set(slot_options.seed)
+	Globals.Player:set(current_player_slot)
 	-- todo: figure out why the below block doesn't work
 	--if Globals.LoadKey:get() ~= "1" then
 	--	print("new game has been started")
@@ -565,6 +566,7 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
+	print("onplayerdied test")
 	if not sock or not slot_options.death_link or game_is_paused or not UpdateDeathTime() then return end
 
 	local death_msg = GetCauseOfDeath()
