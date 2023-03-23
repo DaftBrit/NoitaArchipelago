@@ -9,4 +9,7 @@
     image_file="data/archipelago/entities/items/trap-$[1-4].png"
   />
 
+  <LuaComponent
+    script_item_picked_up="data/archipelago/scripts/items/ap_trap.lua"
+  />
 </Entity>
