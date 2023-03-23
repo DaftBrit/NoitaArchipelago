@@ -9,7 +9,4 @@
     image_file="data/archipelago/entities/items/icon-junk.png"
   />
 
-  <LuaComponent
-    script_item_picked_up="data/archipelago/scripts/items/ap_item.lua"
-  />
 </Entity>
