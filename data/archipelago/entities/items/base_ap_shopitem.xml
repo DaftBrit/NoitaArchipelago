@@ -12,4 +12,7 @@
     ui_display_description_on_pick_up_hint="1"
     play_hover_animation="1"/>
 
+  <LuaComponent
+    script_item_picked_up="data/archipelago/scripts/items/ap_item.lua"
+  />
 </Entity>
