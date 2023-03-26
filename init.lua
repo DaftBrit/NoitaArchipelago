@@ -50,6 +50,7 @@ local player_slot_to_name = {}
 local current_player_slot = -1
 local sock = nil
 local game_is_paused = true
+local index = -1
 
 -- Locations:
 -- 110000-110499 Chests
@@ -246,18 +247,16 @@ function RECV_MSG.Connected(msg)
 	--else
 	--	print("continued the game")
 	--end
-
+	APConnectedNotifier()
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
 		APConnectedNotifier()
 	else
-		GlobalsSetValue(LOAD_KEY, "1")
-		-- todo: instead of resetting itemdelivery, read it and deliver items in a different way
 		Cache.ItemDelivery:reset()
-		ResetOrbID()
+		--GlobalsSetValue(LOAD_KEY, "1")
+		ResetOrbID() -- todo: check that this actually matters anymore
 		if ModSettingGet("archipelago.debug_items") == true then
 			give_debug_items()
 		end
-		APConnectedNotifier()
 		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	end
 
@@ -290,22 +289,52 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(msg)
-	for _, item in pairs(msg["items"]) do
-		local item_id = item["item"]
-		local sender = item["player"]
-		local location_id = item["location"]
+	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
+		-- we're in sync or we're continuing the game and receiving items in async
+		local recv_index = msg["index"]
+		for _, item in pairs(msg["items"]) do
+			local item_id = item["item"]
+			local sender = item["player"]
+			local location_id = item["location"]
 
-		local cache_key = Cache.make_key(sender, location_id)
-		if not Cache.ItemDelivery:is_set(cache_key) then
-		Cache.ItemDelivery:set(cache_key)
-			if not GameHasFlagRun("ap_spawned_timer_finished") and item_table[item_id].redeliverable then
-				SpawnItem(item_id, false)
-			elseif GameHasFlagRun("ap_spawned_timer_finished") then
-				if ShouldDeliverItem(item) then
-					SpawnItem(item_id, true)
+			local cache_key = Cache.make_key(sender, location_id)
+			if not Cache.ItemDelivery:is_set(cache_key) then
+				Cache.ItemDelivery:set(cache_key)
+
+				if not GameHasFlagRun("ap_spawned_timer_finished") and item_table[item_id].redeliverable then
+					SpawnItem(item_id, false)
+				elseif GameHasFlagRun("ap_spawned_timer_finished") then
+					if ShouldDeliverItem(item) then
+						SpawnItem(item_id, true)
+					end
+				end
+				index = index + 1
+				if index ~= recv_index then
+					SendCmd("Sync")
 				end
 			end
 		end
+	else
+		-- we're starting a new game
+		local ng_items = {}
+		for _, item in pairs(msg["items"]) do
+			index = index + 1
+			local item_id = item["item"]
+			local sender = item["player"]
+			local location_id = item["location"]
+			local cache_key = Cache.make_key(sender, location_id)
+			Cache.ItemDelivery:set(cache_key)
+
+			if item_table[item_id].redeliverable then
+				if ng_items[item_id] == nil then
+					ng_items[item_id] = 1
+				else
+					ng_items[item_id] = ng_items[item_id] + 1
+				end
+			end
+		end
+		NGSpawnItems(ng_items)
+		GlobalsSetValue(LOAD_KEY, "1")
 	end
 end
 
