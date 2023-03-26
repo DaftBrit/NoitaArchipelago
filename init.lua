@@ -317,10 +317,13 @@ function RECV_MSG.ReceivedItems(msg)
 	else
 		-- we're starting a new game
 		local ng_items = {}
+		local sender = -1
+		local table_length = 0
 		for _, item in pairs(msg["items"]) do
 			index = index + 1
+			table_length = table_length + 1
 			local item_id = item["item"]
-			local sender = item["player"]
+			sender = item["player"]
 			local location_id = item["location"]
 			local cache_key = Cache.make_key(sender, location_id)
 			Cache.ItemDelivery:set(cache_key)
@@ -333,7 +336,11 @@ function RECV_MSG.ReceivedItems(msg)
 				end
 			end
 		end
-		NGSpawnItems(ng_items)
+		if sender == current_player_slot and index == 0 and table_length == 1 then
+			print("player found their own item as their first item")
+		else
+			NGSpawnItems(ng_items)
+		end
 		GlobalsSetValue(LOAD_KEY, "1")
 	end
 end
