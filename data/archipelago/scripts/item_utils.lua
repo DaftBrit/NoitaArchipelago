@@ -49,13 +49,18 @@ end
 
 function NGSpawnItems(item_id_table)
 	local xoff = -50
+	local yoff = -30 -- negative means it spawns above you
+	if #item_id_table == 1 then
+		xoff = 0
+		yoff = 0
+	end
 	for item, quantity in pairs(item_id_table) do
 		for _ = 1, quantity do
 			if item_table[item].perk ~= nil then
 				give_perk(item_table[item].perk)
 			elseif #item_table[item].items > 0 then
 				local item_to_spawn = item_table[item].items[Random(1, #item_table[item].items)]
-				EntityLoadAtPlayer(item_to_spawn, xoff, -30)
+				EntityLoadAtPlayer(item_to_spawn, xoff, yoff)
 				xoff = xoff + 20
 			end
 		end
