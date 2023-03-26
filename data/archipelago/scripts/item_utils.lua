@@ -47,14 +47,26 @@ function SpawnItem(item_id, traps)
 end
 
 
-function NGSpawnItems(item_id_table)
+function NGSpawnItems(item_list)
 	local xoff = -50
 	local yoff = -30 -- negative means it spawns above you
-	if #item_id_table == 1 then
+	local item_count = 0
+	for _, v in pairs(item_list) do
+		item_count = item_count + v
+	end
+	if item_count == 1 then
 		xoff = 0
 		yoff = 0
 	end
-	for item, quantity in pairs(item_id_table) do
+	-- check how many hearts are on the list, increase your health based on them, then remove them from the list
+	if item_list[110001] ~= nil then
+		local cur_hp, max_hp = get_health()
+		cur_hp = cur_hp + item_list[110001]
+		max_hp = max_hp + item_list[110001]
+		set_health(cur_hp, max_hp)
+		item_list[110001] = nil
+	end
+	for item, quantity in pairs(item_list) do
 		for _ = 1, quantity do
 			if item_table[item].perk ~= nil then
 				give_perk(item_table[item].perk)

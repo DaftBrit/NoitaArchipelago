@@ -327,8 +327,8 @@ function RECV_MSG.ReceivedItems(msg)
 			local location_id = item["location"]
 			local cache_key = Cache.make_key(sender, location_id)
 			Cache.ItemDelivery:set(cache_key)
-
-			if item_table[item_id].redeliverable then
+			-- count up the items that should be delivered on new game
+			if item_table[item_id].newgame then
 				if ng_items[item_id] == nil then
 					ng_items[item_id] = 1
 				else
@@ -341,7 +341,6 @@ function RECV_MSG.ReceivedItems(msg)
 		else
 			NGSpawnItems(ng_items)
 		end
-		GlobalsSetValue(LOAD_KEY, "1")
 	end
 end
 
