@@ -118,14 +118,14 @@ end
 
 
 -- health and money functions from the cheatgui mod
-local function get_health()
+function get_health()
 	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
 	return ComponentGetValue(dm, "hp"), ComponentGetValue(dm, "max_hp")
 end
 
 
 -- Note that these hp values get mulitplied by 25 by the game. Setting it to 80 means 2,000 health
-local function set_health(cur_hp, max_hp)
+function set_health(cur_hp, max_hp)
 	local damagemodels = EntityGetComponent(get_player(), "DamageModelComponent")
 	for _, damagemodel in ipairs(damagemodels or {}) do
 		ComponentSetValue(damagemodel, "max_hp", max_hp)

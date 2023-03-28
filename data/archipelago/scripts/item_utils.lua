@@ -46,6 +46,69 @@ function SpawnItem(item_id, traps)
 	end
 end
 
+
+function NGSpawnItems(item_list)
+	local itemx = 595
+	local itemy = -90
+	local wandx = 600
+	local wandy = -120
+	local item_count = 0
+	for _, v in pairs(item_list) do
+		item_count = item_count + v
+	end
+	-- check how many hearts are on the list, increase your health based on them, then remove them from the list
+	if item_list[110001] ~= nil then
+		local cur_hp, max_hp = get_health()
+		cur_hp = cur_hp + item_list[110001]
+		max_hp = max_hp + item_list[110001]
+		set_health(cur_hp, max_hp)
+		item_list[110001] = nil
+	end
+
+	-- spawn the wands in an array inside the cave
+	for item, quantity in pairs(item_list) do
+		print(item, quantity)
+		if item_table[item].wand ~= nil then
+			for _ = 1, quantity do
+				local item_to_spawn = item_table[item].items[Random(1, #item_table[item].items)]
+				EntityLoad(item_to_spawn, wandx, wandy)
+				wandx = wandx + 20
+				if wandx >= 800 then
+					wandx = 600
+					wandy = wandy -10
+				end
+			end
+			item_list[item] = nil
+			-- give the player their perks
+		elseif item_table[item].perk ~= nil then
+			for _ = 1, quantity do
+				give_perk(item_table[item].perk)
+			end
+			item_table[item] = nil
+		else
+			-- spawn the rest of the items on the cave floor
+			for _ = 1, quantity do
+				if #item_table[item].items > 0 then
+					print("spawning" .. item .. "at" .. itemx .. itemy)
+					local item_to_spawn = item_table[item].items[Random(1, #item_table[item].items)]
+					EntityLoad(item_to_spawn, itemx, itemy)
+					itemx = itemx + 15
+					-- skip the minecart
+					if itemx > 662 and itemx < 692 then
+						itemx = itemx + 30
+					end
+					-- loop back around, but slightly offset
+					if itemx >= 800 then
+						itemx = itemx - 205
+					end
+				end
+			end
+			item_list[item] = nil
+		end
+	end
+end
+
+
 local LocationFlags = {
 	[110501] = "orb_0",
 	[110502] = "orb_1",
