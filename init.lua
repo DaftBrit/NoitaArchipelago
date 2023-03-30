@@ -623,5 +623,5 @@ function OnPlayerSpawned(player)
 	game_is_paused = false
 	InitializeArchipelagoThread()
 	APNotConnectedNotifier()
-	SetTimeOut(.5, "data/archipelago/scripts/ap_spawned_timer_finish.lua")
+	SetTimeOut(5, "data/archipelago/scripts/ap_spawned_timer_finish.lua")
 end
