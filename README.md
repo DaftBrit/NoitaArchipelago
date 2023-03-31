@@ -18,6 +18,14 @@ This mod takes hidden chests/hearts, pedestals, orbs, and boss drops and convert
       - All stream integration "Bad" and "Awful" events
       - Bad events can be toggled in the player yaml settings
 
+# Design Intent
+
+Noita is a roguelike that does not have required items to beat the game (other than orbs for some endings). It's possible to beat the game without wands if you're feeling up to it. This goes against the general theme of Archipelago, since typically you need to find other players' required items so that they can find your required items, so that you can find theirs, and so on until you've all beaten your games. Despite this, Noita has something that makes it a compelling fit for Archipelago:
+
+It's hard.
+
+Looking at Steam's global achievement stats, it's safe to assume that at least 85% of people who have played Noita have not acheived any of the endings. The design goal for this mod is to essentially make you stronger and stronger as the multiworld progresses, kind of like how a roguelite does it. As you gain extra max health, more wand options at the start, and most importantly your immunity perks, it becomes easier to actually beat the game.
+
 # Todo: update preview videos
  
 # Local item
@@ -39,3 +47,23 @@ In order to enable the mod you will first need to toggle "Allow unsafe mods". Th
 In the Options menu, select Mod Settings. Under the Archipelago drop down, you will see the options for Hostname, Port, and Slot name, where you can fill in the relevant information.
 
 Once you start a new run in Noita, you should see "Connected to Archipelago server" in the bottom left of the screen, as well as a unique perk. If you do not see this message, ensure that the mod is enabled and installed per the instructions above.
+
+# Notes and Quirks
+
+Potions and dice do not get delivered in async (won't get delivered if they are sent to you while your game is closed).
+
+This is because it is just plain dangerous to deliver these to you when you've just spawned. Potions sometimes break when they spawn next to you, and the dice sometimes roll when they spawn. Getting spawn killed in Archipelago does not seem like much fun. It is, however, still fun when they spawn while you're actively playing, since you would potentially have time to react.
+
+Potions, dice, spell refreshes, gold, and extra lives do not get redelivered to you on new game.
+
+For the potions and dice, similar reason to the above. They like to break when they are spawned sometimes, espeically if they're spawned in a crowded room. We may find a nicer way to resend these on new game later on, though.
+
+For spell refreshes, gold, and extra lives, they are intended to be "current run" buffs, rather than permanent buffs like other items act as. As noted above, you'll be getting stronger over the course of the course of the run. Getting stronger means you'll have less of a need for extra gold to be given to you. You'll have less of a need for spell refreshes to be dropped on you (especially since the shop ones will spawn once you've gotten those checks). And you'll have less of a need for extra lives to save you.
+
+Sometimes, Archipelago Chests spawn randomly on the ground.
+
+The Archipelago Chests replace the hearts and chests that are normally hidden in the environment. The chest design, the Archipelago logo, is larger than regular chests and hearts are. This means that they sometimes do not fit in the space that chest or heart is supposed to be in. Noita automatically shoves items that get stuck in too-small spaces upwards until they reach an open surface they can rest on. While having a recolored or redesigned chest instead of a larger, essentially ball-shaped chest would resolve this issue, it would not be as fun.
+
+The Fungal Caverns don't replace all of their pedestals with checks.
+
+The Fungal Caverns have a ridiculous number of pedestals. We decided to replace just the wand pedestals in the Fungal Caverns, rather than replacing both the wand and potion pedestals like we do in other biomes.
