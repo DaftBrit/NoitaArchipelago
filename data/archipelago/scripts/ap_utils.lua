@@ -117,6 +117,12 @@ local function get_player()
 end
 
 
+function isMovingRight()
+	local control = EntityGetFirstComponent(get_player(), "ControlsComponent")
+	return ComponentGetValue2(control, "mButtonDownRight")
+end
+
+
 -- health and money functions from the cheatgui mod
 function get_health()
 	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
@@ -143,6 +149,13 @@ end
 local function set_money(amt)
 	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
 	ComponentSetValue2(wallet, "money", amt)
+end
+
+
+function add_money(amt)
+	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
+	local current_money = ComponentGetValue2(wallet, "money")
+	ComponentSetValue2(wallet, "money", current_money + amt)
 end
 
 

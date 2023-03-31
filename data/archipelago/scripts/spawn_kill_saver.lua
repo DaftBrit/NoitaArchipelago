@@ -1,0 +1,1 @@
+GameAddFlagRun("ap_spawn_kill_saver")
