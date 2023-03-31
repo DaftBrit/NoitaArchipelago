@@ -248,6 +248,7 @@ function RECV_MSG.Connected(msg)
 	--	print("continued the game")
 	--end
 	APConnectedNotifier()
+	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
 		APConnectedNotifier()
 	else
@@ -301,9 +302,9 @@ function RECV_MSG.ReceivedItems(msg)
 			if not Cache.ItemDelivery:is_set(cache_key) then
 				Cache.ItemDelivery:set(cache_key)
 
-				if not GameHasFlagRun("ap_spawned_timer_finished") and item_table[item_id].redeliverable then
+				if not GameHasFlagRun("ap_spawn_kill_saver") and item_table[item_id].redeliverable then
 					SpawnItem(item_id, false)
-				elseif GameHasFlagRun("ap_spawned_timer_finished") then
+				elseif GameHasFlagRun("ap_spawn_kill_saver") then
 					if ShouldDeliverItem(item) then
 						SpawnItem(item_id, true)
 					end
@@ -342,7 +343,7 @@ function RECV_MSG.ReceivedItems(msg)
 			-- first received item was sent by another player
 			print("if an error is happening it's probably here in the received items script")
 			for item, _ in ng_items do
-				if GameHasFlagRun("ap_spawned_timer_finished") and item_table[item].redeliverable == true then
+				if GameHasFlagRun("ap_spawn_kill_saver") and item_table[item].redeliverable == true then
 					SpawnItem(item, false)
 				else
 					SpawnItem(item, true)
@@ -645,5 +646,4 @@ function OnPlayerSpawned(player)
 	game_is_paused = false
 	InitializeArchipelagoThread()
 	APNotConnectedNotifier()
-	SetTimeOut(5, "data/archipelago/scripts/ap_spawned_timer_finish.lua")
 end

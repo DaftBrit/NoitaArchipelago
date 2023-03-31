@@ -1,1 +1,0 @@
-GameAddFlagRun("ap_spawned_timer_finished")
