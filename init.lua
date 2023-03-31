@@ -351,7 +351,7 @@ function RECV_MSG.ReceivedItems(msg)
 		else
 			NGSpawnItems(ng_items)
 		end
-		GlobalsSetValue("AP_FIRST_LOAD_DONE", "1")
+		GlobalsSetValue(LOAD_KEY, "1")
 	end
 end
 
@@ -578,9 +578,9 @@ end
 
 
 local function CheckPlayerMovement()
-	local movement = getPlayerHorizontalMovement()
-    if movement == "right" then
-        GlobalsSetValue("AP_FIRST_LOAD_DONE", "1")
+	local movement = isMovingRight()
+    if movement then
+        GlobalsSetValue(LOAD_KEY, "1")
     end
 end
 
@@ -605,7 +605,7 @@ function OnWorldPostUpdate()
 		CheckNetworkMessages()
 		CheckGlobalsAndFlags()
 	end
-	if GlobalsGetValue("AP_FIRST_LOAD_DONE", 0) == 0 then
+	if GlobalsGetValue(LOAD_KEY, 0) == 0 then
 		CheckPlayerMovement()
 	end
 end

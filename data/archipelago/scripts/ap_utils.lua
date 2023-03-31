@@ -117,24 +117,9 @@ local function get_player()
 end
 
 
--- from the wiki
-local function getPlayerVelocities()
-    local cdc_id = EntityGetFirstComponentIncludingDisabled(get_player(), "CharacterDataComponent")
-    local velocity_x, velocity_y = ComponentGetValue2(cdc_id, "mVelocity")
-    return velocity_x, velocity_y
-end
-
-
-function getPlayerHorizontalMovement()
-	local vel_x, vel_y = getPlayerVelocities()
-	local horizontal_movement = ""
-	if(vel_x > 10) then
-		horizontal_movement = "right"
-	end
-	if(vel_x < -10) then
-		horizontal_movement = "left"
-	end
-	return horizontal_movement
+function isMovingRight()
+	local control = EntityGetFirstComponent(get_player(), "ControlsComponent")
+	return ComponentGetValue2(control, "mButtonDownRight")
 end
 
 
