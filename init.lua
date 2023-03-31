@@ -606,7 +606,7 @@ function OnWorldPostUpdate()
 		CheckNetworkMessages()
 		CheckGlobalsAndFlags()
 	end
-	if GlobalsGetValue(LOAD_KEY, 0) == 0 then
+	if GlobalsGetValue(LOAD_KEY, "0") == "0" then
 		CheckPlayerMovement()
 	end
 end
