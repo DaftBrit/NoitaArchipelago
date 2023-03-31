@@ -337,10 +337,21 @@ function RECV_MSG.ReceivedItems(msg)
 			end
 		end
 		if sender == current_player_slot and index == 0 and table_length == 1 then
-			print("player found their own item as their first item")
+			-- player found their own item as their first item
+		elseif table_length == 1 then
+			-- first received item was sent by another player
+			print("if an error is happening it's probably here in the received items script")
+			for item, _ in ng_items do
+				if GameHasFlagRun("ap_spawned_timer_finished") and item_table[item].redeliverable == true then
+					SpawnItem(item, false)
+				else
+					SpawnItem(item, true)
+				end
+			end
 		else
 			NGSpawnItems(ng_items)
 		end
+		GlobalsSetValue("AP_FIRST_LOAD_DONE", "1")
 	end
 end
 
@@ -566,6 +577,14 @@ local function CheckGlobalsAndFlags()
 end
 
 
+local function CheckPlayerMovement()
+	local movement = getPlayerHorizontalMovement()
+    if movement == "right" then
+        GlobalsSetValue("AP_FIRST_LOAD_DONE", "1")
+    end
+end
+
+
 function InitializeArchipelagoThread()
 	if not sock then
 		InitSocket()
@@ -585,6 +604,9 @@ function OnWorldPostUpdate()
 	if sock ~= nil then
 		CheckNetworkMessages()
 		CheckGlobalsAndFlags()
+	end
+	if GlobalsGetValue("AP_FIRST_LOAD_DONE", 0) == 0 then
+		CheckPlayerMovement()
 	end
 end
 

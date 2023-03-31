@@ -117,6 +117,27 @@ local function get_player()
 end
 
 
+-- from the wiki
+local function getPlayerVelocities()
+    local cdc_id = EntityGetFirstComponentIncludingDisabled(get_player(), "CharacterDataComponent")
+    local velocity_x, velocity_y = ComponentGetValue2(cdc_id, "mVelocity")
+    return velocity_x, velocity_y
+end
+
+
+function getPlayerHorizontalMovement()
+	local vel_x, vel_y = getPlayerVelocities()
+	local horizontal_movement = ""
+	if(vel_x > 10) then
+		horizontal_movement = "right"
+	end
+	if(vel_x < -10) then
+		horizontal_movement = "left"
+	end
+	return horizontal_movement
+end
+
+
 -- health and money functions from the cheatgui mod
 function get_health()
 	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
@@ -143,6 +164,13 @@ end
 local function set_money(amt)
 	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
 	ComponentSetValue2(wallet, "money", amt)
+end
+
+
+function add_money(amt)
+	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
+	local current_money = ComponentGetValue2(wallet, "money")
+	ComponentSetValue2(wallet, "money", current_money + amt)
 end
 
 
