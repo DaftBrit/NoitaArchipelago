@@ -59,6 +59,12 @@ function ShopItems.create_ap_entity_from_flags(location, x, y)
   end
 
   local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
+  if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
+       EntityAddComponent(item_entity, "LuaComponent", {
+           _tags="archipelago",
+           script_item_picked_up="data/archipelago/scripts/ap_badtimes.lua",
+           })
+  end
   return item_entity, item_description
 end
 
