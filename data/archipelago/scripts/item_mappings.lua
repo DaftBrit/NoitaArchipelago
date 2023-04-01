@@ -8,10 +8,10 @@ return {
 	[110002] = { items = { "data/entities/items/pickup/spell_refresh.xml" }, redeliverable = true },
 	[110003] = { items = { "data/entities/items/pickup/potion.xml" } },
 
-	[110004] = { items = { "data/entities/items/pickup/goldnugget_10.xml" }, redeliverable = true },
-	[110005] = { items = { "data/entities/items/pickup/goldnugget_50.xml" }, redeliverable = true },
-	[110006] = { items = { "data/entities/items/pickup/goldnugget_200.xml" }, redeliverable = true },
-	[110007] = { items = { "data/entities/items/pickup/goldnugget_1000.xml" }, redeliverable = true },
+	[110004] = { items = { "data/entities/items/pickup/goldnugget_10.xml" }, gold_amount = 10, redeliverable = true },
+	[110005] = { items = { "data/entities/items/pickup/goldnugget_50.xml" }, gold_amount = 50, redeliverable = true },
+	[110006] = { items = { "data/entities/items/pickup/goldnugget_200.xml" }, gold_amount = 200, redeliverable = true },
+	[110007] = { items = { "data/entities/items/pickup/goldnugget_1000.xml" }, gold_amount = 1000, redeliverable = true },
 
 	[110008] = { items = { "data/entities/items/wand_level_01.xml", "data/entities/items/wand_unshuffle_01.xml" }, redeliverable = true, newgame = true, wand = true },
 	[110009] = { items = { "data/entities/items/wand_level_02.xml", "data/entities/items/wand_unshuffle_02.xml" }, redeliverable = true, newgame = true, wand = true },
