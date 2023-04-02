@@ -34,15 +34,15 @@ body:
     attributes:
       label: Death Link
       options:
-        - No
-        - Yes
+        - "No"
+        - "Yes"
   - type: dropdown
     id: setting-traps
     attributes:
       label: Traps
       options:
-        - No
-        - Yes
+        - "No"
+        - "Yes"
   - type: dropdown
     id: setting-victorycondition
     attributes:
