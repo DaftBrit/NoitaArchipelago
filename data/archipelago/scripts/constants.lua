@@ -5,7 +5,6 @@ return {
 	-- Location IDs
 	FIRST_CHEST_LOCATION_ID = 110000,
 	LAST_CHEST_LOCATION_ID = 110500,
-	-- Bosses, possibly find a way to make the last_location_id dependent on a slider or something
 	FIRST_BOSS_LOCATION_ID = 110600,
 	FIRST_KOLMI_LOCATION_ID = 110600,
 	LAST_KOLMI_LOCATION_ID = 110609,
@@ -33,9 +32,6 @@ return {
 	LAST_MECHA_LOCATION_ID = 110719,
 	LAST_BOSS_LOCATION_ID = 110719,
 
-	FIRST_ORB_LOCATION_ID = 110501,
-	LAST_ORB_LOCATION_ID = 110511,
-
 	FIRST_ITEM_LOCATION_ID = 111000,
 
 	FIRST_SPELL_REFRESH_LOCATION_ID = 111035,
@@ -50,6 +46,10 @@ return {
 
 	FIRST_PED_LOCATION_ID = 112500,
 	LAST_PED_LOCATION_ID = 112799,
+
+	-- the range of locations used, for releasing items on goal completion
+	FIRST_NOITA_LOCATION_ID = 110501,
+	LAST_NOITA_LOCATION_ID = 112799,
 
 
 	-- Item flag constants.
