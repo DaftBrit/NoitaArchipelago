@@ -223,7 +223,7 @@ function create_ap_entity_from_flags(location, x, y)
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
 		 EntityAddComponent(item_entity, "LuaComponent", {
 			 _tags="archipelago",
-             script_item_picked_up="data/archipelago/scripts/ap_badtimes.lua",
+             script_item_picked_up="data/archipelago/scripts/items/ap_trap.lua",
              })
 	end
   	return item_entity, item_description
