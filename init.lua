@@ -624,19 +624,19 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-	print("onplayerdied test")
-	if not sock or not slot_options.death_link or game_is_paused or not UpdateDeathTime() then return end
-
-	local death_msg = GetCauseOfDeath()
-	local slotname = ModSettingGet("archipelago.slot_name")
-	SendCmd("Bounce", {
-		tags = { "DeathLink" },
-		data = {
-			time = last_death_time,
-			cause = slotname .. " died to " .. death_msg,
-			source = slotname
-		}
-	})
+	if sock == nil or slot_options.death_link ~= 1 or game_is_paused or not UpdateDeathTime() then
+	else
+		local death_msg = GetCauseOfDeath()
+		local slotname = ModSettingGet("archipelago.slot_name")
+		SendCmd("Bounce", {
+			tags = { "DeathLink" },
+			data = {
+				time = last_death_time,
+				cause = slotname .. " died to " .. death_msg,
+				source = slotname
+			}
+		})
+	end
 end
 
 
