@@ -2,7 +2,6 @@
 "ap_connected_to_server","Connected to Archipelago server",,,,,,,,,,,,,
 "ap_died_to","$0 died to $1",,,,,,,,,,,,,
 "ap_died","$0 died",,,,,,,,,,,,,
-"ap_bad_times","BAD TIMES!!",,,,,,,,,,,,,
 "ap_kills_spawned_chest","$0 kills spawned a chest",,,,,,,,,,,,,
 "ap_menu_server_settings_name","Server Settings",,,,,,,,,,,,,
 "ap_menu_server_settings_desc","Archipelago server settings ",,,,,,,,,,,,,
@@ -34,3 +33,4 @@
 "ap_not_connected_notifier","Archipelago Error",,,,,,,,,,,,,
 "ap_connected_desc","Connected to Archipelago.",,,,,,,,,,,,,
 "ap_not_connected_desc","Archipelago Connection Failed, please check your mod settings and reboot your game.",,,,,,,,,,,,,
+"ap_connecting_desc","Connecting to Archipelago...",,,,,,,,,,,,,

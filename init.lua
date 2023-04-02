@@ -38,7 +38,7 @@ local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 -- Modules
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 local Cache = dofile("data/archipelago/scripts/caches.lua")
-
+local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
@@ -248,11 +248,9 @@ function RECV_MSG.Connected(msg)
 	--else
 	--	print("continued the game")
 	--end
-	APConnectedNotifier()
+	ConnIcon:setConnected()
 	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
-	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
-		APConnectedNotifier()
-	else
+	if GlobalsGetValue(LOAD_KEY, "0") ~= "1" then
 		Cache.ItemDelivery:reset()
 		--GlobalsSetValue(LOAD_KEY, "1")
 		ResetOrbID() -- todo: check that this actually matters anymore
@@ -443,6 +441,7 @@ function RECV_MSG.ConnectionRefused(msg)
 		msg_str = msg_str .. ": " .. table.concat(msg["errors"], ",")
 	end
 	Log.Error(msg_str)
+	ConnIcon:setDisconnected(msg_str)
 end
 
 
@@ -519,6 +518,7 @@ function InitSocket()
 
 	if not sock then
 		Log.Error("Failed to open socket")
+		ConnIcon:setDisconnected()
 		return
 	end
 
@@ -591,6 +591,7 @@ function InitializeArchipelagoThread()
 	if not sock then
 		InitSocket()
 		if not sock then
+			ConnIcon:setDisconnected()
 			Log.Error("Unable to establish Archipelago connection")
 		end
 	end
@@ -603,6 +604,8 @@ end
 -- Called every update frame in Noita
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
+	ConnIcon:update()
+
 	if sock ~= nil then
 		CheckNetworkMessages()
 		CheckGlobalsAndFlags()
@@ -644,6 +647,7 @@ end
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned
 function OnPlayerSpawned(player)
 	game_is_paused = false
+	ConnIcon:create()
+	ConnIcon:setConnecting()
 	InitializeArchipelagoThread()
-	APNotConnectedNotifier()
 end

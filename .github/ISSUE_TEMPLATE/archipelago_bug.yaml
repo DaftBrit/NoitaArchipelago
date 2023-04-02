@@ -1,0 +1,87 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: This form is used to file bug reports for the Noita world in Archipelago.
+  - type: checkboxes
+    id: preconditions
+    attributes:
+      label: Which of these are true?
+      options:
+        - label: The archipelago logo did not appear in the bottom right after starting a new game.
+        - label: I could not connect to the Archipelago server.
+        - label: I had other mods loaded with Archipelago (list all of them below).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe what happened and what was expected.
+    validations:
+      required: true
+  - type: textarea
+    id: logfile
+    attributes:
+      label: Upload your `logger.txt` file here.
+      description: You can find your `logger.txt` file in your Noita folder. You can drag and drop it over this field. Without this, it will likely take longer to address the issue.
+  - type: markdown
+    attributes:
+      value: Provide your Archipelago settings here.
+  - type: dropdown
+    id: setting-deathlink
+    attributes:
+      label: Death Link
+      options:
+        - "No"
+        - "Yes"
+  - type: dropdown
+    id: setting-traps
+    attributes:
+      label: Traps
+      options:
+        - "No"
+        - "Yes"
+  - type: dropdown
+    id: setting-victorycondition
+    attributes:
+      label: Victory Condition
+      options:
+        - Greed Ending
+        - Pure Ending
+        - Peaceful Ending
+  - type: dropdown
+    id: setting-pathoption
+    attributes:
+      label: Path Option
+      options:
+        - Main Path
+        - Side Path
+        - Main World
+  - type: input
+    id: setting-chests
+    attributes:
+      label: Hidden Chests per Biome
+  - type: input
+    id: setting-pedestals
+    attributes:
+      label: Pedestal Checks per Biome
+  - type: dropdown
+    id: setting-orbs
+    attributes:
+      label: Orbs as Location Checks
+      options:
+        - No Orbs
+        - Main Path
+        - Side Path
+        - Main World
+  - type: dropdown
+    id: setting-bosses
+    attributes:
+      label: Bosses as Location Checks
+      options:
+        - No Bosses
+        - Main Path
+        - Side Path
+        - All Bosses
