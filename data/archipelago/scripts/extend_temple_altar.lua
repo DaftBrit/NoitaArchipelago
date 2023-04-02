@@ -100,7 +100,7 @@ local function ap_extend_temple_altar()
 		-- This part would otherwise be a spell refresher
 
 		local location_id = AP.FIRST_SPELL_REFRESH_LOCATION_ID + get_shop_num(y) - 1
-    local is_not_obtained = Globals.MissingLocationsSet:has_key(location_id)
+    	local is_not_obtained = Globals.MissingLocationsSet:has_key(location_id)
 		if is_not_obtained then
 			-- biomeid of 0 = free
 			ShopItems.generate_ap_shop_item(location_id, 0, x+16, y+6)
