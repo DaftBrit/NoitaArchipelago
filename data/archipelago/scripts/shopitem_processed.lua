@@ -31,6 +31,7 @@ end -- get_cost_x_offset
 
 -- Called when the entity gets created
 function init(entity_id)
+	if EntityGetFirstComponent(entity_id, "ItemCostComponent", "shop_cost") ~= nil then return end
 	local data = get_transferred_values(entity_id)
 	if data.price <= 0 then return end
 
