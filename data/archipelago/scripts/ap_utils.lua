@@ -236,8 +236,8 @@ function create_our_item_entity(item, x, y)
   	elseif item.items ~= nil and #item.items > 0 then
     	-- our item is something else (random choice)
 		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
-		if item.gold_amount ~= 0 then
-			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+		local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+		if life_comp ~= nil then
 			EntityRemoveComponent(entity_id, life_comp)
 		end
 		return entity_id
