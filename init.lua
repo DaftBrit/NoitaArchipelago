@@ -89,6 +89,7 @@ local function CheckVictoryConditionFor(flag, msg)
 		Log.Info(msg)
 		SendCmd("StatusUpdate", {status = 30})
 		GameRemoveFlagRun(flag)
+		SendCmd("Say", { text = "!release"})
 	end
 end
 

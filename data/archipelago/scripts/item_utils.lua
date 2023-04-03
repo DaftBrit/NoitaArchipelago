@@ -67,10 +67,9 @@ function NGSpawnItems(item_list)
 		item_list[110001] = nil
 	end
 
-	-- spawn the wands in an array inside the cave
 	for item, quantity in pairs(item_list) do
-		print(item, quantity)
 		if item_table[item].wand ~= nil then
+			-- spawn the wands in an array inside the cave
 			for _ = 1, quantity do
 				local item_to_spawn = item_table[item].items[Random(1, #item_table[item].items)]
 				EntityLoad(item_to_spawn, wandx, wandy)
@@ -81,8 +80,14 @@ function NGSpawnItems(item_list)
 				end
 			end
 			item_list[item] = nil
-			-- give the player their perks
+		
+		elseif item == 110032 then
+			-- spawn the map perk on the ground, in case it really distracts you
+			perk_spawn(813, -90, item_table[item].perk)
+			item_list[item] = nil
+			
 		elseif item_table[item].perk ~= nil then
+			-- give the player their perks
 			for _ = 1, quantity do
 				give_perk(item_table[item].perk)
 			end

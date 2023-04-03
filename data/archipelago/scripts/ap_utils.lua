@@ -223,7 +223,7 @@ function create_ap_entity_from_flags(location, x, y)
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
 		 EntityAddComponent(item_entity, "LuaComponent", {
 			 _tags="archipelago",
-             script_item_picked_up="data/archipelago/scripts/ap_badtimes.lua",
+             script_item_picked_up="data/archipelago/scripts/items/ap_trap.lua",
              })
 	end
   	return item_entity, item_description
@@ -235,7 +235,12 @@ function create_our_item_entity(item, x, y)
     	return perk_spawn(x, y, item.perk, true)
   	elseif item.items ~= nil and #item.items > 0 then
     	-- our item is something else (random choice)
-    	return EntityLoad(item.items[Random(1, #item.items)], x, y)
+		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
+		local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+		if life_comp ~= nil then
+			EntityRemoveComponent(entity_id, life_comp)
+		end
+		return entity_id
   	else
     	Log.Error("Failed to load our own item!")
   	end
