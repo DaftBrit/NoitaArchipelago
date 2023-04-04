@@ -59,12 +59,12 @@ function NGSpawnItems(item_list)
 		item_count = item_count + v
 	end
 	-- check how many hearts are on the list, increase your health based on them, then remove them from the list
-	if item_list[110001] ~= nil then
+	if item_list[AP.HEART_ITEM_ID] ~= nil then
 		local cur_hp, max_hp = get_health()
-		cur_hp = cur_hp + item_list[110001]
-		max_hp = max_hp + item_list[110001]
+		cur_hp = cur_hp + item_list[AP.HEART_ITEM_ID]
+		max_hp = max_hp + item_list[AP.HEART_ITEM_ID]
 		set_health(cur_hp, max_hp)
-		item_list[110001] = nil
+		item_list[AP.HEART_ITEM_ID] = nil
 	end
 
 	for item, quantity in pairs(item_list) do
@@ -81,7 +81,7 @@ function NGSpawnItems(item_list)
 			end
 			item_list[item] = nil
 		
-		elseif item == 110032 then
+		elseif item == AP.MAP_PERK_ID then
 			-- spawn the map perk on the ground, in case it really distracts you
 			perk_spawn(813, -90, item_table[item].perk)
 			item_list[item] = nil
