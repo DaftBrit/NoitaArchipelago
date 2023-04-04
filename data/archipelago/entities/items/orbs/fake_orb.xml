@@ -1,0 +1,14 @@
+<Entity name="unknown" >
+    <ItemComponent
+        _tags="enabled_in_world"
+        is_pickable="1"
+        auto_pickup="1"
+        item_name="$item_goldnugget_10"
+        preferred_inventory="FULL"
+        enable_orb_hacks="1">
+    </ItemComponent>
+
+    <LuaComponent
+        script_source_file="data/archipelago/scripts/items/ap_item.lua" >
+    </LuaComponent>
+</Entity>

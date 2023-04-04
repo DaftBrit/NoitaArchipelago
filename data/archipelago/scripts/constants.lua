@@ -53,6 +53,7 @@ return {
 
 
 	HEART_ITEM_ID = 110001,
+	ORB_ITEM_ID = 110022,
 	MAP_PERK_ID = 110032,
 
 
