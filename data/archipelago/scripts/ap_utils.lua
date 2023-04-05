@@ -51,8 +51,7 @@ end
 function EntityLoadAtPlayer(filename, xoff, yoff)
 	for _, p in ipairs(get_players()) do
 		local x, y = EntityGetTransform(p)
-		local entity_id = EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
-		return entity_id
+		return EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
 	end
 end
 
