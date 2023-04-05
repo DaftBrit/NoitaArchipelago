@@ -127,6 +127,7 @@ local function GetItemName(player_id, item_id, flags)
 	local item_name = Cache.ItemNames:get(item_id)
 	if item_name == nil then
 		error("item_name is nil")
+		item_name = "problem with LocationScouts"
 	end
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
@@ -211,7 +212,10 @@ end
 
 local function SetupDataPackage()
 	if Cache.ItemNames:is_empty() or Cache.LocationNames:is_empty() then
-		SendCmd("GetDataPackage", { games = Games })
+		-- if you do too many games at once Noita refuses to process it because it hates you
+		for _, game_name in pairs(Games) do
+			SendCmd("GetDataPackage", { games = {game_name} })
+		end
 	else
 		Log.Info("Restored DataPackage from cache")
 		SetupLocationScouts()
