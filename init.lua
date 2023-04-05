@@ -292,6 +292,7 @@ function RECV_MSG.ReceivedItems(msg)
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
 		-- we're in sync or we're continuing the game and receiving items in async
 		local recv_index = msg["index"]
+		local orb_count = 0
 		for _, item in pairs(msg["items"]) do
 			local item_id = item["item"]
 			local sender = item["player"]
@@ -312,8 +313,11 @@ function RECV_MSG.ReceivedItems(msg)
 				if index ~= recv_index then
 					SendCmd("Sync")
 				end
+			elseif item_id == AP.ORB_ITEM_ID then
+				orb_count = orb_count + 1
 			end
 		end
+		GivePlayerOrbsOnSpawn(orb_count)
 	else
 		-- we're starting a new game
 		local ng_items = {}
@@ -340,7 +344,6 @@ function RECV_MSG.ReceivedItems(msg)
 			-- player found their own item as their first item
 		elseif table_length == 1 then
 			-- first received item was sent by another player
-			print("if an error is happening it's probably here in the received items script")
 			for item, _ in ng_items do
 				if GameHasFlagRun("ap_spawn_kill_saver") and item_table[item].redeliverable == true then
 					SpawnItem(item, false)
@@ -640,7 +643,6 @@ function OnPlayerDied(player)
         }
     })
 end
-
 
 
 -- Called when the player spawns

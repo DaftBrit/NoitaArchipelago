@@ -28,7 +28,7 @@ end
 
 function add_items_to_inventory(items)
 	local player = get_players()[1]
-	for _2, path in ipairs(items) do
+	for _, path in ipairs(items) do
 		local item = EntityLoad(path)
 		if item then
 			GamePickUpInventoryItem(player, item)
@@ -41,7 +41,7 @@ end
 
 -- Uses the player's position to initialize the random seed
 function SeedRandom()
-	for i, p in ipairs(get_players()) do
+	for _, p in ipairs(get_players()) do
 		local x, y = EntityGetTransform(p)
 		SetRandomSeed(x, y)
 	end
@@ -49,9 +49,9 @@ end
 
 
 function EntityLoadAtPlayer(filename, xoff, yoff)
-	for i, p in ipairs(get_players()) do
+	for _, p in ipairs(get_players()) do
 		local x, y = EntityGetTransform(p)
-		EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
+		return EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
 	end
 end
 
@@ -137,6 +137,12 @@ function set_health(cur_hp, max_hp)
 		ComponentSetValue(damagemodel, "max_hp", max_hp)
 		ComponentSetValue(damagemodel, "hp", cur_hp)
 	end
+end
+
+
+function add_cur_and_max_health(health_increase)
+	local cur_hp, max_hp = get_health()
+	set_health(cur_hp + health_increase, max_hp + health_increase)
 end
 
 

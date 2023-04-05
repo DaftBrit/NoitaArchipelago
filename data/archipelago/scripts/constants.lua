@@ -52,6 +52,11 @@ return {
 	LAST_PED_LOCATION_ID = 112799,
 
 
+	HEART_ITEM_ID = 110001,
+	ORB_ITEM_ID = 110022,
+	MAP_PERK_ID = 110032,
+
+
 	-- Item flag constants.
 	-- See https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#networkitem
 	ITEM_FLAG_PROGRESSION = 1,
