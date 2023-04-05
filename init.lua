@@ -381,7 +381,7 @@ function RECV_MSG.DataPackage(msg)
 end
 
 
-function ParseJSONPart(part)
+local function ParseJSONPart(part)
 	local result = ""
 	if part["type"] == "player_id" then
 		result = player_slot_to_name[tonumber(part["text"])]
@@ -404,6 +404,17 @@ function ParseJSONPart(part)
 	return result
 end
 
+
+-- Builds the JSON message
+local function ParseJSONParts(data)
+	local msg_strs = {}
+	for _, part in ipairs(data) do
+		table.insert(msg_strs, ParseJSONPart(part))
+	end
+	return table.concat(msg_strs)
+end
+
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
 function RECV_MSG.PrintJSON(msg)
 	if msg["type"] == "ItemSend" then
@@ -411,11 +422,7 @@ function RECV_MSG.PrintJSON(msg)
 		local source_player_id = msg["item"]["player"]
 		local item_id = msg["item"]["item"]
 
-		-- Build the message
-		local msg_str = ""
-		for _, part in ipairs(msg["data"]) do
-			msg_str = msg_str .. ParseJSONPart(part)
-		end
+		local msg_str = ParseJSONParts(msg["data"])
 
 		local is_destination_player = destination_player_id == current_player_slot
 		local is_source_player = source_player_id == current_player_slot
@@ -428,6 +435,10 @@ function RECV_MSG.PrintJSON(msg)
 		end
 	else
 		Log.Warn("Unsupported PrintJSON type " .. msg["type"])
+		if msg["data"] ~= nil then
+			local msg_str = ParseJSONParts(msg["data"])
+			GamePrint(msg_str)
+		end
 	end
 end
 
