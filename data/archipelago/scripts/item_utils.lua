@@ -70,9 +70,7 @@ function NGSpawnItems(item_counts)
 	if item_counts[AP.HEART_ITEM_ID] ~= nil or item_counts[AP.ORB_ITEM_ID] ~= nil then
 		local heart_amt = item_counts[AP.HEART_ITEM_ID] or 0
 		local orb_amt = item_counts[AP.ORB_ITEM_ID] or 0
-		if orb_amt > 0 then
-			GivePlayerOrbsOnSpawn(orb_amt)
-		end
+		GivePlayerOrbsOnSpawn(orb_amt)
 		add_cur_and_max_health(heart_amt + orb_amt)
 		item_counts[AP.HEART_ITEM_ID] = nil
 		item_counts[AP.ORB_ITEM_ID] = nil
