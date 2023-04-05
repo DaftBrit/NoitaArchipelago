@@ -11,6 +11,11 @@ local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local ShopItems = {}
 
 
+local function encodeXML(str)
+	return str:gsub("\"", "&quot;")
+end
+
+
 -- Uses vanilla wand price calculation, copied from the actual shop code.
 -- cheap_item is true if it's an on-sale item
 -- If the biomeid is 0, the item is free
@@ -117,12 +122,12 @@ function ShopItems.generate_ap_shop_item(location_id, biomeid, x, y, cheap_item)
   EntityAddComponent(entity_id, "VariableStorageComponent", {
     _tags="archipelago,enabled_in_world",
     name="ap_shop_data",
-    value_string=JSON:encode({
+    value_string=encodeXML(JSON:encode({
       location_id = location_id,
       price = price,
       sale = cheap_item,
       is_ap_item = is_foreign_item,
-    })
+    }))
   })
 
   EntityAddComponent(entity_id, "LuaComponent", {

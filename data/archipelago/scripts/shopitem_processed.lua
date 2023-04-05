@@ -4,10 +4,15 @@ local JSON = dofile("data/archipelago/lib/json.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 
 
+local function decodeXML(str)
+	return str:gsub("&quot;", "\"")
+end
+
+
 local function get_transferred_values(entity_id)
 	local component = get_variable_storage_component(entity_id, "ap_shop_data")
 	local data_str = ComponentGetValue2(component, "value_string")
-	return JSON:decode(data_str)
+	return JSON:decode(decodeXML(data_str))
 end
 
 

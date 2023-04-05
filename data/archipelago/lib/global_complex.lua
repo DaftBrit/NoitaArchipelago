@@ -3,16 +3,27 @@ local JSON = dofile("data/archipelago/lib/json.lua")
 
 local GlobalComplex = Global:extend()
 
+local function encodeXML(str)
+	return str:gsub("\"", "&quot;")
+end
+
+local function decodeXML(str)
+	return str:gsub("&quot;", "\"")
+end
+
 function GlobalComplex:new(key_name)
 	GlobalComplex.super.new(self, key_name)
 end
 
 function GlobalComplex:get_table(default_value)
-	return JSON:decode(self:get(JSON:encode(default_value or {})))
+	local default_value_str = JSON:encode(default_value or {})
+	local ret_val_str = self:get(default_value_str)
+	return JSON:decode(decodeXML(ret_val_str))
 end
 
 function GlobalComplex:set_table(value)
-	self:set(JSON:encode(value))
+	local tbl_str = encodeXML(JSON:encode(value))
+	self:set(tbl_str)
 end
 
 function GlobalComplex:append(value)
