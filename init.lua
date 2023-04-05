@@ -344,7 +344,6 @@ function RECV_MSG.ReceivedItems(msg)
 			-- player found their own item as their first item
 		elseif table_length == 1 then
 			-- first received item was sent by another player
-			print("if an error is happening it's probably here in the received items script")
 			for item, _ in ng_items do
 				if GameHasFlagRun("ap_spawn_kill_saver") and item_table[item].redeliverable == true then
 					SpawnItem(item, false)

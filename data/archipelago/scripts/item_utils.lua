@@ -65,11 +65,8 @@ function NGSpawnItems(item_counts)
 	local itemy = -90
 	local wandx = 600
 	local wandy = -120
-	--local item_count = 0
-	--for _, v in pairs(item_counts) do
-	--	item_count = item_count + v
-	--end
-	-- check how many hearts are on the list, increase your health based on them, then remove them from the list
+	-- check how many hearts and orbs are on the list, increase your health, then remove them from the list
+	-- note that health increases are in increments of 25
 	if item_counts[AP.HEART_ITEM_ID] ~= nil or item_counts[AP.ORB_ITEM_ID] ~= nil then
 		local heart_amt = item_counts[AP.HEART_ITEM_ID] or 0
 		local orb_amt = item_counts[AP.ORB_ITEM_ID] or 0
