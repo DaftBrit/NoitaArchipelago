@@ -20,6 +20,17 @@ function ResetOrbID()
 end
 
 
+function GivePlayerOrbsOnSpawn(orb_count)
+	local fake_orb_entity = EntityLoadAtPlayer("data/archipelago/entities/items/orbs/fake_orb.xml")
+	if orb_count > 0 and fake_orb_entity ~= nil then
+		for i = 1, orb_count do
+			EntityAddComponent2(fake_orb_entity, "OrbComponent", {orb_id = i + 20})
+		end
+		GameAddFlagRun("orb_check")
+	end
+end
+
+
 function SpawnItem(item_id, traps)
 	Log.Info("item spawning shortly")
 	local item = item_table[item_id]
@@ -49,25 +60,28 @@ function SpawnItem(item_id, traps)
 end
 
 
-function NGSpawnItems(item_list)
+function NGSpawnItems(item_counts)
 	local itemx = 595
 	local itemy = -90
 	local wandx = 600
 	local wandy = -120
-	local item_count = 0
-	for _, v in pairs(item_list) do
-		item_count = item_count + v
-	end
+	--local item_count = 0
+	--for _, v in pairs(item_counts) do
+	--	item_count = item_count + v
+	--end
 	-- check how many hearts are on the list, increase your health based on them, then remove them from the list
-	if item_list[AP.HEART_ITEM_ID] ~= nil then
-		local cur_hp, max_hp = get_health()
-		cur_hp = cur_hp + item_list[AP.HEART_ITEM_ID]
-		max_hp = max_hp + item_list[AP.HEART_ITEM_ID]
-		set_health(cur_hp, max_hp)
-		item_list[AP.HEART_ITEM_ID] = nil
+	if item_counts[AP.HEART_ITEM_ID] ~= nil or item_counts[AP.ORB_ITEM_ID] ~= nil then
+		local heart_amt = item_counts[AP.HEART_ITEM_ID] or 0
+		local orb_amt = item_counts[AP.ORB_ITEM_ID] or 0
+		if orb_amt > 0 then
+			GivePlayerOrbsOnSpawn(orb_amt)
+		end
+		add_cur_and_max_health(heart_amt + orb_amt)
+		item_counts[AP.HEART_ITEM_ID] = nil
+		item_counts[AP.ORB_ITEM_ID] = nil
 	end
 
-	for item, quantity in pairs(item_list) do
+	for item, quantity in pairs(item_counts) do
 		if item_table[item].wand ~= nil then
 			-- spawn the wands in an array inside the cave
 			for _ = 1, quantity do
@@ -79,12 +93,12 @@ function NGSpawnItems(item_list)
 					wandy = wandy -10
 				end
 			end
-			item_list[item] = nil
+			item_counts[item] = nil
 		
 		elseif item == AP.MAP_PERK_ID then
 			-- spawn the map perk on the ground, in case it really distracts you
 			perk_spawn(813, -90, item_table[item].perk)
-			item_list[item] = nil
+			item_counts[item] = nil
 			
 		elseif item_table[item].perk ~= nil then
 			-- give the player their perks
@@ -96,7 +110,6 @@ function NGSpawnItems(item_list)
 			-- spawn the rest of the items on the cave floor
 			for _ = 1, quantity do
 				if #item_table[item].items > 0 then
-					print("spawning" .. item .. "at" .. itemx .. itemy)
 					local item_to_spawn = item_table[item].items[Random(1, #item_table[item].items)]
 					EntityLoad(item_to_spawn, itemx, itemy)
 					itemx = itemx + 15
@@ -110,7 +123,7 @@ function NGSpawnItems(item_list)
 					end
 				end
 			end
-			item_list[item] = nil
+			item_counts[item] = nil
 		end
 	end
 end

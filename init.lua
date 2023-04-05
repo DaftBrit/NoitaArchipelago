@@ -645,16 +645,6 @@ function OnPlayerDied(player)
     })
 end
 
-function GivePlayerOrbsOnSpawn(orb_count)
-	local fake_orb_entity = EntityLoadAtPlayer("data/archipelago/entities/items/orbs/fake_orb.xml")
-	if orb_count > 0 and fake_orb_entity ~= nil then
-		for i = 1, orb_count do
-			print("adding orb component with value" .. i + 20)
-			EntityAddComponent2(fake_orb_entity, "OrbComponent", {orb_id = tostring(i + 20)})
-		end
-		GameAddFlagRun("orb_check")
-	end
-end
 
 -- Called when the player spawns
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned
