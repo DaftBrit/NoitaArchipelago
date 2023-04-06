@@ -216,6 +216,7 @@ local function SetupDataPackage()
 		for _, game_name in pairs(Games) do
 			SendCmd("GetDataPackage", { games = {game_name} })
 		end
+		--SendCmd("GetDataPackage", { games = {Games} })
 	else
 		Log.Info("Restored DataPackage from cache")
 		SetupLocationScouts()
@@ -535,7 +536,7 @@ function InitSocket()
 		name = player_name,
 		uuid = "NoitaClient",
 		tags = { "AP", "WebHost" },
-		version = { major = 0, minor = 3, build = 4, class = "Version" },
+		version = { major = 0, minor = 4, build = 0, class = "Version" },
 		items_handling = 7
 	})
 end
