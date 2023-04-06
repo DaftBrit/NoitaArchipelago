@@ -17,7 +17,7 @@ dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
 ModMaterialsFileAdd("data/archipelago/materials.xml")
 
 --LIBS
-local pollnet = dofile("data/archipelago/lib/pollnet/init.lua")
+local pollnet = dofile("data/archipelago/lib/pollnet/pollnet.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua")
 
 local JSON = dofile("data/archipelago/lib/json.lua")
