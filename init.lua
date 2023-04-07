@@ -212,11 +212,7 @@ end
 
 local function SetupDataPackage()
 	if Cache.ItemNames:is_empty() or Cache.LocationNames:is_empty() then
-		-- if you do too many games at once Noita refuses to process it because it hates you
-		for _, game_name in pairs(Games) do
-			SendCmd("GetDataPackage", { games = {game_name} })
-		end
-		--SendCmd("GetDataPackage", { games = {Games} })
+		SendCmd("GetDataPackage", { games = Games })
 	else
 		Log.Info("Restored DataPackage from cache")
 		SetupLocationScouts()
@@ -522,7 +518,7 @@ function InitSocket()
 	local url = "ws://" .. host .. ":" .. port
 	Log.Info("Connecting to " .. url .. "...")
 
-	sock = pollnet.open_ws(url)
+	sock = pollnet.open_ws(url, 1048576)
 
 	if not sock then
 		Log.Error("Failed to open socket")
