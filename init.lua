@@ -127,6 +127,7 @@ local function GetItemName(player_id, item_id, flags)
 	local item_name = Cache.ItemNames:get(item_id)
 	if item_name == nil then
 		error("item_name is nil")
+		item_name = "problem with LocationScouts"
 	end
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
@@ -276,8 +277,13 @@ function RECV_MSG.Connected(msg)
 		player_slot_to_name[plr["slot"]] = plr["name"]
 	end
 
-	for key, val in pairs(msg["slot_info"]) do
-		table.insert(Games, val["game"])
+	local game_set = {}
+	for _, slot in pairs(msg["slot_info"]) do
+		game_set[slot["game"]] = true
+	end
+
+	for game, _ in pairs (game_set) do
+		table.insert(Games, game)
 	end
 
 	-- Request DataPackage
@@ -528,7 +534,7 @@ function InitSocket()
 	local url = "ws://" .. host .. ":" .. port
 	Log.Info("Connecting to " .. url .. "...")
 
-	sock = pollnet.open_ws(url)
+	sock = pollnet.open_ws(url, 10 * 1024 * 1024)
 
 	if not sock then
 		Log.Error("Failed to open socket")
@@ -542,7 +548,7 @@ function InitSocket()
 		name = player_name,
 		uuid = "NoitaClient",
 		tags = { "AP", "WebHost" },
-		version = { major = 0, minor = 3, build = 4, class = "Version" },
+		version = { major = 0, minor = 4, build = 0, class = "Version" },
 		items_handling = 7
 	})
 end
