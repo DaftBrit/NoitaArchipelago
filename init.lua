@@ -448,11 +448,6 @@ function RECV_MSG.PrintJSON(msg)
 	end
 end
 
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Print
-function RECV_MSG.Print(msg)
-	GamePrint(msg["text"])
-end
-
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#ConnectionRefused
 function RECV_MSG.ConnectionRefused(msg)
