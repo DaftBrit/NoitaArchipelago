@@ -523,7 +523,7 @@ function InitSocket()
 	local url = "ws://" .. host .. ":" .. port
 	Log.Info("Connecting to " .. url .. "...")
 
-	sock = pollnet.open_ws(url, 1048576)
+	sock = pollnet.open_ws(url, 10 * 1024 * 1024)
 
 	if not sock then
 		Log.Error("Failed to open socket")
