@@ -214,6 +214,7 @@ function create_ap_entity_from_flags(location, x, y)
   	local item_description = "$ap_shopdescription_junk"
 	if flags == nil then
 		print("flags == nil")
+		item_description = "problem with item in create_ap_entity_from_flags"
 	elseif bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
 	    item_filename = "ap_useful_shopitem.xml"
 	    item_description = "$ap_shopdescription_useful"
@@ -248,7 +249,7 @@ function create_our_item_entity(item, x, y)
 		end
 		return entity_id
   	else
-    	Log.Error("Failed to load our own item!")
+    	Log.Error("Failed to load our own item at x = " .. x .. ", y = " .. y)
   	end
 end
 
@@ -256,7 +257,7 @@ end
 -- Spawns in an AP item (our own entity to represent items that don't exist in this game)
 function create_foreign_item_entity(location, x, y)
   local entity_id, description = create_ap_entity_from_flags(location, x, y)
-  local name = location.item_name
+  local name = location.item_name or "problem in create_foreign_item_entity"
 
   -- Change item name
   change_entity_ingame_name(entity_id, name, description)
