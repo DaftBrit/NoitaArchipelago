@@ -323,7 +323,9 @@ function RECV_MSG.ReceivedItems(msg)
 				orb_count = orb_count + 1
 			end
 		end
-		GivePlayerOrbsOnSpawn(orb_count)
+		if recv_index == 0 then
+			GivePlayerOrbsOnSpawn(orb_count)
+		end
 	else
 		-- we're starting a new game
 		local ng_items = {}
