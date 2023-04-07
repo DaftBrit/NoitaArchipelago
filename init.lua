@@ -277,8 +277,13 @@ function RECV_MSG.Connected(msg)
 		player_slot_to_name[plr["slot"]] = plr["name"]
 	end
 
-	for key, val in pairs(msg["slot_info"]) do
-		table.insert(Games, val["game"])
+	local game_set = {}
+	for _, slot in pairs(msg["slot_info"]) do
+		game_set[slot["game"]] = true
+	end
+
+	for game, _ in pairs (game_set) do
+		table.insert(Games, game)
 	end
 
 	-- Request DataPackage
