@@ -63,7 +63,7 @@ local index = -1
 
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
-	local conn_tags = { "AP", "WebHost" }
+	local conn_tags = { "AP" }
 	if enabled ~= 0 and enabled ~= nil then
 		table.insert(conn_tags, "DeathLink")
 	end
@@ -547,7 +547,7 @@ function InitSocket()
 		game = "Noita",
 		name = player_name,
 		uuid = "NoitaClient",
-		tags = { "AP", "WebHost" },
+		tags = { "AP" },
 		version = { major = 0, minor = 4, build = 0, class = "Version" },
 		items_handling = 7
 	})
