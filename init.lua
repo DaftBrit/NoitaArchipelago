@@ -360,9 +360,7 @@ function RECV_MSG.RoomInfo(msg)
 	local checksum_info = msg["datapackage_checksums"]
 	local game_list = {}
 	for game, checksum in pairs(checksum_info) do
-		if Cache.ChecksumVersions:get(game) == checksum then
-			-- checksum for this game is the same as the cached version
-		else
+		if Cache.ChecksumVersions:get(game) ~= checksum then
 			table.insert(game_list, game)
 		end
 	end
