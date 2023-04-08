@@ -1,4 +1,4 @@
--- Copyright (c) 2022 DaftBrit
+-- Copyright (c) 2022 Heinermann, Scipio Wright, DaftBrit
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -9,8 +9,6 @@
 -- noita-ws-api (for reference and initial websocket setup) probable-basilisk/noita-ws-api
 -- cheatgui (for reference) probable-basilisk/cheatgui
 
--- TODO: We need to make sure we sync items per
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
@@ -52,10 +50,6 @@ local sock = nil
 local game_is_paused = true
 local index = -1
 
--- Locations:
--- 110000-110499 Chests
--- 111000-111034 Holy mountain shops (5 each)
--- 111035-111038 Secret shop below the hourglass room by the Hiisi Base
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
@@ -89,7 +83,9 @@ local function CheckVictoryConditionFor(flag, msg)
 		Log.Info(msg)
 		SendCmd("StatusUpdate", {status = 30})
 		GameRemoveFlagRun(flag)
-		SendCmd("Say", { text = "!release"})
+		if ModSettingGet("archipelago.auto_release") == true then
+			SendCmd("Say", { text = "!release"})
+		end
 	end
 end
 
@@ -177,8 +173,8 @@ local function ShareLocationScouts()
 end
 
 -- Request items we need to display (i.e. shops)
-local function SetupLocationScouts()
-	if Cache.LocationInfo:is_empty() then
+local function SetupLocationScouts(new_checksum)
+	if Cache.LocationInfo:is_empty() or new_checksum then
 		local locations = {}
 		for i = AP.FIRST_ITEM_LOCATION_ID, AP.LAST_ITEM_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
@@ -206,16 +202,6 @@ local function SetupLocationScouts()
 	else
 		Log.Info("Restored LocationInfo from cache")
 		ShareLocationScouts()
-	end
-end
-
-
-local function SetupDataPackage()
-	if Cache.ItemNames:is_empty() or Cache.LocationNames:is_empty() then
-		SendCmd("GetDataPackage", { games = Games })
-	else
-		Log.Info("Restored DataPackage from cache")
-		SetupLocationScouts()
 	end
 end
 
@@ -286,8 +272,7 @@ function RECV_MSG.Connected(msg)
 		table.insert(Games, game)
 	end
 
-	-- Request DataPackage
-	SetupDataPackage()
+	SetupLocationScouts(false)
 
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
@@ -323,7 +308,9 @@ function RECV_MSG.ReceivedItems(msg)
 				orb_count = orb_count + 1
 			end
 		end
-		GivePlayerOrbsOnSpawn(orb_count)
+		if recv_index == 0 then
+			GivePlayerOrbsOnSpawn(orb_count)
+		end
 	else
 		-- we're starting a new game
 		local ng_items = {}
@@ -365,25 +352,43 @@ function RECV_MSG.ReceivedItems(msg)
 end
 
 
+function RECV_MSG.RoomInfo(msg)
+	local checksum_info = msg["datapackage_checksums"]
+	local game_list = {}
+	for game, checksum in pairs(checksum_info) do
+		if Cache.ChecksumVersions:get(game) ~= checksum then
+			table.insert(game_list, game)
+		end
+	end
+	if #game_list ~= 0 then
+		SendCmd("GetDataPackage", {games = game_list})
+	end
+end
+
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
 function RECV_MSG.DataPackage(msg)
 	local item_names = Cache.ItemNames:reference()
 	local location_names = Cache.LocationNames:reference()
+	local checksums = Cache.ChecksumVersions:reference()
 
-	for _, game in pairs(msg["data"]["games"]) do
-		for item_name, item_id in pairs(game["item_name_to_id"]) do
+	for game, data in pairs(msg["data"]["games"]) do
+		for item_name, item_id in pairs(data["item_name_to_id"]) do
 			-- Some games like Hollow Knight use underscores for whatever reason
 			item_names[item_id] = string.gsub(item_name, "_", " ")
 		end
 
-		for location_name, location_id in pairs(game["location_name_to_id"]) do
+		for location_name, location_id in pairs(data["location_name_to_id"]) do
 			location_names[location_id] = string.gsub(location_name, "_", " ")
 		end
+
+		checksums[game] = data["checksum"]
 	end
 
 	Cache.ItemNames:write()
 	Cache.LocationNames:write()
-	SetupLocationScouts()
+	Cache.ChecksumVersions:write()
+	SetupLocationScouts(true)
 end
 
 
