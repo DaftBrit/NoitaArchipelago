@@ -1,4 +1,4 @@
--- Copyright (c) 2022 DaftBrit
+-- Copyright (c) 2023 Heinermann, Scipio Wright, DaftBrit
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -9,8 +9,6 @@
 -- noita-ws-api (for reference and initial websocket setup) probable-basilisk/noita-ws-api
 -- cheatgui (for reference) probable-basilisk/cheatgui
 
--- TODO: We need to make sure we sync items per
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
@@ -210,16 +208,6 @@ local function SetupLocationScouts()
 end
 
 
-local function SetupDataPackage()
-	if Cache.ItemNames:is_empty() or Cache.LocationNames:is_empty() then
-		SendCmd("GetDataPackage", { games = Games })
-	else
-		Log.Info("Restored DataPackage from cache")
-		SetupLocationScouts()
-	end
-end
-
-
 ----------------------------------------------------------------------------------------------------
 -- SPECIFIC MESSAGE HANDLING
 ----------------------------------------------------------------------------------------------------
@@ -286,8 +274,7 @@ function RECV_MSG.Connected(msg)
 		table.insert(Games, game)
 	end
 
-	-- Request DataPackage
-	SetupDataPackage()
+	SetupLocationScouts()
 
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
@@ -367,24 +354,44 @@ function RECV_MSG.ReceivedItems(msg)
 end
 
 
+function RECV_MSG.RoomInfo(msg)
+	local checksum_info = msg["datapackage_checksums"]
+	local game_list = {}
+	for game, checksum in pairs(checksum_info) do
+		if Cache.ChecksumVersions:get(game) == checksum then
+			-- checksum for this game is the same as the cached version
+		else
+			table.insert(game_list, game)
+		end
+	end
+	if #game_list ~= 0 then
+		SendCmd("GetDataPackage", {games = game_list})
+	end
+end
+
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
 function RECV_MSG.DataPackage(msg)
 	local item_names = Cache.ItemNames:reference()
 	local location_names = Cache.LocationNames:reference()
+	local checksums = Cache.ChecksumVersions:reference()
 
-	for _, game in pairs(msg["data"]["games"]) do
-		for item_name, item_id in pairs(game["item_name_to_id"]) do
+	for game, data in pairs(msg["data"]["games"]) do
+		for item_name, item_id in pairs(data["item_name_to_id"]) do
 			-- Some games like Hollow Knight use underscores for whatever reason
 			item_names[item_id] = string.gsub(item_name, "_", " ")
 		end
 
-		for location_name, location_id in pairs(game["location_name_to_id"]) do
+		for location_name, location_id in pairs(data["location_name_to_id"]) do
 			location_names[location_id] = string.gsub(location_name, "_", " ")
 		end
+
+		checksums[game] = data["checksum"]
 	end
 
 	Cache.ItemNames:write()
 	Cache.LocationNames:write()
+	Cache.ChecksumVersions:write()
 	SetupLocationScouts()
 end
 
