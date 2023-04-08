@@ -49,6 +49,7 @@ local current_player_slot = -1
 local sock = nil
 local game_is_paused = true
 local index = -1
+local checksums_good = nil
 
 -- Locations:
 -- 110000-110499 Chests
@@ -274,7 +275,7 @@ function RECV_MSG.Connected(msg)
 		table.insert(Games, game)
 	end
 
-	if GameHasFlagRun("checksums_good") then
+	if checksums_good then
 		SetupLocationScouts()
 	end
 
@@ -367,7 +368,7 @@ function RECV_MSG.RoomInfo(msg)
 	if #game_list ~= 0 then
 		SendCmd("GetDataPackage", {games = game_list})
 	else
-		GameAddFlagRun("checksums_good")
+		checksums_good = true
 	end
 end
 
