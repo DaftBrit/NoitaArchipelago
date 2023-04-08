@@ -49,12 +49,7 @@ local current_player_slot = -1
 local sock = nil
 local game_is_paused = true
 local index = -1
-local checksums_good = nil
 
--- Locations:
--- 110000-110499 Chests
--- 111000-111034 Holy mountain shops (5 each)
--- 111035-111038 Secret shop below the hourglass room by the Hiisi Base
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
@@ -176,8 +171,8 @@ local function ShareLocationScouts()
 end
 
 -- Request items we need to display (i.e. shops)
-local function SetupLocationScouts()
-	if Cache.LocationInfo:is_empty() then
+local function SetupLocationScouts(new_checksum)
+	if Cache.LocationInfo:is_empty() or new_checksum then
 		local locations = {}
 		for i = AP.FIRST_ITEM_LOCATION_ID, AP.LAST_ITEM_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
@@ -275,9 +270,7 @@ function RECV_MSG.Connected(msg)
 		table.insert(Games, game)
 	end
 
-	if checksums_good then
-		SetupLocationScouts()
-	end
+	SetupLocationScouts(false)
 
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
@@ -367,8 +360,6 @@ function RECV_MSG.RoomInfo(msg)
 	end
 	if #game_list ~= 0 then
 		SendCmd("GetDataPackage", {games = game_list})
-	else
-		checksums_good = true
 	end
 end
 
@@ -395,7 +386,7 @@ function RECV_MSG.DataPackage(msg)
 	Cache.ItemNames:write()
 	Cache.LocationNames:write()
 	Cache.ChecksumVersions:write()
-	SetupLocationScouts()
+	SetupLocationScouts(true)
 end
 
 
