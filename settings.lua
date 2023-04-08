@@ -68,6 +68,13 @@ mod_settings =
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
+				id = "auto_release",
+				ui_name = "Auto-Release",
+				ui_description = "Automatically release items when you complete your goal?",
+				value_default = false,
+				scope = MOD_SETTING_SCOPE_NEW_GAME,
+			},
+			{
 				id = "debug_items",
 				ui_name = "Debug Items",
 				ui_description = "Makes debug items and perks spawn when starting a new run.",

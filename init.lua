@@ -83,7 +83,9 @@ local function CheckVictoryConditionFor(flag, msg)
 		Log.Info(msg)
 		SendCmd("StatusUpdate", {status = 30})
 		GameRemoveFlagRun(flag)
-		SendCmd("Say", { text = "!release"})
+		if ModSettingGet("archipelago.auto_release") == true then
+			SendCmd("Say", { text = "!release"})
+		end
 	end
 end
 
