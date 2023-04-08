@@ -1,4 +1,4 @@
--- Copyright (c) 2023 Heinermann, Scipio Wright, DaftBrit
+-- Copyright (c) 2022 Heinermann, Scipio Wright, DaftBrit
 --
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
@@ -274,7 +274,9 @@ function RECV_MSG.Connected(msg)
 		table.insert(Games, game)
 	end
 
-	SetupLocationScouts()
+	if GameHasFlagRun("checksums_good") then
+		SetupLocationScouts()
+	end
 
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
@@ -366,6 +368,8 @@ function RECV_MSG.RoomInfo(msg)
 	end
 	if #game_list ~= 0 then
 		SendCmd("GetDataPackage", {games = game_list})
+	else
+		GameAddFlagRun("checksums_good")
 	end
 end
 
