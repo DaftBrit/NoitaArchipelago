@@ -70,7 +70,7 @@ mod_settings =
 			{
 				id = "auto_release",
 				ui_name = "Auto-Release",
-				ui_description = "Automatically release items when you complete your goal?",
+				ui_description = "Automatically releases items when you complete your goal.",
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
