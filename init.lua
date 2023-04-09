@@ -224,10 +224,10 @@ function RECV_MSG.RoomInfo(msg)
 
 	local checksum_info = msg["datapackage_checksums"]
 	for game, checksum in pairs(checksum_info) do
-		--if Cache.ChecksumVersions:get(game) ~= checksum then
-		--	table.insert(game_list, game)
-		--end
-		table.insert(game_list, game)
+		if Cache.ChecksumVersions:get(game) ~= checksum then
+			table.insert(game_list, game)
+		end
+		--table.insert(game_list, game)
 	end
 
 	new_checksums = (#game_list ~= 0)
@@ -501,7 +501,6 @@ end
 -- This is the reply to the LocationScouts request
 function RECV_MSG.LocationInfo(msg)
 	local cache = Cache.LocationInfo:reference()
-
 	-- Set global shop item names to share with the shop lua context
 	for _, net_item in ipairs(msg["locations"]) do
 		local item_id = net_item.item
@@ -514,6 +513,7 @@ function RECV_MSG.LocationInfo(msg)
 			is_our_item = net_item.player == current_player_slot
 		}
 	end
+	-- todo: figure out why this breaks if the checksum changes while you have location_scouts_info already
 	Cache.LocationInfo:write()
 	ShareLocationScouts()
 end
