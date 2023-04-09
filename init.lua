@@ -224,9 +224,10 @@ function RECV_MSG.RoomInfo(msg)
 
 	local checksum_info = msg["datapackage_checksums"]
 	for game, checksum in pairs(checksum_info) do
-		if Cache.ChecksumVersions:get(game) ~= checksum then
-			table.insert(game_list, game)
-		end
+		--if Cache.ChecksumVersions:get(game) ~= checksum then
+		--	table.insert(game_list, game)
+		--end
+		table.insert(game_list, game)
 	end
 
 	new_checksums = (#game_list ~= 0)
