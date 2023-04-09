@@ -43,12 +43,15 @@ local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
 local slot_options = nil
 
 local last_death_time = 0
-local Games = {}
+local game_list = {}
 local player_slot_to_name = {}
 local current_player_slot = -1
 local sock = nil
 local game_is_paused = true
 local index = -1
+local player_name = ""
+local password = ""
+local new_checksums = false
 
 
 ----------------------------------------------------------------------------------------------------
@@ -215,6 +218,29 @@ local RECV_MSG = {}
 
 local LOAD_KEY = "AP_FIRST_LOAD_DONE"
 
+
+function RECV_MSG.RoomInfo(msg)
+	Globals.Seed:set(msg["seed_name"])
+
+	local checksum_info = msg["datapackage_checksums"]
+	for game, checksum in pairs(checksum_info) do
+		if Cache.ChecksumVersions:get(game) ~= checksum then
+			table.insert(game_list, game)
+		end
+	end
+
+	SendCmd("Connect", {
+		password = password,
+		game = "Noita",
+		name = player_name,
+		uuid = "NoitaClient",
+		tags = { "AP" },
+		version = { major = 0, minor = 4, build = 0, class = "Version" },
+		items_handling = 7
+	})
+end
+
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected(msg)
 	SendCmd("Sync")
@@ -222,7 +248,7 @@ function RECV_MSG.Connected(msg)
 	current_player_slot = msg["slot"]
 	slot_options = msg["slot_data"]
 
-	Globals.Seed:set(slot_options.seed)
+
 	Globals.PlayerSlot:set(current_player_slot)
 	-- todo: figure out why the below block doesn't work
 	--if Globals.LoadKey:get() ~= "1" then
@@ -240,7 +266,7 @@ function RECV_MSG.Connected(msg)
 	if GlobalsGetValue(LOAD_KEY, "0") ~= "1" then
 		Cache.ItemDelivery:reset()
 		--GlobalsSetValue(LOAD_KEY, "1")
-		ResetOrbID() -- todo: check that this actually matters anymore
+		ResetOrbID()
 		if ModSettingGet("archipelago.debug_items") == true then
 			give_debug_items()
 		end
@@ -259,24 +285,47 @@ function RECV_MSG.Connected(msg)
 	Globals.MissingLocationsSet:set_table(missing_locations_set)
 	Globals.PedestalLocationsSet:set_table(peds_checklist)
 
-	for k, plr in pairs(msg["players"]) do
+	for _, plr in pairs(msg["players"]) do
 		player_slot_to_name[plr["slot"]] = plr["name"]
 	end
 
-	local game_set = {}
-	for _, slot in pairs(msg["slot_info"]) do
-		game_set[slot["game"]] = true
+	if #game_list ~= 0 then
+		new_checksums = true
+		SendCmd("GetDataPackage", {games = game_list})
 	end
 
-	for game, _ in pairs (game_set) do
-		table.insert(Games, game)
+	if new_checksums ~= true then
+		SetupLocationScouts(false)
 	end
-
-	SetupLocationScouts(false)
-
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
 end
+
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
+function RECV_MSG.DataPackage(msg)
+	local item_names = Cache.ItemNames:reference()
+	local location_names = Cache.LocationNames:reference()
+	local checksums = Cache.ChecksumVersions:reference()
+
+	for game, data in pairs(msg["data"]["games"]) do
+		for item_name, item_id in pairs(data["item_name_to_id"]) do
+			-- Some games like Hollow Knight use underscores for whatever reason
+			item_names[item_id] = string.gsub(item_name, "_", " ")
+		end
+
+		for location_name, location_id in pairs(data["location_name_to_id"]) do
+			location_names[location_id] = string.gsub(location_name, "_", " ")
+		end
+
+		checksums[game] = data["checksum"]
+	end
+	SetupLocationScouts(true)
+	Cache.ItemNames:write()
+	Cache.LocationNames:write()
+	Cache.ChecksumVersions:write()
+end
+
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(msg)
@@ -349,46 +398,6 @@ function RECV_MSG.ReceivedItems(msg)
 		end
 		GlobalsSetValue(LOAD_KEY, "1")
 	end
-end
-
-
-function RECV_MSG.RoomInfo(msg)
-	local checksum_info = msg["datapackage_checksums"]
-	local game_list = {}
-	for game, checksum in pairs(checksum_info) do
-		if Cache.ChecksumVersions:get(game) ~= checksum then
-			table.insert(game_list, game)
-		end
-	end
-	if #game_list ~= 0 then
-		SendCmd("GetDataPackage", {games = game_list})
-	end
-end
-
-
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
-function RECV_MSG.DataPackage(msg)
-	local item_names = Cache.ItemNames:reference()
-	local location_names = Cache.LocationNames:reference()
-	local checksums = Cache.ChecksumVersions:reference()
-
-	for game, data in pairs(msg["data"]["games"]) do
-		for item_name, item_id in pairs(data["item_name_to_id"]) do
-			-- Some games like Hollow Knight use underscores for whatever reason
-			item_names[item_id] = string.gsub(item_name, "_", " ")
-		end
-
-		for location_name, location_id in pairs(data["location_name_to_id"]) do
-			location_names[location_id] = string.gsub(location_name, "_", " ")
-		end
-
-		checksums[game] = data["checksum"]
-	end
-
-	Cache.ItemNames:write()
-	Cache.LocationNames:write()
-	Cache.ChecksumVersions:write()
-	SetupLocationScouts(true)
 end
 
 
@@ -526,8 +535,8 @@ end
 
 -- Initializes the socket for AP communication
 function InitSocket()
-	local player_name = ModSettingGet("archipelago.slot_name")
-	local password = ModSettingGet("archipelago.passwd") or ""
+	player_name = ModSettingGet("archipelago.slot_name")
+	password = ModSettingGet("archipelago.passwd") or ""
 	local host = ModSettingGet("archipelago.server_address")
 	local port = ModSettingGet("archipelago.server_port")
 
@@ -541,16 +550,6 @@ function InitSocket()
 		ConnIcon:setDisconnected()
 		return
 	end
-
-	SendCmd("Connect", {
-		password = password,
-		game = "Noita",
-		name = player_name,
-		uuid = "NoitaClient",
-		tags = { "AP" },
-		version = { major = 0, minor = 4, build = 0, class = "Version" },
-		items_handling = 7
-	})
 end
 
 

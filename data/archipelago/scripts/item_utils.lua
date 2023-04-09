@@ -52,7 +52,7 @@ function SpawnItem(item_id, traps)
 		add_money(item.gold_amount)
 	elseif #item.items > 0 then
 		local item_to_spawn = item.items[Random(1, #item.items)]
-		EntityLoadAtPlayer(item_to_spawn)
+		EntityLoadAtPlayer(item_to_spawn, Random(1, 5), Random(1, 5))
 		Log.Info("Item spawned" .. item_to_spawn)
 	else
 		Log.Error("[AP] Item " .. tostring(item_id) .. " not properly configured")
