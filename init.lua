@@ -500,6 +500,7 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#LocationInfo
 -- This is the reply to the LocationScouts request
 function RECV_MSG.LocationInfo(msg)
+	Cache.LocationInfo:reset() -- this is a workaround, if this isn't here it throws an error at Cache.LocationInfo:write()
 	local cache = Cache.LocationInfo:reference()
 	-- Set global shop item names to share with the shop lua context
 	for _, net_item in ipairs(msg["locations"]) do
@@ -513,7 +514,6 @@ function RECV_MSG.LocationInfo(msg)
 			is_our_item = net_item.player == current_player_slot
 		}
 	end
-	-- todo: figure out why this breaks if the checksum changes while you have location_scouts_info already
 	Cache.LocationInfo:write()
 	ShareLocationScouts()
 end
