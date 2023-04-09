@@ -177,7 +177,7 @@ end
 
 -- Request items we need to display (i.e. shops)
 local function SetupLocationScouts(new_checksum)
-	if Cache.LocationInfo:is_empty() or new_checksum then
+	if Cache.LocationInfo:is_empty() or new_checksum == true then
 		local locations = {}
 		for i = AP.FIRST_ITEM_LOCATION_ID, AP.LAST_ITEM_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
@@ -229,6 +229,16 @@ function RECV_MSG.RoomInfo(msg)
 		end
 	end
 
+	new_checksums = (#game_list ~= 0)
+	if new_checksums then
+		SendCmd("GetDataPackage", {games = game_list})
+	else
+		SendConnect()
+	end
+end
+
+
+function SendConnect()
 	SendCmd("Connect", {
 		password = password,
 		game = "Noita",
@@ -247,7 +257,6 @@ function RECV_MSG.Connected(msg)
 	GamePrint("$ap_connected_to_server")
 	current_player_slot = msg["slot"]
 	slot_options = msg["slot_data"]
-
 
 	Globals.PlayerSlot:set(current_player_slot)
 	-- todo: figure out why the below block doesn't work
@@ -270,7 +279,6 @@ function RECV_MSG.Connected(msg)
 		if ModSettingGet("archipelago.debug_items") == true then
 			give_debug_items()
 		end
-		--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
 	end
 
 	-- Retrieve all chest location ids the server is considering
@@ -289,14 +297,7 @@ function RECV_MSG.Connected(msg)
 		player_slot_to_name[plr["slot"]] = plr["name"]
 	end
 
-	if #game_list ~= 0 then
-		new_checksums = true
-		SendCmd("GetDataPackage", {games = game_list})
-	end
-
-	if new_checksums ~= true then
-		SetupLocationScouts(false)
-	end
+	SetupLocationScouts(new_checksums)
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
 end
@@ -320,10 +321,11 @@ function RECV_MSG.DataPackage(msg)
 
 		checksums[game] = data["checksum"]
 	end
-	SetupLocationScouts(true)
+
 	Cache.ItemNames:write()
 	Cache.LocationNames:write()
 	Cache.ChecksumVersions:write()
+	SendConnect()
 end
 
 
