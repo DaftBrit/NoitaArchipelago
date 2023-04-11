@@ -89,6 +89,9 @@ local function CheckVictoryConditionFor(flag, msg)
 		if ModSettingGet("archipelago.auto_release") == true then
 			SendCmd("Say", { text = "!release"})
 		end
+		if ModSettingGet("archipelago.auto_collect") == true then
+			SendCmd("Say", { text = "!collect"})
+		end
 	end
 end
 
@@ -482,16 +485,21 @@ end
 function RECV_MSG.Bounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
 		if not slot_options.death_link or not UpdateDeathTime() then return end
+		local game_msg = GameTextGet("$ap_died", msg["data"]["source"])
+		GamePrintImportant(game_msg, msg["data"]["cause"])
 
-		GamePrintImportant(GameTextGet("$ap_died", msg["data"]["source"]), msg["data"]["cause"])
-
-		for i, p in ipairs(get_players()) do
-			if not DecreaseExtraLife(p) then
-				local gsc_id = EntityGetFirstComponentIncludingDisabled(p, "GameStatsComponent")
-				ComponentSetValue2(gsc_id, "extra_death_msg", msg["data"]["cause"])
-				EntityKill(p)
-			end
+		local cause = msg["data"]["cause"]
+		if cause == nil or cause == "" then
+			cause = game_msg
 		end
+
+		local player = get_player()
+		if not DecreaseExtraLife(player) then
+			local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
+			ComponentSetValue2(gsc_id, "extra_death_msg", cause)
+			EntityKill(player)
+		end
+
 	else
 		Log.Warn("Unsupported Bounced type received. " .. JSON:encode(msg))
 	end
@@ -652,7 +660,7 @@ end
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
     if sock == nil or slot_options.death_link ~= 1 or game_is_paused or not UpdateDeathTime() then return end
-    local death_msg = GetCauseOfDeath()
+    local death_msg = GetCauseOfDeath() or "skill issue"
     local slotname = ModSettingGet("archipelago.slot_name")
     SendCmd("Bounce", {
         tags = { "DeathLink" },
