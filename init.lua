@@ -89,6 +89,9 @@ local function CheckVictoryConditionFor(flag, msg)
 		if ModSettingGet("archipelago.auto_release") == true then
 			SendCmd("Say", { text = "!release"})
 		end
+		if ModSettingGet("archipelago.auto_collect") == true then
+			SendCmd("Say", { text = "!collect"})
+		end
 	end
 end
 
