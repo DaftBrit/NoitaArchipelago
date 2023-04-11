@@ -49,8 +49,6 @@ local current_player_slot = -1
 local sock = nil
 local game_is_paused = true
 local index = -1
-local player_name = ""
-local password = ""
 local new_checksums = false
 
 
@@ -244,6 +242,8 @@ end
 
 
 function SendConnect()
+	local player_name = ModSettingGet("archipelago.slot_name")
+	local password = ModSettingGet("archipelago.passwd") or ""
 	SendCmd("Connect", {
 		password = password,
 		game = "Noita",
@@ -547,8 +547,6 @@ end
 
 -- Initializes the socket for AP communication
 function InitSocket()
-	player_name = ModSettingGet("archipelago.slot_name")
-	password = ModSettingGet("archipelago.passwd") or ""
 	local host = ModSettingGet("archipelago.server_address")
 	local port = ModSettingGet("archipelago.server_port")
 
