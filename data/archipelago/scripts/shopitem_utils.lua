@@ -34,10 +34,6 @@ end -- generate_item_price
 
 -- Spawn in an item or perk entity for the shop
 function ShopItems.create_our_item_entity(item, x, y)
-  -- remove error books that may have been previously spawned
-  local error_book = EntityGetClosestWithTag(x, y, "ap_error_book")
-  EntityKill(error_book)
-
   if item.perk ~= nil then
     return perk_spawn(x, y, item.perk, true)
   elseif item.items ~= nil and #item.items > 0 then
@@ -71,6 +67,9 @@ function ShopItems.create_ap_entity_from_flags(location, x, y)
   elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
     item_filename = "ap_trap_item.xml"
     item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
+  elseif flags == 0 then
+    item_filename = "pickup/ap_error_book"
+    item_description = "$ap_error_book_desc"
   end
 
   local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)

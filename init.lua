@@ -529,6 +529,7 @@ function RECV_MSG.LocationInfo(msg)
 	end
 	Cache.LocationInfo:write()
 	ShareLocationScouts()
+	GameAddFlagRun("AP_LocationInfo_received")
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -679,6 +680,7 @@ end
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned
 function OnPlayerSpawned(player)
 	game_is_paused = false
+	GameRemoveFlagRun("AP_LocationInfo_received")
 	ConnIcon:create()
 	ConnIcon:setConnecting()
 	InitializeArchipelagoThread()
