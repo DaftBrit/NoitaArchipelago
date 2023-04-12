@@ -27,7 +27,7 @@ local function ap_extend_temple_altar()
 	-- Gets the location id for the shop based on the y coordinate and number of AP items already placed (assuming max 5)
 	-- TODO: Use x for parallel worlds in the future
 	local function get_shop_location_id(x, y)
-		return AP.FIRST_ITEM_LOCATION_ID + (get_shop_num(y)-1) * 5 + num_ap_items
+		return AP.FIRST_SHOP_LOCATION_ID + (get_shop_num(y)-1) * 6 + num_ap_items
 	end
 
 
@@ -99,7 +99,7 @@ local function ap_extend_temple_altar()
 		--
 		-- This part would otherwise be a spell refresher
 
-		local location_id = AP.FIRST_SPELL_REFRESH_LOCATION_ID + get_shop_num(y) - 1
+		local location_id = AP.FIRST_SPELL_REFRESH_LOCATION_ID + (get_shop_num(y) - 1) * 6
 		local is_not_obtained = Globals.MissingLocationsSet:has_key(location_id)
 		if is_not_obtained then
 			-- biomeid of 0 = free

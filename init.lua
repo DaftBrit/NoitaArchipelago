@@ -154,12 +154,10 @@ end
 
 local function ShouldDeliverItem(item)
 	if item["player"] == current_player_slot then
-		if item["location"] >= AP.FIRST_ITEM_LOCATION_ID and item["location"] <= AP.LAST_ITEM_LOCATION_ID then
+		if item["location"] >= AP.FIRST_SHOP_LOCATION_ID and item["location"] <= AP.LAST_SHOP_LOCATION_ID then
 			return false	-- Don't deliver shopitems, they are given locally
-		elseif item["location"] >= AP.FIRST_PED_LOCATION_ID and item["location"] <= AP.LAST_PED_LOCATION_ID then
-			return false	-- Don't deliver pedestal items, they are given locally
-		elseif item["location"] >= AP.FIRST_HC_LOCATION_ID and item["location"] <= AP.LAST_HC_LOCATION_ID then
-			return false
+		elseif item["location"] >= AP.FIRST_BIOME_LOCATION_ID and item["location"] <= AP.LAST_BIOME_LOCATION_ID then
+			return false	-- Don't deliver biome items, they are given locally
 		end
 	end
 	return true
@@ -180,7 +178,7 @@ end
 local function SetupLocationScouts(new_checksum)
 	if Cache.LocationInfo:is_empty() or new_checksum == true then
 		local locations = {}
-		for i = AP.FIRST_ITEM_LOCATION_ID, AP.LAST_ITEM_LOCATION_ID do
+		for i = AP.FIRST_SHOP_LOCATION_ID, AP.LAST_SHOP_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
 			end
@@ -288,10 +286,16 @@ function RECV_MSG.Connected(msg)
 
 	-- Retrieve all chest location ids the server is considering
 	local missing_locations_set = {}
+	local peds_list = {}
 	local peds_checklist = {}
+	for _, biome_data in pairs(Biomes) do
+		for i = biome_data.first_ped, biome_data.first_ped + 19 do
+			peds_list[i] = true
+		end
+	end
 	for _, location in ipairs(msg["missing_locations"]) do
 		missing_locations_set[location] = true
-		if location >= AP.FIRST_PED_LOCATION_ID and location <= AP.LAST_PED_LOCATION_ID then
+		if peds_list[location] == true then
 			peds_checklist[location] = true
 		end
 	end

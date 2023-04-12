@@ -23,6 +23,7 @@ function ap_extend_ending()
 		if (distance < 32) then
 			if (orb_count >= 34) then
 				-- yendor ending
+				print("red pixel pog")
 				GameAddFlagRun("ap_yendor_ending")
 			end
 			if (orb_count >= 33) then
