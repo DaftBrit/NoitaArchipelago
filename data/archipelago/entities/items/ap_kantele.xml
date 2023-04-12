@@ -54,7 +54,7 @@
 	<LuaComponent
 		execute_on_added="1"
 		remove_after_executed="1"
-		script_source_file="mods/archipelago/data/archipelago/entities/items/pw_teleporter_setup.lua"
+		script_source_file="mods/archipelago/data/archipelago/entities/items/kantele_setup.lua"
 		>
 	</LuaComponent>
 
