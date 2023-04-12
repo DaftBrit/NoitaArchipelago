@@ -20,8 +20,15 @@ return {
 
 	-- Item IDs for items where we want to spawn them a little differently
 	HEART_ITEM_ID = 110001,
+	POTION_ITEM_ID = 110003,
+	FIRST_WAND_ITEM_ID = 110006,
+	LAST_WAND_ITEM_ID = 110012,
 	MAP_PERK_ID = 110020,
 	ORB_ITEM_ID = 110022,
+	RANDOM_POTION_ITEM_ID = 110023,
+	SECRET_POTION_ITEM_ID = 110024,
+	POWDER_STASH_ITEM_ID = 110025,
+	KAMMI_ITEM_ID = 110028,
 
 
 	-- Item flag constants.

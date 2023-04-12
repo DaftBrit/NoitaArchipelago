@@ -33,3 +33,6 @@
 "ap_connected_desc","Connected to Archipelago.",,,,,,,,,,,,,
 "ap_not_connected_desc","Archipelago Connection Failed, please check your mod settings and reboot your game.",,,,,,,,,,,,,
 "ap_connecting_desc","Connecting to Archipelago...",,,,,,,,,,,,,
+"ap_error_book_title","Something has gone horribly wrong here",,,,,,,,,,,,,
+"ap_error_book_desc","You should probably restart your game, or file a bug report if this persists",,,,,,,,,,,,,
+"ap_error_book_desc_forged","Why?",,,,,,,,,,,,,
