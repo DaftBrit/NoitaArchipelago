@@ -172,6 +172,7 @@ end
 local function ShareLocationScouts()
 	local cache = Cache.LocationInfo:reference()
 	Globals.LocationScouts:set_table(cache)
+	GameAddFlagRun("AP_LocationInfo_received")
 end
 
 -- Request items we need to display (i.e. shops)
@@ -531,7 +532,6 @@ function RECV_MSG.LocationInfo(msg)
 	end
 	Cache.LocationInfo:write()
 	ShareLocationScouts()
-	GameAddFlagRun("AP_LocationInfo_received")
 end
 
 ----------------------------------------------------------------------------------------------------
