@@ -31,4 +31,5 @@ if GameHasFlagRun("AP_LocationInfo_received") then
 		call_init_function="1",
 		script_item_picked_up="data/archipelago/scripts/shopitem_processed.lua",
 	})
+    EntityKill(entity_id)
 end
