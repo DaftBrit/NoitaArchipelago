@@ -46,6 +46,7 @@ function ShopItems.create_our_item_entity(item, x, y)
     return entity_id
   else -- error?
     -- TODO
+    EntityLoad("data/archipelago/entities/items/ap_error_book.xml", x, y)
     Log.Error("Failed to load our own shopitem!")
   end
 end
@@ -66,6 +67,9 @@ function ShopItems.create_ap_entity_from_flags(location, x, y)
   elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
     item_filename = "ap_trap_item.xml"
     item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
+  elseif flags == 0 then
+    item_filename = "pickup/ap_error_book"
+    item_description = "$ap_error_book_desc"
   end
 
   local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)

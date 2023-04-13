@@ -154,12 +154,10 @@ end
 
 local function ShouldDeliverItem(item)
 	if item["player"] == current_player_slot then
-		if item["location"] >= AP.FIRST_ITEM_LOCATION_ID and item["location"] <= AP.LAST_ITEM_LOCATION_ID then
+		if item["location"] >= AP.FIRST_SHOP_LOCATION_ID and item["location"] <= AP.LAST_SHOP_LOCATION_ID then
 			return false	-- Don't deliver shopitems, they are given locally
-		elseif item["location"] >= AP.FIRST_PED_LOCATION_ID and item["location"] <= AP.LAST_PED_LOCATION_ID then
-			return false	-- Don't deliver pedestal items, they are given locally
-		elseif item["location"] >= AP.FIRST_HC_LOCATION_ID and item["location"] <= AP.LAST_HC_LOCATION_ID then
-			return false
+		elseif item["location"] >= AP.FIRST_BIOME_LOCATION_ID and item["location"] <= AP.LAST_BIOME_LOCATION_ID then
+			return false	-- Don't deliver biome items, they are given locally
 		end
 	end
 	return true
@@ -180,7 +178,7 @@ end
 local function SetupLocationScouts(new_checksum)
 	if Cache.LocationInfo:is_empty() or new_checksum == true then
 		local locations = {}
-		for i = AP.FIRST_ITEM_LOCATION_ID, AP.LAST_ITEM_LOCATION_ID do
+		for i = AP.FIRST_SHOP_LOCATION_ID, AP.LAST_SHOP_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
 			end
@@ -222,18 +220,20 @@ local LOAD_KEY = "AP_FIRST_LOAD_DONE"
 
 function RECV_MSG.RoomInfo(msg)
 	Globals.Seed:set(msg["seed_name"])
-
 	local checksum_info = msg["datapackage_checksums"]
+	-- todo: modify this after figuring out how to not overwrite entire cache when one checksum is different
+	local checksum_hax
 	for game, checksum in pairs(checksum_info) do
-		--if Cache.ChecksumVersions:get(game) ~= checksum then
-		--	table.insert(game_list, game)
-		--end
+		if Cache.ChecksumVersions:get(game) ~= checksum then
+			checksum_hax = true
+			--table.insert(game_list, game)
+		end
 		table.insert(game_list, game)
 	end
 
-	-- todo: figure out how to make this not overwrite the entire cache when only one game changes
-	new_checksums = (#game_list ~= 0)
-	if new_checksums then
+	--new_checksums = (#game_list ~= 0)
+	if checksum_hax then
+		new_checksums = true
 		SendCmd("GetDataPackage", {games = game_list})
 	else
 		SendConnect()
@@ -288,10 +288,16 @@ function RECV_MSG.Connected(msg)
 
 	-- Retrieve all chest location ids the server is considering
 	local missing_locations_set = {}
+	local peds_list = {}
 	local peds_checklist = {}
+	for _, biome_data in pairs(Biomes) do
+		for i = biome_data.first_ped, biome_data.first_ped + 19 do
+			peds_list[i] = true
+		end
+	end
 	for _, location in ipairs(msg["missing_locations"]) do
 		missing_locations_set[location] = true
-		if location >= AP.FIRST_PED_LOCATION_ID and location <= AP.LAST_PED_LOCATION_ID then
+		if peds_list[location] == true then
 			peds_checklist[location] = true
 		end
 	end
@@ -525,6 +531,7 @@ function RECV_MSG.LocationInfo(msg)
 	end
 	Cache.LocationInfo:write()
 	ShareLocationScouts()
+	GameAddFlagRun("AP_LocationInfo_received")
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -675,6 +682,7 @@ end
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned
 function OnPlayerSpawned(player)
 	game_is_paused = false
+	GameRemoveFlagRun("AP_LocationInfo_received")
 	ConnIcon:create()
 	ConnIcon:setConnecting()
 	InitializeArchipelagoThread()

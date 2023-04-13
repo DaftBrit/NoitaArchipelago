@@ -3,19 +3,19 @@
 -- first_hc is the first location ID for the hidden chests in the walls
 
 return {
-    ["$biome_coalmine"] = { main_path = true, first_hc = 112000, first_ped = 112500,},
-    ["$biome_coalmine_alt"] = { side_path = true, first_hc = 112020, first_ped = 112520,},
-    ["$biome_excavationsite"] = { main_path = true, first_hc = 112040, first_ped = 112540,},
-    ["$biome_fungicave"] = { side_path = true, first_hc = 112060, first_ped = 112560,},
-    ["$biome_snowcave"] = { main_path = true, first_hc = 112080, first_ped = 112580,},
-    ["$biome_snowcastle"] = { main_path = true, first_hc = 112100, first_ped = 112600,},
-    ["$biome_rainforest"] = { main_path = true, first_hc = 112120, first_ped = 112620,},
-    ["$biome_rainforest_dark"] = { side_path = true, first_hc = 112140, first_ped = 112640,},
-    ["$biome_vault"] = { main_path = true, first_hc = 112160, first_ped = 112660,},
-    ["$biome_crypt"] = { main_path = true, first_hc = 112180, first_ped = 112680,},
-    ["$biome_fun"] = { main_world = true, first_hc = 112200, first_ped = 112700,},
-    ["$biome_wizardcave"] = { main_world = true, first_hc = 112220, first_ped = 112720,},
-    ["$biome_robobase"] = { main_world = true, first_hc = 112240, first_ped = 112740,},
-    ["$biome_vault_frozen"] = { main_world = true, first_hc = 112260, first_ped = 112760,},
-    ["$biome_tower"] = { main_world = true, first_hc = 112280, first_ped = 112780,},
+    ["$biome_coalmine"] = { main_path = true, first_hc = 110046, first_ped = 110066,},
+    ["$biome_coalmine_alt"] = { main_path = true, first_hc = 110086, first_ped = 110106,},
+    ["$biome_excavationsite"] = { main_path = true, first_hc = 110126, first_ped = 110146,},
+    ["$biome_fungicave"] = { side_path = true, first_hc = 110166, first_ped = 110186,},
+    ["$biome_snowcave"] = { main_path = true, first_hc = 110206, first_ped = 110226,},
+    ["$biome_snowcastle"] = { main_path = true, first_hc = 110246, first_ped = 110266,},
+    ["$biome_rainforest"] = { main_path = true, first_hc = 110286, first_ped = 110306,}, -- Underground Jungle
+    ["$biome_rainforest_dark"] = { side_path = true, first_hc = 110326, first_ped = 110346,}, -- Lukki Lair
+    ["$biome_vault"] = { main_path = true, first_hc = 110366, first_ped = 110386,},
+    ["$biome_crypt"] = { main_path = true, first_hc = 110406, first_ped = 110426,}, -- Temple of the Art
+    ["$biome_fun"] = { main_world = true, first_hc = 110526, first_ped = 110546,}, -- Overgrown Cavern
+    ["$biome_wizardcave"] = { main_world = true, first_hc = 110446, first_ped = 110466,},
+    ["$biome_robobase"] = { main_world = true, first_hc = 110486, first_ped = 110506,},
+    ["$biome_vault_frozen"] = { main_world = true, first_hc = 110566, first_ped = 110586,},
+    ["$biome_tower"] = { main_world = true, first_hc = 110606, first_ped = 110626,},
 }

@@ -35,13 +35,14 @@ local function PedestalReplacer()
                                 x = x + 0.5
                             end
                         -- wands
-                        elseif item_id >= 110008 and item_id <= 110013 then
+                        elseif item_id >= AP.FIRST_WAND_ITEM_ID and item_id <= AP.LAST_WAND_ITEM_ID then
                             y = y + 0.5
                         -- potions or powder stash
-                        elseif contains_element({110003, 110023, 110024, 110031}, item_id) and replaced_pedestal == "wand" then
+                        elseif contains_element({AP.POTION_ITEM_ID, AP.RANDOM_POTION_ITEM_ID, AP.SECRET_POTION_ITEM_ID, AP.POWDER_STASH_ITEM_ID}, item_id)
+                                and replaced_pedestal == "wand" then
                             x = x + 1.5
                         -- kammi
-                        elseif item_id == 110027 and replaced_pedestal == "potion" then
+                        elseif item_id == AP.KAMMI_ITEM_ID and replaced_pedestal == "potion" then
                             x = x + 0.5
                         end
                         if location.is_our_item and item and item_id ~= AP.TRAP_ID then

@@ -59,8 +59,12 @@ function SpawnItem(item_id, traps)
 	end
 end
 
-
+local ng_spawn_check
 function NGSpawnItems(item_counts)
+	if ng_spawn_check ~= true then
+		ng_spawn_check = true
+		print("spawning items in mountain using NGSpawnItems")
+	end
 	local itemx = 595
 	local itemy = -90
 	local wandx = 600
@@ -125,30 +129,30 @@ end
 
 
 local LocationFlags = {
-	[110501] = "orb_0",
-	[110502] = "orb_1",
-	[110503] = "orb_2",
-	[110504] = "orb_3",
-	[110505] = "orb_4",
-	[110506] = "orb_5",
-	[110507] = "orb_6",
-	[110508] = "orb_7",
-	[110509] = "orb_8",
-	[110510] = "orb_9",
-	[110511] = "orb_10",
+	[110658] = "orb_0", -- Floating Island
+	[110659] = "orb_1", -- Pyramid
+	[110660] = "orb_2", -- Frozen Vault
+	[110661] = "orb_3", -- Lava Lake
+	[110662] = "orb_4", -- Sandcave
+	[110663] = "orb_5", -- Magical Temple
+	[110664] = "orb_6", -- Lukki Lair
+	[110665] = "orb_7", -- Abyss
+	[110666] = "orb_8", -- Hell
+	[110667] = "orb_9", -- Snow Chasm
+	[110668] = "orb_10", -- Wizard's Den
 
-	[110600] = "kolmi_is_dead",
-	[110610] = "maggot_is_dead",
-	[110620] = "dragon_is_dead",
-	[110630] = "koipi_is_dead",
-	[110640] = "squidward_is_dead",
-	[110650] = "leviathan_is_dead",
-	[110660] = "triangle_is_dead",
-	[110670] = "skull_is_dead",
-	[110680] = "friend_is_dead",
-	[110690] = "mestari_is_dead",
-	[110700] = "alchemist_is_dead",
-	[110710] = "mecha_is_dead",
+	[110646] = "kolmi_is_dead",
+	[110647] = "maggot_is_dead",
+	[110648] = "dragon_is_dead",
+	[110649] = "koipi_is_dead",
+	[110650] = "squidward_is_dead",
+	[110651] = "leviathan_is_dead",
+	[110652] = "triangle_is_dead",
+	[110653] = "skull_is_dead",
+	[110654] = "friend_is_dead",
+	[110655] = "mestari_is_dead",
+	[110656] = "alchemist_is_dead",
+	[110657] = "mecha_is_dead",
 }
 
 function CheckLocationFlags()

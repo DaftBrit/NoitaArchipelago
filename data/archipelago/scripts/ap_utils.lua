@@ -282,6 +282,7 @@ function give_debug_items()
 	set_money(100000000)
 	set_health(80, 80)
 	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/pw_teleporter.xml", 60)
+	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/ap_kantele.xml", 30)
 	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world
 	-- don't aim other directions. the linear arc means it snaps to 8 directions
 end
