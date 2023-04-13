@@ -59,8 +59,12 @@ function SpawnItem(item_id, traps)
 	end
 end
 
-
+local ng_spawn_check
 function NGSpawnItems(item_counts)
+	if ng_spawn_check ~= true then
+		ng_spawn_check = true
+		print("spawning items in mountain using NGSpawnItems")
+	end
 	local itemx = 595
 	local itemy = -90
 	local wandx = 600
