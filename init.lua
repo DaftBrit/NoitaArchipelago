@@ -220,18 +220,20 @@ local LOAD_KEY = "AP_FIRST_LOAD_DONE"
 
 function RECV_MSG.RoomInfo(msg)
 	Globals.Seed:set(msg["seed_name"])
-
 	local checksum_info = msg["datapackage_checksums"]
+	-- todo: modify this after figuring out how to not overwrite entire cache when one checksum is different
+	local checksum_hax
 	for game, checksum in pairs(checksum_info) do
-		--if Cache.ChecksumVersions:get(game) ~= checksum then
-		--	table.insert(game_list, game)
-		--end
+		if Cache.ChecksumVersions:get(game) ~= checksum then
+			checksum_hax = true
+			--table.insert(game_list, game)
+		end
 		table.insert(game_list, game)
 	end
 
-	-- todo: figure out how to make this not overwrite the entire cache when only one game changes
-	new_checksums = (#game_list ~= 0)
-	if new_checksums then
+	--new_checksums = (#game_list ~= 0)
+	if checksum_hax then
+		new_checksums = true
 		SendCmd("GetDataPackage", {games = game_list})
 	else
 		SendConnect()
