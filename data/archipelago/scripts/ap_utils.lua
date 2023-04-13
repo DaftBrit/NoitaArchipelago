@@ -286,3 +286,25 @@ function give_debug_items()
 	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world
 	-- don't aim other directions. the linear arc means it snaps to 8 directions
 end
+
+local function dir_exists(dirname)
+	-- Universal way of checking whether a file or directory exists
+	local ok, err = os.rename(dirname, dirname)
+	if not ok and err then
+		 if err:find("permission") then
+				-- Permission denied, but it exists
+				return true
+		 end
+	end
+	return ok
+end
+
+function create_dir(dirname)
+	-- Prevent console window from appearing if it already exists
+	if dir_exists(dirname) then return end
+
+	local code = os.execute("mkdir " .. dirname)
+	if code ~= 0 then
+		Log.Error("Failed to create cache directory '" .. dirname .. "'. Error code: " .. tostring(code))
+	end
+end

@@ -9,9 +9,9 @@ end
 
 function SeededCache:get_filename()
 	if contains_element({"checksum_versions", "data_package_item_ids_to_name", "data_package_location_ids_to_name"}, self.cache_name) then
-		return "mods/archipelago/cache/" .. self.cache_name .. ".json"
+		return "archipelago_cache/" .. self.cache_name .. ".json"
 	else
-		return "mods/archipelago/cache/" .. self.cache_name .. "_" .. Globals.Seed:get() .. "_" .. Globals.PlayerSlot:get() .. ".json"
+		return "archipelago_cache/" .. self.cache_name .. "_" .. Globals.Seed:get() .. "_" .. Globals.PlayerSlot:get() .. ".json"
 	end
 end
 

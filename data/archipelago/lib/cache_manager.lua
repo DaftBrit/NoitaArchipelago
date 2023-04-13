@@ -18,7 +18,7 @@ function Cache:new(cache_name)
 end
 
 function Cache:get_filename()
-	return "mods/archipelago/cache/" .. self.cache_name .. ".json"
+	return "archipelago_cache/" .. self.cache_name .. ".json"
 end
 
 function Cache:reset()

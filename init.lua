@@ -503,7 +503,9 @@ function RECV_MSG.Bounced(msg)
 		local player = get_player()
 		if not DecreaseExtraLife(player) then
 			local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
-			ComponentSetValue2(gsc_id, "extra_death_msg", cause)
+			if gsc_id ~= nil then
+				ComponentSetValue2(gsc_id, "extra_death_msg", cause)
+			end
 			EntityKill(player)
 		end
 
@@ -683,6 +685,7 @@ end
 function OnPlayerSpawned(player)
 	game_is_paused = false
 	GameRemoveFlagRun("AP_LocationInfo_received")
+	create_dir("archipelago_cache")
 	ConnIcon:create()
 	ConnIcon:setConnecting()
 	InitializeArchipelagoThread()
