@@ -21,6 +21,15 @@ local function get_player()
 end
 
 
+function random_offset(x, y)
+	if x == nil then x = 0 end
+	if y == nil then y = 0 end
+	x = x - 2 + Random(1, 40)/10
+	y = y - 2 + Random(1, 40)/10
+	return x, y
+end
+
+
 --Function to spawn a perk at the player and then have the player automatically pick it up
 function give_perk(perk_name)
 	for i, p in ipairs(get_players()) do
@@ -34,11 +43,10 @@ end
 function spawn_potion(potion, x, y)
 	-- if a position is not called, spawn it at the player
 	if x == nil or y == nil then
-		print("loading at player")
 		x, y = EntityGetTransform(get_player())
 	end
 
-	local potion_entity = EntityLoad(potion, x, y)
+	local potion_entity = EntityLoad(potion, random_offset(x, y))
 	local physics_damage_comp = EntityGetFirstComponentIncludingDisabled(potion_entity, "PhysicsBodyCollisionDamageComponent")
 	ComponentSetValue2(physics_damage_comp, "damage_multiplier", 0)
 

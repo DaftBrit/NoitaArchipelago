@@ -54,7 +54,7 @@ function SpawnItem(item_id, traps)
 		spawn_potion(item.items[1])
 	elseif #item.items > 0 then
 		local item_to_spawn = item.items[Random(1, #item.items)]
-		EntityLoadAtPlayer(item_to_spawn, -2 + Random(1, 40)/10, -2 + Random(1, 40)/10)
+		EntityLoadAtPlayer(item_to_spawn, random_offset())
 		Log.Info("Item spawned" .. item_to_spawn)
 	else
 		Log.Error("[AP] Item " .. tostring(item_id) .. " not properly configured")
@@ -97,7 +97,7 @@ function NGSpawnItems(item_counts)
 			item_counts[item] = nil
 		
 		elseif item == AP.MAP_PERK_ID then
-			-- spawn the map perk on the ground, in case it really distracts you
+			-- spawn the map perk on the ground, in case you find it distracting
 			perk_spawn(813, -90, item_table[item].perk)
 			item_counts[item] = nil
 			
