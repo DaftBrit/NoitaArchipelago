@@ -8,7 +8,7 @@ local function decodeXML(str)
 end
 
 if GameHasFlagRun("AP_LocationInfo_received") then
-    local entity_id = GetUpdatedEntityID()
+	local entity_id = GetUpdatedEntityID()
 
 	local component = get_variable_storage_component(entity_id, "ap_shop_data")
 	local data_str = ComponentGetValue2(component, "value_string")
@@ -31,5 +31,5 @@ if GameHasFlagRun("AP_LocationInfo_received") then
 		call_init_function="1",
 		script_item_picked_up="data/archipelago/scripts/shopitem_processed.lua",
 	})
-    EntityKill(entity_id)
+	EntityKill(entity_id)
 end

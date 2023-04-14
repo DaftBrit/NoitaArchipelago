@@ -1,12 +1,12 @@
 function ap_extend_ending()
-    local endpoint_underground = EntityGetWithTag( "ending_sampo_spot_underground" )
-    local endpoint_mountain = EntityGetWithTag( "ending_sampo_spot_mountain" )
-    local orb_count = GameGetOrbCountThisRun()
-    local entity_id = GetUpdatedEntityID()
-    local ap_x, ap_y = EntityGetTransform(entity_id)
+	local endpoint_underground = EntityGetWithTag( "ending_sampo_spot_underground" )
+	local endpoint_mountain = EntityGetWithTag( "ending_sampo_spot_mountain" )
+	local orb_count = GameGetOrbCountThisRun()
+	local entity_id = GetUpdatedEntityID()
+	local ap_x, ap_y = EntityGetTransform(entity_id)
 
-    if ( #endpoint_underground > 0 ) then
-        local endpoint_id = endpoint_underground[1]
+	if ( #endpoint_underground > 0 ) then
+		local endpoint_id = endpoint_underground[1]
 		local ex, ey = EntityGetTransform( endpoint_id )
 		local distance = math.abs(ap_x - ex) + math.abs(ap_y - ey)
 
@@ -37,8 +37,8 @@ function ap_extend_ending()
 				--toxic ending or ng+
 				print("wrong ending, get greened on nerd or go to ng+ I guess")
 			end
-        end
-    end
+		end
+	end
 end
 
 ap_extend_ending()

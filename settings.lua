@@ -12,7 +12,7 @@ dofile("data/scripts/lib/mod_settings.lua") -- see this file for documentation o
 -- until the player starts a new game.
 -- ModSettingSetNextValue() will set the buffered value, that will later become visible via ModSettingGet(), unless the setting scope is MOD_SETTING_SCOPE_RUNTIME.
 
-function mod_setting_bool_custom( mod_id, gui, in_main_menu, im_id, setting )
+function mod_setting_bool_custom(mod_id, gui, in_main_menu, im_id, setting)
 	local value = ModSettingGetNextValue( mod_setting_get_id(mod_id,setting) )
 	local text = setting.ui_name .. " - " .. GameTextGet( value and "$option_on" or "$option_off" )
 
@@ -20,10 +20,10 @@ function mod_setting_bool_custom( mod_id, gui, in_main_menu, im_id, setting )
 		ModSettingSetNextValue( mod_setting_get_id(mod_id,setting), not value, false )
 	end
 
-	mod_setting_tooltip( mod_id, gui, in_main_menu, setting )
+	mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
 end
 
-function mod_setting_change_callback( mod_id, gui, in_main_menu, setting, old_value, new_value  )
+function mod_setting_change_callback(mod_id, gui, in_main_menu, setting, old_value, new_value)
 	print( tostring(new_value) )
 end
 
@@ -125,46 +125,4 @@ end
 -- This function is called to display the settings UI for this mod. Your mod's settings wont be visible in the mod settings menu if this function isn't defined correctly.
 function ModSettingsGui( gui, in_main_menu )
 	mod_settings_gui( mod_id, mod_settings, gui, in_main_menu )
-
-	--example usage:
-	--[[
-	local im_id = 124662 -- NOTE: ids should not be reused like we do below
-	GuiLayoutBeginLayer( gui )
-
-	GuiLayoutBeginHorizontal( gui, 10, 50 )
-    GuiImage( gui, im_id + 12312535, 0, 0, "data/particles/shine_07.xml", 1, 1, 1, 0, GUI_RECT_ANIMATION_PLAYBACK.PlayToEndAndPause )
-    GuiImage( gui, im_id + 123125351, 0, 0, "data/particles/shine_04.xml", 1, 1, 1, 0, GUI_RECT_ANIMATION_PLAYBACK.PlayToEndAndPause )
-    GuiLayoutEnd( gui )
-
-	GuiBeginAutoBox( gui )
-
-	GuiZSet( gui, 10 )
-	GuiZSetForNextWidget( gui, 11 )
-	GuiText( gui, 50, 50, "Gui*AutoBox*")
-	GuiImage( gui, im_id, 50, 60, "data/ui_gfx/game_over_menu/game_over.png", 1, 1, 0 )
-	GuiZSetForNextWidget( gui, 13 )
-	GuiImage( gui, im_id, 60, 150, "data/ui_gfx/game_over_menu/game_over.png", 1, 1, 0 )
-
-	GuiZSetForNextWidget( gui, 12 )
-	GuiEndAutoBoxNinePiece( gui )
-
-	GuiZSetForNextWidget( gui, 11 )
-	GuiImageNinePiece( gui, 12368912341, 10, 10, 80, 20 )
-	GuiText( gui, 15, 15, "GuiImageNinePiece")
-
-	GuiBeginScrollContainer( gui, 1233451, 500, 100, 100, 100 )
-	GuiLayoutBeginVertical( gui, 0, 0 )
-	GuiText( gui, 10, 0, "GuiScrollContainer")
-	GuiImage( gui, im_id, 10, 0, "data/ui_gfx/game_over_menu/game_over.png", 1, 1, 0 )
-	GuiImage( gui, im_id, 10, 0, "data/ui_gfx/game_over_menu/game_over.png", 1, 1, 0 )
-	GuiImage( gui, im_id, 10, 0, "data/ui_gfx/game_over_menu/game_over.png", 1, 1, 0 )
-	GuiImage( gui, im_id, 10, 0, "data/ui_gfx/game_over_menu/game_over.png", 1, 1, 0 )
-	GuiLayoutEnd( gui )
-	GuiEndScrollContainer( gui )
-
-	local c,rc,hov,x,y,w,h = GuiGetPreviousWidgetInfo( gui )
-	print( tostring(c) .. " " .. tostring(rc) .." " .. tostring(hov) .." " .. tostring(x) .." " .. tostring(y) .." " .. tostring(w) .." ".. tostring(h) )
-
-	GuiLayoutEndLayer( gui )
-	]]--
 end

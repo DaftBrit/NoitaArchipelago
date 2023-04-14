@@ -606,9 +606,9 @@ end
 
 local function CheckPlayerMovement()
 	local movement = isMovingRight()
-		if movement then
-			GlobalsSetValue(LOAD_KEY, "1")
-		end
+	if movement then
+		GlobalsSetValue(LOAD_KEY, "1")
+	end
 end
 
 
@@ -653,17 +653,17 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-		if sock == nil or slot_options.death_link ~= 1 or game_is_paused or not UpdateDeathTime() then return end
-		local death_msg = GetCauseOfDeath() or "skill issue"
-		local slotname = ModSettingGet("archipelago.slot_name")
-		SendCmd("Bounce", {
-			tags = { "DeathLink" },
-			data = {
-				time = last_death_time,
-				cause = slotname .. " died to " .. death_msg,
-				source = slotname
-			}
-		})
+	if sock == nil or slot_options.death_link ~= 1 or game_is_paused or not UpdateDeathTime() then return end
+	local death_msg = GetCauseOfDeath() or "skill issue"
+	local slotname = ModSettingGet("archipelago.slot_name")
+	SendCmd("Bounce", {
+		tags = { "DeathLink" },
+		data = {
+			time = last_death_time,
+			cause = slotname .. " died to " .. death_msg,
+			source = slotname
+		}
+	})
 end
 
 

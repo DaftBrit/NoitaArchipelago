@@ -12,16 +12,16 @@ local function ap_extend_snowcastle_cavern()
 
   -- Override of spawn_shopitem in the original file
   spawn_shopitem = function(x, y)
-    local is_ap_shopitem = num_items < MAX_AP_ITEMS
-    local location_id = AP.FIRST_SECRET_SHOP_LOCATION_ID + num_items
-    local is_not_obtained = is_ap_shopitem and Globals.MissingLocationsSet:has_key(location_id)
+		local is_ap_shopitem = num_items < MAX_AP_ITEMS
+		local location_id = AP.FIRST_SECRET_SHOP_LOCATION_ID + num_items
+		local is_not_obtained = is_ap_shopitem and Globals.MissingLocationsSet:has_key(location_id)
 
-    if is_ap_shopitem and is_not_obtained then
-      ShopItems.generate_ap_shop_item(location_id, HIISI_BASE_ID, x, y)
-    else
-      generate_shop_item(x, y, false, nil)
-    end
-    num_items = num_items + 1
+		if is_ap_shopitem and is_not_obtained then
+			ShopItems.generate_ap_shop_item(location_id, HIISI_BASE_ID, x, y)
+		else
+			generate_shop_item(x, y, false, nil)
+		end
+		num_items = num_items + 1
   end
 end
 
