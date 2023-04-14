@@ -552,7 +552,6 @@ function InitSocket()
 	Log.Info("Connecting to " .. url .. "...")
 
 	sock = pollnet.open_ws(url, 10 * 1024 * 1024)
-	conn_start = os.time()
 
 	local error_msg = sock:error_msg()
 	if error_msg ~= nil then

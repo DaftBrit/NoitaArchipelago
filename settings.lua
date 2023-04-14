@@ -12,6 +12,63 @@ dofile("data/scripts/lib/mod_settings.lua") -- see this file for documentation o
 -- until the player starts a new game.
 -- ModSettingSetNextValue() will set the buffered value, that will later become visible via ModSettingGet(), unless the setting scope is MOD_SETTING_SCOPE_RUNTIME.
 
+local translations = {
+	["$ap_menu_server_settings_name"] = {
+		en="Server Settings"
+	},
+	["$ap_menu_server_settings_desc"] = {
+		en="Archipelago server settings "
+	},
+	["$ap_menu_server_settings_address_name"] = {
+		en="Server"
+	},
+	["$ap_menu_server_settings_address_desc"] = {
+		en="Server address"
+	},
+	["$ap_menu_server_settings_port_name"] = {
+		en="Port"
+	},
+	["$ap_menu_server_settings_port_desc"] = {
+		en="Server Port"
+	},
+	["$ap_menu_server_settings_slot_name"] = {
+		en="Slot"
+	},
+	["$ap_menu_server_settings_slot_desc"] = {
+		en="Slot name"
+	},
+	["$ap_menu_server_settings_password_name"] = {
+		en="Password"
+	},
+	["$ap_menu_server_settings_password_desc"] = {
+		en="Password"
+	},
+	["$ap_menu_server_settings_auto_release_name"] = {
+		en="Auto-Release"
+	},
+	["$ap_menu_server_settings_auto_release_desc"] = {
+		en="Automatically releases your remaining checks from your game when you complete your goal."
+	},
+	["$ap_menu_server_settings_auto_collect_name"] = {
+		en="Auto-Collect"
+	},
+	["$ap_menu_server_settings_auto_collect_desc"] = {
+		en="Automatically collects your remaining items from other games when you complete your goal."
+	},
+	["$ap_menu_server_settings_debug_items_name"] = {
+		en="Debug Items"
+	},
+	["$ap_menu_server_settings_debug_items_desc"] = {
+		en="Makes debug items and perks spawn when starting a new run."
+	},
+}
+
+local function translate(msg)
+	local translation_table = translations[msg] or {}
+	local lang_id = GameTextGet("$")
+	return translation_table[lang_id] or translation_table["en"] or msg
+end
+
 function mod_setting_bool_custom(mod_id, gui, in_main_menu, im_id, setting)
 	local value = ModSettingGetNextValue( mod_setting_get_id(mod_id,setting) )
 	local text = setting.ui_name .. " - " .. GameTextGet( value and "$option_on" or "$option_off" )
@@ -37,13 +94,13 @@ mod_settings =
 	},
 	{
 		category_id = "group_of_settings",
-		ui_name = "Server Settings",
-		ui_description = "Archipelago server settings",
+		ui_name = translate("$ap_menu_server_settings_name"),
+		ui_description = translate("$ap_menu_server_settings_desc"),
 		settings = {
 			{
 				id = "server_address",
-				ui_name = "Server",
-				ui_description = "Server address",
+				ui_name = translate("$ap_menu_server_settings_address_name"),
+				ui_description = translate("$ap_menu_server_settings_address_desc"),
 				value_default = "archipelago.gg",
 				text_max_length = 120,
 				allowed_characters = "%-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~",
@@ -51,8 +108,8 @@ mod_settings =
 			},
 			{
 				id = "server_port",
-				ui_name = "Port",
-				ui_description = "Server port",
+				ui_name = translate("$ap_menu_server_settings_port_name"),
+				ui_description = translate("$ap_menu_server_settings_port_desc"),
 				value_default = "",
 				text_max_length = 5,
 				allowed_characters = "0123456789",
@@ -60,8 +117,8 @@ mod_settings =
 			},
 			{
 				id = "slot_name",
-				ui_name = "Slot",
-				ui_description = "Slot name",
+				ui_name = translate("$ap_menu_server_settings_slot_name"),
+				ui_description = translate("$ap_menu_server_settings_slot_desc"),
 				value_default = "",
 				text_max_length = 120,
 				allowed_characters = " !#$%&'()+,-.0123456789;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~",
@@ -69,8 +126,8 @@ mod_settings =
 			},
 			{
 				id = "passwd",
-				ui_name = "Password",
-				ui_description = "Password",
+				ui_name = translate("$ap_menu_server_settings_password_name"),
+				ui_description = translate("$ap_menu_server_settings_password_desc"),
 				value_default = "",
 				text_max_length = 20,
 				allowed_characters = " !#$%&'()+,-.0123456789;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~",
@@ -78,22 +135,22 @@ mod_settings =
 			},
 			{
 				id = "auto_release",
-				ui_name = "Auto-Release",
-				ui_description = "Automatically releases your remaining checks when you complete your goal.",
+				ui_name = translate("$ap_menu_server_settings_auto_release_name"),
+				ui_description = translate("$ap_menu_server_settings_auto_release_desc"),
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
 				id = "auto_collect",
-				ui_name = "Auto-Collect",
-				ui_description = "Automatically collects your remaining items when you complete your goal.",
+				ui_name = translate("$ap_menu_server_settings_auto_collect_name"),
+				ui_description = translate("$ap_menu_server_settings_auto_collect_desc"),
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
 				id = "debug_items",
-				ui_name = "Debug Items",
-				ui_description = "Makes debug items and perks spawn when starting a new run.",
+				ui_name = translate("$ap_menu_server_settings_debug_items_name"),
+				ui_description = translate("$ap_menu_server_settings_debug_items_desc"),
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
