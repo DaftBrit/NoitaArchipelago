@@ -83,4 +83,3 @@ work well:
 
 Below is a list of mods that have been reported not to work with this mod. This list will just include mods where you generally would expect them to work, but they don't.
 
-* Conga's Cats
