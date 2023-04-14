@@ -48,7 +48,7 @@ local game_list = {}
 local player_slot_to_name = {}
 local current_player_slot = -1
 local sock = nil
-local game_is_paused = true
+local game_is_paused = false
 local index = -1
 local new_checksums = false
 
@@ -625,10 +625,6 @@ end
 function InitializeArchipelagoThread()
 	if not sock then
 		InitSocket()
-		if not sock then
-			ConnIcon:setDisconnected()
-			Log.Error("Unable to establish Archipelago connection")
-		end
 	end
 end
 
@@ -663,7 +659,7 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-	if sock == nil or slot_options.death_link ~= 1 or game_is_paused or not UpdateDeathTime() then return end
+	if sock == nil or slot_options == nil or slot_options.death_link ~= 1 or game_is_paused or not UpdateDeathTime() then return end
 	local death_msg = GetCauseOfDeath() or "skill issue"
 	local slotname = ModSettingGet("archipelago.slot_name")
 	SendCmd("Bounce", {
@@ -676,11 +672,9 @@ function OnPlayerDied(player)
 	})
 end
 
-
--- Called when the player spawns
--- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerSpawned
-function OnPlayerSpawned(player)
-	game_is_paused = false
+-- Called at the earliest possible time
+-- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnModInit
+function OnModInit()
 	GameRemoveFlagRun("AP_LocationInfo_received")
 	create_dir("archipelago_cache")
 	ConnIcon:create()
