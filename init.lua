@@ -13,6 +13,7 @@
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
 ModMaterialsFileAdd("data/archipelago/materials.xml")
+ModMagicNumbersFileAdd("data/archipelago/magic_numbers.xml")
 
 --LIBS
 local pollnet = dofile("data/archipelago/lib/pollnet/pollnet.lua")
