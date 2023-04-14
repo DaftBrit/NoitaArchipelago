@@ -1,5 +1,2 @@
-function triangle_check()
-	GameAddFlagRun("triangle_is_dead")
-end
 
-triangle_check()
+GameAddFlagRun("ap_triangle_is_dead")

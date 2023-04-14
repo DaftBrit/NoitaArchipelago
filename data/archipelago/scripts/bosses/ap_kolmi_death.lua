@@ -1,5 +1,2 @@
-function kolmi_check()
-	GameAddFlagRun("kolmi_is_dead")
-end
 
-kolmi_check()
+GameAddFlagRun("ap_kolmi_is_dead")

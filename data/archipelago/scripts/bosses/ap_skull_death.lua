@@ -1,5 +1,2 @@
-function skull_check()
-	GameAddFlagRun("skull_is_dead")
-end
 
-skull_check()
+GameAddFlagRun("ap_skull_is_dead")

@@ -1,5 +1,2 @@
-function mestari_check()
-	GameAddFlagRun("mestarai_is_dead")
-end
 
-mestari_check()
+GameAddFlagRun("ap_mestarai_is_dead")

@@ -143,18 +143,18 @@ local LocationFlags = {
 	[110667] = "orb_9", -- Snow Chasm
 	[110668] = "orb_10", -- Wizard's Den
 
-	[110646] = "kolmi_is_dead",
-	[110647] = "maggot_is_dead",
-	[110648] = "dragon_is_dead",
-	[110649] = "koipi_is_dead",
-	[110650] = "squidward_is_dead",
-	[110651] = "leviathan_is_dead",
-	[110652] = "triangle_is_dead",
-	[110653] = "skull_is_dead",
-	[110654] = "friend_is_dead",
-	[110655] = "mestari_is_dead",
-	[110656] = "alchemist_is_dead",
-	[110657] = "mecha_is_dead",
+	[110646] = "ap_kolmi_is_dead",
+	[110647] = "ap_maggot_is_dead",
+	[110648] = "ap_dragon_is_dead",
+	[110649] = "ap_koipi_is_dead",
+	[110650] = "ap_squidward_is_dead",
+	[110651] = "ap_leviathan_is_dead",
+	[110652] = "ap_triangle_is_dead",
+	[110653] = "ap_skull_is_dead",
+	[110654] = "ap_friend_is_dead",
+	[110655] = "ap_mestari_is_dead",
+	[110656] = "ap_alchemist_is_dead",
+	[110657] = "ap_mecha_is_dead",
 }
 
 function CheckLocationFlags()
