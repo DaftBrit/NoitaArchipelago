@@ -50,6 +50,8 @@ function SpawnItem(item_id, traps)
 		Log.Info("Perk spawned")
 	elseif item.gold_amount ~= nil then
 		add_money(item.gold_amount)
+	elseif item.potion ~= nil then
+		spawn_potion(item.items[1])
 	elseif #item.items > 0 then
 		local item_to_spawn = item.items[Random(1, #item.items)]
 		EntityLoadAtPlayer(item_to_spawn, -2 + Random(1, 40)/10, -2 + Random(1, 40)/10)

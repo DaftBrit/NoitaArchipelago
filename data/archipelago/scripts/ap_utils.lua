@@ -16,6 +16,11 @@ function not_empty(s)
 end
 
 
+local function get_player()
+	return EntityGetWithTag("player_unit")[1]
+end
+
+
 --Function to spawn a perk at the player and then have the player automatically pick it up
 function give_perk(perk_name)
 	for i, p in ipairs(get_players()) do
@@ -23,6 +28,28 @@ function give_perk(perk_name)
 		local perk = perk_spawn(x, y, perk_name)
 		perk_pickup(perk, p, EntityGetName(perk), false, false)
 	end
+end
+
+
+function spawn_potion(potion, x, y)
+	-- if a position is not called, spawn it at the player
+	if x == nil or y == nil then
+		print("loading at player")
+		x, y = EntityGetTransform(get_player())
+	end
+
+	local potion_entity = EntityLoad(potion, x, y)
+	local physics_damage_comp = EntityGetFirstComponentIncludingDisabled(potion_entity, "PhysicsBodyCollisionDamageComponent")
+	ComponentSetValue2(physics_damage_comp, "damage_multiplier", 0)
+
+	EntityAddComponent(potion_entity, "LuaComponent", {
+		script_source_file="data/archipelago/scripts/items/potion_saver_remover.lua",
+		execute_every_n_frame="90",
+		execute_times="0",
+		script_enabled_changed="data/archipelago/scripts/items/potion_saver_remover.lua"
+	})
+
+	return potion_entity
 end
 
 
@@ -109,11 +136,6 @@ function DecreaseExtraLife(entity_id)
 		end
 	end
 	return false
-end
-
-
-local function get_player()
-	return EntityGetWithTag("player_unit")[1]
 end
 
 
