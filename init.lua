@@ -51,7 +51,6 @@ local game_is_paused = true
 local index = -1
 local new_checksums = false
 
-
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
 ----------------------------------------------------------------------------------------------------
@@ -205,6 +204,10 @@ local RECV_MSG = {}
 
 local LOAD_KEY = "AP_FIRST_LOAD_DONE"
 
+local function ConnectionError(msg_str)
+	Log.Error(msg_str)
+	ConnIcon:setDisconnected(msg_str)
+end
 
 function RECV_MSG.RoomInfo(msg)
 	Globals.Seed:set(msg["seed_name"])
@@ -470,8 +473,7 @@ function RECV_MSG.ConnectionRefused(msg)
 	if msg["errors"] then
 		msg_str = msg_str .. ": " .. table.concat(msg["errors"], ",")
 	end
-	Log.Error(msg_str)
-	ConnIcon:setDisconnected(msg_str)
+	ConnectionError(msg_str)
 end
 
 
@@ -550,11 +552,11 @@ function InitSocket()
 	Log.Info("Connecting to " .. url .. "...")
 
 	sock = pollnet.open_ws(url, 10 * 1024 * 1024)
+	conn_start = os.time()
 
-	if not sock then
-		Log.Error("Failed to open socket")
-		ConnIcon:setDisconnected()
-		return
+	local error_msg = sock:error_msg()
+	if error_msg ~= nil then
+		ConnectionError("Failed to connect to the Archipelago server. " .. error_msg)
 	end
 end
 
@@ -586,7 +588,15 @@ end
 
 -- Gets network messages waiting on the socket and processes them
 local function CheckNetworkMessages()
-	while sock:poll() do
+	while true do
+		local success, errmsg = sock:poll()
+		if success == false then
+			if errmsg ~= nil then
+				ConnectionError(errmsg)
+			end
+			break
+		end
+
 		local msg = GetNextMessage()
 		if msg == nil then break end
 		ProcessMsg(msg)
