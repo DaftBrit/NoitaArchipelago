@@ -1,9 +1,10 @@
-local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
-local Globals = dofile("data/archipelago/scripts/globals.lua")
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 local function APHeartReplacer()
-	-- sets a function for the old version of spawn_heart
+    local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
+    local Globals = dofile("data/archipelago/scripts/globals.lua")
+
+    -- sets a function for the old version of spawn_heart
 	local ap_old_spawn_heart = spawn_heart
 
 	local function ap_replace_heart(x, y)

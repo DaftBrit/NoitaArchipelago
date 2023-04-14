@@ -1,4 +1,4 @@
-function ap_extend_ending()
+local function ap_extend_ending()
 	local endpoint_underground = EntityGetWithTag( "ending_sampo_spot_underground" )
 	local endpoint_mountain = EntityGetWithTag( "ending_sampo_spot_mountain" )
 	local orb_count = GameGetOrbCountThisRun()

@@ -1,11 +1,12 @@
-local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
-local Globals = dofile("data/archipelago/scripts/globals.lua")
 dofile_once("data/archipelago/scripts/ap_utils.lua")
-local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
-local AP = dofile("data/archipelago/scripts/constants.lua")
 
-local function PedestalReplacer()
-	local ap_old_spawn_wands = spawn_wands
+local function APPedestalReplacer()
+    local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
+    local Globals = dofile("data/archipelago/scripts/globals.lua")
+    local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
+    local AP = dofile("data/archipelago/scripts/constants.lua")
+
+    local ap_old_spawn_wands = spawn_wands
 	local ap_old_spawn_potions = spawn_potions
 	local replaced_pedestal = ""
 
@@ -95,4 +96,4 @@ local function PedestalReplacer()
 	end
 end
 
-PedestalReplacer()
+APPedestalReplacer()
