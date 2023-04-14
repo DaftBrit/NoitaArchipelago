@@ -18,14 +18,6 @@ This mod takes hidden chests/hearts, pedestals, orbs, and boss drops and convert
       - All stream integration "Bad" and "Awful" events
       - Bad events can be toggled in the player yaml settings
 
-## Design Intent
-
-Noita is a roguelike that does not have required items to beat the game (other than orbs for some endings). It's possible to beat the game without wands if you're feeling up to it. This goes against the general theme of Archipelago, since typically you need to find other players' required items so that they can find your required items, so that you can find theirs, and so on until you've all beaten your games. Despite this, Noita has something that makes it a compelling fit for Archipelago:
-
-It's hard.
-
-Looking at Steam's global achievement stats, it's safe to assume that most people who have played Noita have not acheived any of the endings. The design goal for this mod is to essentially make you stronger and stronger as the multiworld progresses, kind of like how a roguelite does it. As you gain extra max health, more wand options at the start, and most importantly your immunity perks, it becomes easier to actually beat the game.
-
 ## Installation
 
 Find Noita in your Steam library, right click it and select Manage -> Browse Local Files.
@@ -39,6 +31,14 @@ In order to enable the mod you will first need to toggle "Allow unsafe mods". Th
 In the Options menu, select Mod Settings. Under the Archipelago drop down, you will see the options for Hostname, Port, and Slot name, where you can fill in the relevant information.
 
 Once you start a new run in Noita, you should see "Connected to Archipelago server" in the bottom left of the screen, as well as a unique perk. If you do not see this message, ensure that the mod is enabled and installed per the instructions above.
+
+## Design Intent
+
+Noita is a roguelike that does not have required items to beat the game (other than orbs for some endings). It's possible to beat the game without wands if you're feeling up to it. This goes against the general theme of Archipelago, since typically you need to find other players' required items so that they can find your required items, so that you can find theirs, and so on until you've all beaten your games. Despite this, Noita has something that makes it a compelling fit for Archipelago:
+
+It's hard.
+
+Looking at Steam's global achievement stats, it's safe to assume that most people who have played Noita have not acheived any of the endings. The design goal for this mod is to essentially make you stronger and stronger as the multiworld progresses, kind of like how a roguelite does it. As you gain extra max health, more wand options at the start, and most importantly your immunity perks, it becomes easier to actually beat the game.
 
 ## Notes and Quirks
 
@@ -83,3 +83,4 @@ work well:
 
 Below is a list of mods that have been reported not to work with this mod. This list will just include mods where you generally would expect them to work, but they don't.
 
+Or, it would, if we had a list of any at the moment. If you find an incompatibility, please let us know and we will add it to this list.
