@@ -109,19 +109,6 @@ end
 ----------------------------------------------------------------------------------------------------
 -- SHOP AND ITEM MANAGEMENT
 ----------------------------------------------------------------------------------------------------
-local TRAP_ITEM_NAMES = {
-	"Infinite Lives",
-	"Godmode",
-	"9999 Rupees",
-	"Debug Mode",
-	"Instant Victory",
-	"Unlimited Resources",
-	"Unlimited Power",
-	"Infinite Energy",
-	"Unlimited Food",
-	"The Best Item Ever"
-}
-
 -- Creates a name based on the player_id, item_id, and flags to be presented as the name of an AP item
 local function GetItemName(player_id, item_id, flags)
 	local item_name = Cache.ItemNames:get(item_id)
@@ -131,7 +118,7 @@ local function GetItemName(player_id, item_id, flags)
 	end
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
-		item_name = TRAP_ITEM_NAMES[Random(1, #TRAP_ITEM_NAMES)]
+		item_name = "$ap_trapname" .. Random(1, 10)
 	end
 
 	if player_id == current_player_slot then
@@ -619,9 +606,9 @@ end
 
 local function CheckPlayerMovement()
 	local movement = isMovingRight()
-    if movement then
-        GlobalsSetValue(LOAD_KEY, "1")
-    end
+		if movement then
+			GlobalsSetValue(LOAD_KEY, "1")
+		end
 end
 
 
@@ -666,17 +653,17 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-    if sock == nil or slot_options.death_link ~= 1 or game_is_paused or not UpdateDeathTime() then return end
-    local death_msg = GetCauseOfDeath() or "skill issue"
-    local slotname = ModSettingGet("archipelago.slot_name")
-    SendCmd("Bounce", {
-        tags = { "DeathLink" },
-        data = {
-            time = last_death_time,
-            cause = slotname .. " died to " .. death_msg,
-            source = slotname
-        }
-    })
+		if sock == nil or slot_options.death_link ~= 1 or game_is_paused or not UpdateDeathTime() then return end
+		local death_msg = GetCauseOfDeath() or "skill issue"
+		local slotname = ModSettingGet("archipelago.slot_name")
+		SendCmd("Bounce", {
+			tags = { "DeathLink" },
+			data = {
+				time = last_death_time,
+				cause = slotname .. " died to " .. death_msg,
+				source = slotname
+			}
+		})
 end
 
 

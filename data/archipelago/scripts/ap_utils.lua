@@ -196,7 +196,7 @@ function getInternalVariableValue(entity_id, variable_name, variable_type)
 	local value = nil
 	local components = EntityGetComponent( entity_id, "VariableStorageComponent" )
 	if ( components ~= nil ) then
-		for key,comp_id in pairs(components) do
+		for _, comp_id in pairs(components) do
 			local var_name = ComponentGetValue2( comp_id, "name" )
 			if(var_name == variable_name) then
 				value = ComponentGetValue2(comp_id, variable_type)
@@ -208,60 +208,60 @@ end
 
 
 function create_ap_entity_from_flags(location, x, y)
-  	local flags = location.item_flags
+	local flags = location.item_flags
 
-  	local item_filename = "ap_junk_shopitem.xml"
-  	local item_description = "$ap_shopdescription_junk"
+	local item_filename = "ap_junk_shopitem.xml"
+	local item_description = "$ap_shopdescription_junk"
 	if flags == nil then
 		print("flags == nil")
 		item_description = "problem with item in create_ap_entity_from_flags"
 	elseif bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
-	    item_filename = "ap_useful_shopitem.xml"
-	    item_description = "$ap_shopdescription_useful"
-  	elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
-	    item_filename = "ap_progression_shopitem.xml"
-	    item_description = "$ap_shopdescription_progression"
-  	elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
-    	item_filename = "ap_trap_item.xml"
-    	item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
-  	end
-
-  	local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
-	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
-		 EntityAddComponent(item_entity, "LuaComponent", {
-			 _tags="archipelago",
-             script_item_picked_up="data/archipelago/scripts/items/ap_trap.lua",
-             })
+		item_filename = "ap_useful_shopitem.xml"
+		item_description = "$ap_shopdescription_useful"
+	elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
+		item_filename = "ap_progression_shopitem.xml"
+		item_description = "$ap_shopdescription_progression"
+	elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
+		item_filename = "ap_trap_item.xml"
+		item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
 	end
-  	return item_entity, item_description
+
+	local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
+	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
+		EntityAddComponent(item_entity, "LuaComponent", {
+			_tags="archipelago",
+			script_item_picked_up="data/archipelago/scripts/items/ap_trap.lua",
+		})
+	end
+	return item_entity, item_description
 end
 
 
 function create_our_item_entity(item, x, y)
-  	if item.perk ~= nil then
-    	return perk_spawn(x, y, item.perk, true)
-  	elseif item.items ~= nil and #item.items > 0 then
-    	-- our item is something else (random choice)
+		if item.perk ~= nil then
+			return perk_spawn(x, y, item.perk, true)
+		elseif item.items ~= nil and #item.items > 0 then
+			-- our item is something else (random choice)
 		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
 		local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
 		if life_comp ~= nil then
 			EntityRemoveComponent(entity_id, life_comp)
 		end
 		return entity_id
-  	else
-    	Log.Error("Failed to load our own item at x = " .. x .. ", y = " .. y)
-  	end
+		else
+			Log.Error("Failed to load our own item at x = " .. x .. ", y = " .. y)
+		end
 end
 
 
 -- Spawns in an AP item (our own entity to represent items that don't exist in this game)
 function create_foreign_item_entity(location, x, y)
-  local entity_id, description = create_ap_entity_from_flags(location, x, y)
-  local name = location.item_name or "problem in create_foreign_item_entity"
+	local entity_id, description = create_ap_entity_from_flags(location, x, y)
+	local name = location.item_name or "problem in create_foreign_item_entity"
 
-  -- Change item name
-  change_entity_ingame_name(entity_id, name, description)
-  return entity_id
+	-- Change item name
+	change_entity_ingame_name(entity_id, name, description)
+	return entity_id
 end
 
 

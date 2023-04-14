@@ -23,9 +23,9 @@
 "ap_shopdescription_trap3","Pick this up.",,,,,,,,,,,,,
 "ap_shopdescription_trap4","Do it.",,,,,,,,,,,,"DunkOrSlam’s Twitch channel and “just do it” meme.",
 "ap_shopdescription_trap5","Buy one, get one free!",,,,,,,,,,,,,
-"ap_shopdescription_trap6","It looks so friendly. Do not resist. Don’t struggle.",,,,,,,,,,,,Subnautica reference to Mesmer enemy.
-"ap_shopdescription_trap7","You are so lucky that you found this most valuable artifact.",,,,,,,,,,,,Satisfactory reference to Mercer Sphere object.
-"ap_shopdescription_trap8","The most fulfilling of lives is that in which you can buy anything!",,,,,,,,,,,,Slay the Spire reference to The Ssssserpent event.
+"ap_shopdescription_trap6","It looks so friendly. Do not resist. Don’t struggle.",,,,,,,,,,,,"Subnautica reference to Mesmer enemy.",
+"ap_shopdescription_trap7","You are so lucky that you found this most valuable artifact.",,,,,,,,,,,,"Satisfactory reference to Mercer Sphere object.",
+"ap_shopdescription_trap8","The most fulfilling of lives is that in which you can buy anything!",,,,,,,,,,,,"Slay the Spire reference to The Ssssserpent event.",
 "ap_chest_random","Archipelago Chest",,,,,,,,,,,,,
 "mat_ap_chest","Archipelago Juice",,,,,,,,,,,,,
 "ap_connected_notifier","Archipelago",,,,,,,,,,,,,
@@ -36,3 +36,13 @@
 "ap_error_book_title","Something has gone horribly wrong here",,,,,,,,,,,,,
 "ap_error_book_desc","You should probably restart your game, or file a bug report if this persists",,,,,,,,,,,,,
 "ap_error_book_desc_forged","Why?",,,,,,,,,,,,,
+"ap_trapname1","Infinite Lives",,,,,,,,,,,,,
+"ap_trapname2","Godmode",,,,,,,,,,,,,
+"ap_trapname3","9999 Rupees",,,,,,,,,,,,,
+"ap_trapname4","Debug Mode",,,,,,,,,,,,,
+"ap_trapname5","Instant Victory",,,,,,,,,,,,,
+"ap_trapname6","Unlimited Resources",,,,,,,,,,,,,
+"ap_trapname7","Unlimited Power",,,,,,,,,,,,,
+"ap_trapname8","Infinite Energy",,,,,,,,,,,,,
+"ap_trapname9","Unlimited Food",,,,,,,,,,,,,
+"ap_trapname10","The Best Item Ever",,,,,,,,,,,,,
