@@ -69,21 +69,6 @@ local function translate(msg)
 	return translation_table[lang_id] or translation_table["en"] or msg
 end
 
-function mod_setting_bool_custom(mod_id, gui, in_main_menu, im_id, setting)
-	local value = ModSettingGetNextValue( mod_setting_get_id(mod_id,setting) )
-	local text = setting.ui_name .. " - " .. GameTextGet( value and "$option_on" or "$option_off" )
-
-	if GuiButton( gui, im_id, mod_setting_group_x_offset, 0, text ) then
-		ModSettingSetNextValue( mod_setting_get_id(mod_id,setting), not value, false )
-	end
-
-	mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
-end
-
-function mod_setting_change_callback(mod_id, gui, in_main_menu, setting, old_value, new_value)
-	print( tostring(new_value) )
-end
-
 local mod_id = "archipelago" -- This should match the name of your mod's folder.
 mod_settings_version = 1 -- This is a magic global that can be used to migrate settings to new mod versions. call mod_settings_get_version() before mod_settings_update() to get the old value. 
 mod_settings = 
@@ -129,8 +114,7 @@ mod_settings =
 				ui_name = translate("$ap_menu_server_settings_password_name"),
 				ui_description = translate("$ap_menu_server_settings_password_desc"),
 				value_default = "",
-				text_max_length = 20,
-				allowed_characters = " !#$%&'()+,-.0123456789;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~",
+				text_max_length = 120,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
