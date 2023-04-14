@@ -131,17 +131,17 @@ end
 
 
 local LocationFlags = {
-	[110658] = "orb_0", -- Floating Island
-	[110659] = "orb_1", -- Pyramid
-	[110660] = "orb_2", -- Frozen Vault
-	[110661] = "orb_3", -- Lava Lake
-	[110662] = "orb_4", -- Sandcave
-	[110663] = "orb_5", -- Magical Temple
-	[110664] = "orb_6", -- Lukki Lair
-	[110665] = "orb_7", -- Abyss
-	[110666] = "orb_8", -- Hell
-	[110667] = "orb_9", -- Snow Chasm
-	[110668] = "orb_10", -- Wizard's Den
+	[110658] = "ap_orb_0", -- Floating Island
+	[110659] = "ap_orb_1", -- Pyramid
+	[110660] = "ap_orb_2", -- Frozen Vault
+	[110661] = "ap_orb_3", -- Lava Lake
+	[110662] = "ap_orb_4", -- Sandcave
+	[110663] = "ap_orb_5", -- Magical Temple
+	[110664] = "ap_orb_6", -- Lukki Lair
+	[110665] = "ap_orb_7", -- Abyss
+	[110666] = "ap_orb_8", -- Hell
+	[110667] = "ap_orb_9", -- Snow Chasm
+	[110668] = "ap_orb_10", -- Wizard's Den
 
 	[110646] = "ap_kolmi_is_dead",
 	[110647] = "ap_maggot_is_dead",
