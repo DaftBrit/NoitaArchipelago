@@ -29,3 +29,5 @@ ModLuaFileAppend("data/scripts/items/orb_pickup.lua", "data/archipelago/scripts/
 
 ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/patches/ap_heart_replacer.lua")
 ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/patches/ap_pedestal_replacer.lua")
+
+ModLuaFileAppend("data/scripts/buildings/forge_item_convert.lua", "data/archipelago/scripts/patches/extend_forge_item_convert.lua")
