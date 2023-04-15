@@ -636,15 +636,15 @@ end
 -- Called every update frame in Noita
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
-		ConnIcon:update()
+	ConnIcon:update()
 
-		if is_player_spawned then
-			CheckNetworkMessages()
-			CheckGlobalsAndFlags()
-		end
-		if GlobalsGetValue(LOAD_KEY, "0") == "0" then
-			CheckPlayerMovement()
-		end
+	if is_player_spawned then
+		CheckNetworkMessages()
+		CheckGlobalsAndFlags()
+	end
+	if GlobalsGetValue(LOAD_KEY, "0") == "0" then
+		CheckPlayerMovement()
+	end
 end
 
 
