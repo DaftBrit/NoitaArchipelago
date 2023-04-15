@@ -51,6 +51,7 @@ local sock = nil
 local game_is_paused = false
 local index = -1
 local new_checksums = false
+local is_player_spawned = false
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
@@ -637,7 +638,7 @@ end
 function OnWorldPostUpdate()
 	ConnIcon:update()
 
-	if sock ~= nil then
+	if is_player_spawned then
 		CheckNetworkMessages()
 		CheckGlobalsAndFlags()
 	end
@@ -680,4 +681,8 @@ function OnModInit()
 	ConnIcon:create()
 	ConnIcon:setConnecting()
 	InitializeArchipelagoThread()
+end
+
+function OnPlayerSpawned()
+	is_player_spawned = true
 end
