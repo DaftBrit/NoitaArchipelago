@@ -191,9 +191,16 @@ end
 
 
 function add_money(amt)
-	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
+	local player_id = get_player()
+	local x, y = EntityGetTransform(player_id)
+	local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
 	local current_money = ComponentGetValue2(wallet, "money")
 	ComponentSetValue2(wallet, "money", current_money + amt)
+	local sound = "data/entities/particles/gold_pickup_large.xml"
+	if amt > 500 then
+		sound = "data/entities/particles/gold_pickup_huge.xml"
+	end
+	shoot_projectile(player_id, "data/entities/particles/gold_pickup_huge.xml", x, y, 0, 0)
 end
 
 
