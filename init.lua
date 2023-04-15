@@ -51,6 +51,7 @@ local sock = nil
 local game_is_paused = false
 local index = -1
 local new_checksums = false
+local is_player_spawned = false
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
@@ -635,15 +636,15 @@ end
 -- Called every update frame in Noita
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
-	ConnIcon:update()
+		ConnIcon:update()
 
-	if sock ~= nil then
-		CheckNetworkMessages()
-		CheckGlobalsAndFlags()
-	end
-	if GlobalsGetValue(LOAD_KEY, "0") == "0" then
-		CheckPlayerMovement()
-	end
+		if is_player_spawned then
+			CheckNetworkMessages()
+			CheckGlobalsAndFlags()
+		end
+		if GlobalsGetValue(LOAD_KEY, "0") == "0" then
+			CheckPlayerMovement()
+		end
 end
 
 
@@ -680,4 +681,8 @@ function OnModInit()
 	ConnIcon:create()
 	ConnIcon:setConnecting()
 	InitializeArchipelagoThread()
+end
+
+function OnPlayerSpawned()
+	is_player_spawned = true
 end
