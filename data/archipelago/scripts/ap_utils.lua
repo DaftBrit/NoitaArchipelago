@@ -252,7 +252,9 @@ function create_ap_entity_from_flags(location, x, y)
 	local item_filename = "ap_junk_shopitem.xml"
 	local item_description = "$ap_shopdescription_junk"
 	if flags == nil then
+		-- todo: figure out how to make it so touching a pedestal item that broke like this doesn't crash the game
 		print("flags == nil")
+		EntityLoadAtPlayer("data/archipelago/entities/items/pickup/ap_error_book_flags.xml")
 		item_description = "problem with item in create_ap_entity_from_flags"
 	elseif bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
 		item_filename = "ap_useful_shopitem.xml"

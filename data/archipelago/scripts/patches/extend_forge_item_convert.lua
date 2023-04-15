@@ -14,6 +14,7 @@ local function ap_extend_forge_item_convert()
 					item_name = ComponentGetValue( itemc, "item_name" )
 
 					if( item_name == "$ap_error_book_title" ) then new_desc = "$ap_error_book_desc_forged" end
+					if( item_name == "$ap_error_book_flags_title" ) then new_desc = "$ap_error_book_flags_desc_forged" end
 				end
 			end
 			if( new_desc ~= "" ) then
