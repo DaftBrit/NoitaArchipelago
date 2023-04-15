@@ -119,7 +119,7 @@ local function GetItemName(player_id, item_id, flags)
 	end
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
-		item_name = "$ap_trapname" .. Random(1, 10)
+		item_name = GameTextGetTranslatedOrNot("$ap_trapname" .. Random(1, 10))
 	end
 
 	if player_id == current_player_slot then
