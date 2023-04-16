@@ -13,13 +13,13 @@ local function ap_extend_temple_altar()
 
 	-- Retrieves the shop index based on the y coordinate (depth) to determine which holy mountain it is
 	local function get_shop_num(y)
-		if y < 1500 then return 1 -- Mines
-		elseif y < 3000 then return 2 -- Coal Pits
-		elseif y < 5500 then return 3 -- Snowy Depths
-		elseif y < 7000 then return 4 -- Hiisi Base
-		elseif y < 9500 then return 5 -- Underground Jungle
-		elseif y < 11500 then return 6 -- The Vault
-		else return 7 -- Temple of the Art
+		if y < 1500 then return 1, 1 -- Mines
+		elseif y < 3000 then return 2, 1 -- Coal Pits
+		elseif y < 5500 then return 3, 2 -- Snowy Depths
+		elseif y < 7000 then return 4, 2 -- Hiisi Base
+		elseif y < 9500 then return 5, 3 -- Underground Jungle
+		elseif y < 11500 then return 6, 4 -- The Vault
+		else return 7, 6 -- Temple of the Art
 		end
 	end
 
@@ -34,7 +34,7 @@ local function ap_extend_temple_altar()
 	-- Spawns either an AP item or spell shop item randomly. If an AP item was already obtained, replace it with a
 	-- normal shop item.
 	local function spawn_either(x, y, is_sale, is_wand_shop)
-		local biomeid = get_shop_num(y)
+		local _, biomeid = get_shop_num(y)
 		local location_id = get_shop_location_id(x, y)
 		local is_not_obtained = Globals.MissingLocationsSet:has_key(location_id)
 		local is_ap_shopitem = remaining_ap_items > 0 and Randomf() <= remaining_ap_items / total_remaining_items
