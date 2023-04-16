@@ -12,6 +12,7 @@ local function ap_extend_temple_altar()
 
 
 	-- Retrieves the shop index based on the y coordinate (depth) to determine which holy mountain it is
+	-- The second value is how the game determines shop item pricing
 	local function get_shop_num(y)
 		if y < 1500 then return 1, 1 -- Mines
 		elseif y < 3000 then return 2, 1 -- Coal Pits
