@@ -191,9 +191,16 @@ end
 
 
 function add_money(amt)
-	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
+	local player_id = get_player()
+	local x, y = EntityGetTransform(player_id)
+	local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
 	local current_money = ComponentGetValue2(wallet, "money")
 	ComponentSetValue2(wallet, "money", current_money + amt)
+	local sound = "data/entities/particles/gold_pickup_large.xml"
+	if amt > 500 then
+		sound = "data/entities/particles/gold_pickup_huge.xml"
+	end
+	shoot_projectile(player_id, "data/entities/particles/gold_pickup_huge.xml", x, y, 0, 0)
 end
 
 
@@ -245,7 +252,9 @@ function create_ap_entity_from_flags(location, x, y)
 	local item_filename = "ap_junk_shopitem.xml"
 	local item_description = "$ap_shopdescription_junk"
 	if flags == nil then
+		-- todo: figure out how to make it so touching a pedestal item that broke like this doesn't crash the game
 		print("flags == nil")
+		EntityLoadAtPlayer("data/archipelago/entities/items/pickup/ap_error_book_flags.xml")
 		item_description = "problem with item in create_ap_entity_from_flags"
 	elseif bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
 		item_filename = "ap_useful_shopitem.xml"

@@ -52,6 +52,7 @@ local game_is_paused = false
 local index = -1
 local new_checksums = false
 local is_player_spawned = false
+local goal_reached = false
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
@@ -85,6 +86,7 @@ local function CheckVictoryConditionFor(flag, msg)
 		Log.Info(msg)
 		SendCmd("StatusUpdate", {status = 30})
 		GameRemoveFlagRun(flag)
+		goal_reached = true
 		if ModSettingGet("archipelago.auto_release") == true then
 			SendCmd("Say", { text = "!release"})
 		end
@@ -356,7 +358,7 @@ function RECV_MSG.ReceivedItems(msg)
 					end
 				end
 				index = index + 1
-				if index ~= recv_index then
+				if index ~= recv_index and not goal_reached then
 					SendCmd("Sync")
 				end
 			elseif item_id == AP.ORB_ITEM_ID then

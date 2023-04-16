@@ -45,13 +45,13 @@
         <gun_config
             shuffle_deck_when_empty="0"
             reload_time="0"
-	    actions_per_round="1"
+			actions_per_round="1"
             deck_capacity="4" >
         </gun_config>
         <gunaction_config
             fire_rate_wait="2"
-	    spread_degrees="0"
-	    speed_multiplier="1" >
+			spread_degrees="0"
+			speed_multiplier="1" >
         </gunaction_config>
     </AbilityComponent>
 
