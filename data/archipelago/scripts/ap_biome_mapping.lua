@@ -4,7 +4,7 @@
 
 return {
 	["$biome_coalmine"] = { main_path = true, first_hc = 110046, first_ped = 110066,},
-	["$biome_coalmine_alt"] = { main_path = true, first_hc = 110086, first_ped = 110106,},
+	["$biome_coalmine_alt"] = { main_path = true, first_hc = 110046, first_ped = 110066,},
 	["$biome_excavationsite"] = { main_path = true, first_hc = 110126, first_ped = 110146,},
 	["$biome_fungicave"] = { side_path = true, first_hc = 110166, first_ped = 110186,},
 	["$biome_snowcave"] = { main_path = true, first_hc = 110206, first_ped = 110226,},
