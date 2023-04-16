@@ -17,7 +17,7 @@ return {
 	[110009] = { items = { "data/entities/items/wand_level_04.xml", "data/entities/items/wand_unshuffle_04.xml" }, redeliverable = true, newgame = true, wand = true },
 	[110010] = { items = { "data/entities/items/wand_level_05.xml", "data/entities/items/wand_unshuffle_05.xml" }, redeliverable = true, newgame = true, wand = true },
 	[110011] = { items = { "data/entities/items/wand_level_06.xml", "data/entities/items/wand_unshuffle_06.xml" }, redeliverable = true, newgame = true, wand = true },
-	[110012] = { items = { "data/entities/items/kantele.xml" }, redeliverable = true, newgame = true, wand = true },
+	[110012] = { items = { "data/archipelago/entities/items/ap_kantele.xml" }, redeliverable = true, newgame = true, wand = true },
 	-- todo: make this kantele spawn with certain spells
 
 	[110013] = { perk = "PROTECTION_FIRE", redeliverable = true, newgame = true },
