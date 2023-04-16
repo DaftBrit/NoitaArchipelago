@@ -3,9 +3,9 @@ dofile_once("data/scripts/lib/utilities.lua")
 local JSON = dofile("data/archipelago/lib/json.lua")
 local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
---local function decodeXML(str)
---	return str:gsub("&quot;", "\"")
---end
+local function decodeXML(str)
+	return str:gsub("&quot;", "\"")
+end
 
 if GameHasFlagRun("AP_LocationInfo_received") then
 	local entity_id = GetUpdatedEntityID()

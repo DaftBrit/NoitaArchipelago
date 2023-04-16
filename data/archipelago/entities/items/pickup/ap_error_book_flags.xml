@@ -2,18 +2,13 @@
 	<Base file="data/entities/items/books/base_book.xml">
 		<UIInfoComponent
 			name="$ap_error_book_flags_title"
-			>
-		</UIInfoComponent>
-
+		/>
 		<ItemComponent
 			item_name="$ap_error_book_flags_title"
 			ui_description="$ap_error_book_flags_desc"
-			>
-		</ItemComponent>
-
+		/>
 		<AbilityComponent
 			ui_name="$ap_error_book_flags_title"
-			>
-		</AbilityComponent>
+		/>
 	</Base>
 </Entity>
