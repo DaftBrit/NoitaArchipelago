@@ -121,7 +121,7 @@ local function GetItemName(player_id, item_id, flags)
 	end
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
-		item_name = "$ap_trapname" .. Random(1, 10)
+		item_name = GameTextGetTranslatedOrNot("$ap_trapname" .. Random(1, 10))
 	end
 
 	if player_id == current_player_slot then
@@ -565,12 +565,12 @@ end
 
 
 -- Retrieves the last message from the socket and parses it into a Lua-digestible format
-function GetNextMessage()
+function GetMessages()
 	local raw_msg = sock:last_message()
 	if not raw_msg then return nil end
 
 	Log.Info("RECV: " .. raw_msg)
-	return JSON:decode(raw_msg)[1]
+	return JSON:decode(raw_msg)
 end
 
 
@@ -600,9 +600,11 @@ local function CheckNetworkMessages()
 			break
 		end
 
-		local msg = GetNextMessage()
-		if msg == nil then break end
-		ProcessMsg(msg)
+		local messages = GetMessages()
+		if messages == nil then break end
+		for _, msg in ipairs(messages) do
+			ProcessMsg(msg)
+		end
 	end
 end
 
