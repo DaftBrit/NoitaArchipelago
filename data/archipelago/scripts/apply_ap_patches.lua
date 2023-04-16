@@ -10,6 +10,7 @@ ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "data/archipelago/scripts
 ModLuaFileAppend("data/scripts/biomes/snowcastle_cavern.lua", "data/archipelago/scripts/patches/extend_snowcastle_cavern.lua")
 ModLuaFileAppend("data/scripts/perks/perk_list.lua", "data/archipelago/scripts/patches/ap_extend_perk_list.lua")
 ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "data/archipelago/scripts/patches/ap_extend_ending.lua")
+ModLuaFileAppend("data/entities/animals/boss_centipede/sampo_pickup.lua", "data/archipelago/scripts/patches/ap_extend_sampo_pickup.lua")
 
 ModLuaFileAppend("data/entities/animals/boss_alchemist/death.lua", "data/archipelago/scripts/bosses/ap_alchemist_death.lua")
 ModLuaFileAppend("data/scripts/animals/boss_dragon_death.lua", "data/archipelago/scripts/bosses/ap_dragon_death.lua")

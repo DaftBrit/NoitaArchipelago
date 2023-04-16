@@ -76,23 +76,13 @@ local function APPedestalReplacer()
 	end
 
 	spawn_wands = function(x, y)
-		local r = ProceduralRandom(x, y)
-		if r >= .5 then
-			replaced_pedestal = "wand"
-			ap_replace_pedestals(x, y)
-		else
-			ap_old_spawn_wands(x, y)
-		end
+		replaced_pedestal = "wand"
+		ap_replace_pedestals(x, y)
 	end
 
 	spawn_potions = function(x, y)
-		local r = ProceduralRandom(x, y)
-		if r >= .5 then
-			replaced_pedestal = "potion"
-			ap_replace_pedestals(x, y)
-		else
-			ap_old_spawn_potions(x, y)
-		end
+		replaced_pedestal = "potion"
+		ap_replace_pedestals(x, y)
 	end
 end
 

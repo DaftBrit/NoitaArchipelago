@@ -35,10 +35,12 @@ local function ap_extend_ending()
 				GameAddFlagRun("ap_pure_ending")
 			elseif (orb_count < 33) then
 				--toxic ending or ng+
+				print(GameGetOrbCountThisRun())
 				print("wrong ending, get greened on nerd or go to ng+ I guess")
 			end
 		end
 	end
+	dofile_once("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua")
 end
 
 ap_extend_ending()
