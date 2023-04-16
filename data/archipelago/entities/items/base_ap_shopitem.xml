@@ -7,8 +7,8 @@
   <!-- https://noita.wiki.gg/wiki/Documentation:_ItemComponent -->
   <ItemComponent
     _tags="enabled_in_world"
-    item_name=""
-    ui_description=""
+    item_name="$ap_pedestal_error_name"
+    ui_description="$ap_pedestal_error_description"
     ui_display_description_on_pick_up_hint="1"
     play_hover_animation="1"/>
 

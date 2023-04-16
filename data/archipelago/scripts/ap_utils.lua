@@ -255,6 +255,7 @@ function create_ap_entity_from_flags(location, x, y)
 	if flags == nil then
 		-- todo: figure out how to make it so touching a pedestal item that broke like this doesn't crash the game
 		print("flags == nil")
+		print("error is at " .. x .. ", " .. y)
 		EntityLoadAtPlayer("data/archipelago/entities/items/pickup/ap_error_book_flags.xml")
 		item_description = "problem with item in create_ap_entity_from_flags"
 	elseif bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then

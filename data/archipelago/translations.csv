@@ -37,3 +37,5 @@
 "ap_trapname8","Infinite Energy",,,,,,,,,,,,,
 "ap_trapname9","Unlimited Food",,,,,,,,,,,,,
 "ap_trapname10","The Best Item Ever",,,,,,,,,,,,,
+"ap_pedestal_error_name","This is an error.",,,,,,,,,,,,,
+"ap_pedestal_error_description","It should only happen on your first run.",,,,,,,,,,,,,
