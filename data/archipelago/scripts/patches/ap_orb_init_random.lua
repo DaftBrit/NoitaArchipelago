@@ -19,8 +19,10 @@ local function APOrbInitRandom()
 		EntityRemoveComponent(entity_id, comp_id)
 	end
 
-	-- todo: after the ap client update, put together a check for whether the orb has been checked already
-	local location = Globals.LocationScouts:get_key(orb_id + Constants.FIRST_ORB_LOCATION_ID)
+	local location_id = orb_id + Constants.FIRST_ORB_LOCATION_ID
+	if not Globals.MissingLocationsSet:has_key(location_id) then return end
+
+	local location = Globals.LocationScouts:get_key(location_id)
 	local flags = location.item_flags
 	local orb_image = "ap_logo_orb"
 	local check_type_icon = "filler_icon"
