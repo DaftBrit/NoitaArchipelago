@@ -689,4 +689,5 @@ end
 
 function OnPlayerSpawned()
 	is_player_spawned = true
+	GlobalsSetValue("ap_random_hax", 23)
 end
