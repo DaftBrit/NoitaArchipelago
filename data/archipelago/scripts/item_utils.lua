@@ -38,12 +38,15 @@ function SpawnItem(item_id, traps)
 		Log.Error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
 		return
 	end
-
-	SeedRandom()
+	-- setting the random seed using arbitrary offsets that get modified on each spawn
+	local rand_x = GlobalsGetValue("ap_random_hax")
+	local rand_y = rand_x * 2
+	SeedRandom(rand_x, rand_y)
 
 	if item_id == AP.TRAP_ID then
 		if not traps then return end
 		BadTimes()
+		GlobalsSetValue("ap_random_hax", rand_x + 2)
 		Log.Info("Badtimes")
 	elseif item.perk ~= nil then
 		give_perk(item.perk)
@@ -52,9 +55,11 @@ function SpawnItem(item_id, traps)
 		add_money(item.gold_amount)
 	elseif item.potion ~= nil then
 		spawn_potion(item.items[1])
+		GlobalsSetValue("ap_random_hax", rand_x + 2)
 	elseif #item.items > 0 then
 		local item_to_spawn = item.items[Random(1, #item.items)]
 		EntityLoadAtPlayer(item_to_spawn, random_offset())
+		GlobalsSetValue("ap_random_hax", rand_x + 2)
 		Log.Info("Item spawned" .. item_to_spawn)
 	else
 		Log.Error("[AP] Item " .. tostring(item_id) .. " not properly configured")

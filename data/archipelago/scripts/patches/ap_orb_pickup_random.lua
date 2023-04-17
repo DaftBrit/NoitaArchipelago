@@ -11,7 +11,9 @@ function item_pickup( entity_item, entity_who_picked, item_name )
 	local entity_id = GetUpdatedEntityID()
 
 	local orb_id = getInternalVariableValue(entity_id, "OriginalID", "value_int")
-	GameAddFlagRun("ap_orb_" .. orb_id)
+	if orb_id ~= nil then
+		GameAddFlagRun("ap_orb_" .. orb_id)
+	end
 
 	EntityLoad( "data/entities/items/pickup/heart.xml", pos_x, pos_y )
 

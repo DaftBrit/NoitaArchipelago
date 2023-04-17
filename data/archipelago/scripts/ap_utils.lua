@@ -78,10 +78,14 @@ end
 
 
 -- Uses the player's position to initialize the random seed
-function SeedRandom()
+function SeedRandom(a, b)
+	if a == nil or b == nil then
+		a = 0
+		b = 0
+	end
 	for _, p in ipairs(get_players()) do
 		local x, y = EntityGetTransform(p)
-		SetRandomSeed(x, y)
+		SetRandomSeed(x + a, y + b)
 	end
 end
 
