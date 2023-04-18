@@ -50,12 +50,14 @@ local function APOrbInitRandom()
 			image_file = "data/archipelago/entities/items/icons/" .. orb_image .. ".png",
 			offset_x = 7,
 			offset_y = 20,
+			z_index = 0.8,
 		})
 
 		EntityAddComponent2(entity_id, "SpriteComponent", {
 			image_file = "data/archipelago/entities/items/icons/" .. check_type_icon .. ".png",
 			offset_x = 0,
 			offset_y = 10,
+			z_index = 0.7,
 		})
 	end
 end
