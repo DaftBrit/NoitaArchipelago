@@ -548,11 +548,15 @@ end
 
 
 -- Initializes the socket for AP communication
-function InitSocket()
+function InitSocket(secure)
 	local host = ModSettingGet("archipelago.server_address")
 	local port = ModSettingGet("archipelago.server_port")
 
-	local url = "ws://" .. host .. ":" .. port
+	local prefix = "ws://"
+	if secure then
+		prefix = "wss://"
+	end
+	local url = prefix .. host .. ":" .. port
 	Log.Info("Connecting to " .. url .. "...")
 
 	sock = pollnet.open_ws(url, 10 * 1024 * 1024)
@@ -596,6 +600,10 @@ local function CheckNetworkMessages()
 		if success == false then
 			if errmsg ~= nil then
 				ConnectionError(errmsg)
+				if errmsg:find("TLS") or errmsg:find("-2146893048") then
+					Log.Error("Something related to TLS failed, attempting to connect on unsecure protocol")
+					InitSocket(false)
+				end
 			end
 			break
 		end
@@ -626,12 +634,6 @@ local function CheckPlayerMovement()
 	end
 end
 
-
-function InitializeArchipelagoThread()
-	if not sock then
-		InitSocket()
-	end
-end
 
 ----------------------------------------------------------------------------------------------------
 -- NOITA CALLBACKS
@@ -683,8 +685,7 @@ function OnModInit()
 	GameRemoveFlagRun("AP_LocationInfo_received")
 	create_dir("archipelago_cache")
 	ConnIcon:create()
-	ConnIcon:setConnecting()
-	InitializeArchipelagoThread()
+	InitSocket(true)
 end
 
 function OnPlayerSpawned()

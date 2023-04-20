@@ -33,8 +33,7 @@ end
 
 function ConnIcon:create()
 	self.gui = GuiCreate()
-	self.state = STATE.DISCONNECTED
-	self.img_width, self.img_height = GuiGetImageDimensions(self.gui, self:img())
+	self:setConnecting()
 end
 
 function ConnIcon:update()
@@ -43,6 +42,10 @@ function ConnIcon:update()
 	GuiStartFrame(self.gui)
 
 	local screen_width, screen_height = GuiGetScreenDimensions(self.gui)
+
+	if not self.img_width or not self.img_height then
+		self.img_width, self.img_height = GuiGetImageDimensions(self.gui, self:img())
+	end
 
 	local x = screen_width - self.img_width - 8
 	local y = screen_height - self.img_height - 8
