@@ -5,7 +5,7 @@ local function ap_extend_snowcastle_cavern()
 
   -- Local constants
   local MAX_AP_ITEMS = AP.LAST_SECRET_SHOP_LOCATION_ID - AP.FIRST_SECRET_SHOP_LOCATION_ID + 1
-  local HIISI_BASE_ID = 4  -- Hiisi Base
+  local HIISI_BASE_ID = 2  -- Hiisi Base
 
   -- Locals
   local num_items = 0
