@@ -49,7 +49,7 @@ local player_slot_to_name = {}
 local current_player_slot = -1
 local sock = nil
 local game_is_paused = false
-local index = -1
+local stored_index = -1
 local new_checksums = false
 local is_player_spawned = false
 local goal_reached = false
@@ -337,9 +337,10 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(msg)
+	local recv_index = msg["index"]
 	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
 		-- we're in sync or we're continuing the game and receiving items in async
-		local recv_index = msg["index"]
+		local recv_count = #msg["items"]
 		local orb_count = 0
 		for _, item in pairs(msg["items"]) do
 			local item_id = item["item"]
@@ -357,9 +358,11 @@ function RECV_MSG.ReceivedItems(msg)
 						SpawnItem(item_id, true)
 					end
 				end
-				index = index + 1
-				if index ~= recv_index and not goal_reached then
+				stored_index = stored_index + 1
+				if stored_index ~= recv_index and not goal_reached then
 					SendCmd("Sync")
+					stored_index = recv_index + recv_count
+					print("stored index value was wrong, it is now " .. stored_index)
 				end
 			elseif item_id == AP.ORB_ITEM_ID then
 				orb_count = orb_count + 1
@@ -374,7 +377,7 @@ function RECV_MSG.ReceivedItems(msg)
 		local sender = -1
 		local table_length = 0
 		for _, item in pairs(msg["items"]) do
-			index = index + 1
+			stored_index = stored_index + 1
 			table_length = table_length + 1
 			local item_id = item["item"]
 			sender = item["player"]
@@ -390,7 +393,7 @@ function RECV_MSG.ReceivedItems(msg)
 				end
 			end
 		end
-		if sender == current_player_slot and index == 0 and table_length == 1 then
+		if sender == current_player_slot and recv_index == 0 and table_length == 1 then
 			-- player found their own item as their first item
 		elseif table_length == 1 then
 			-- first received item was sent by another player
