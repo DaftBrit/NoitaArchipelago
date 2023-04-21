@@ -63,14 +63,20 @@ local function APPedestalReplacer()
 	end
 
 	spawn_wands = function(x, y)
-		if not ap_replace_pedestals(x, y, "wand") then
+		-- check that we actually have the location info before spawning an ap pedestal
+		if GameHasFlagRun("AP_LocationInfo_received") then
+			if not ap_replace_pedestals(x, y, "wand") then
+				ap_old_spawn_wands(x, y)
+			end
+		else
 			ap_old_spawn_wands(x, y)
+			print("wand pedestal spawned vanilla because it spawned beore location info was done")
 		end
 	end
 
 	spawn_potions = function(x, y)
 		-- fungal caverns has a ridiculous number of pedestals, this will cool it down a little
-		if BiomeMapGetName(x, y) ~= "$biome_fungicave" then
+		if BiomeMapGetName(x, y) ~= "$biome_fungicave" and GameHasFlagRun("AP_LocationInfo_received") then
 			if not ap_replace_pedestals(x, y, "potion") then
 				ap_old_spawn_potions(x, y)
 			end
