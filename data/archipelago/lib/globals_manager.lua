@@ -8,7 +8,8 @@ end
 
 -- Gets a global, returned as a string. Automatically converts `default_value` to a number.
 function GlobalImpl:get(default_value)
-	return GlobalsGetValue(self.key, tostring(default_value) or "")
+	default_value = default_value or ""
+	return GlobalsGetValue(self.key, tostring(default_value))
 end
 
 -- Gets a global, returned as a number.

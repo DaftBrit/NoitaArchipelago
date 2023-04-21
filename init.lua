@@ -206,8 +206,6 @@ end
 -- Function names must match corresponding command name
 local RECV_MSG = {}
 
-local LOAD_KEY = "AP_FIRST_LOAD_DONE"
-
 local function ConnectionError(msg_str)
 	Log.Error(msg_str)
 	ConnIcon:setDisconnected(msg_str)
@@ -251,6 +249,30 @@ function SendConnect()
 end
 
 
+local function SpawnAllNewGameItems()
+	local ng_items = {}
+	for _, item in ipairs(Cache.ItemDelivery:reference()) do
+		local item_id = item["item"]
+		ng_items[item_id] = (ng_items[item_id] or 0) + 1
+	end
+	NGSpawnItems(ng_items)
+end
+
+
+local function RestoreNewGameItems()
+	if not Globals.FirstLoadDone:is_set() then
+		Globals.FirstLoadDone:set(1)
+
+		ResetOrbID()
+		SpawnAllNewGameItems()
+
+		if ModSettingGet("archipelago.debug_items") == true then
+			give_debug_items()
+		end
+	end
+end
+
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected(msg)
 	SendCmd("Sync")
@@ -259,33 +281,17 @@ function RECV_MSG.Connected(msg)
 	slot_options = msg["slot_data"]
 
 	Globals.PlayerSlot:set(current_player_slot)
-	-- todo: figure out why the below block doesn't work
-	--if Globals.LoadKey:get() ~= "1" then
-	--	print("new game has been started")
-	--	Globals.LoadKey:set("1")
-	--	Cache.ItemDelivery:reset()
-	--	ResetOrbID()
-	--	give_debug_items()
-	--	--putting fully_heal() here doesn't work, it heals the player before redelivery of hearts
-	--else
-	--	print("continued the game")
-	--end
 	ConnIcon:setConnected()
+
 	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
-	if GlobalsGetValue(LOAD_KEY, "0") ~= "1" then
-		Cache.ItemDelivery:reset()
-		--GlobalsSetValue(LOAD_KEY, "1")
-		ResetOrbID()
-		--if ModSettingGet("archipelago.debug_items") == true then
-		--	give_debug_items()
-		--end
-	end
+	RestoreNewGameItems()
 
 	-- Retrieve all chest location ids the server is considering
 	local missing_locations_set = {}
 	local peds_list = {}
 	local peds_checklist = {}
 	for _, biome_data in pairs(Biomes) do
+		-- TODO move this out to biome_mapping.lua as `is_pedestal_location`
 		for i = biome_data.first_ped, biome_data.first_ped + 19 do
 			peds_list[i] = true
 		end
@@ -335,84 +341,57 @@ function RECV_MSG.DataPackage(msg)
 end
 
 
+local function CheckItemSync(msg)
+	local next_item_index = msg["index"]
+
+	local num_received_items = #Cache.ItemDelivery.num_items()
+	if next_item_index ~= num_received_items then
+		local items_missed = next_item_index - num_received_items
+		Log.Error("Missed " .. tostring(items_missed) .. " item(s) from the server, attempting to resync.")
+		SendCmd("Sync")
+		-- TODO: We also need to send LocationChecks for everything we've checked, per the network API specification
+		-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
+		return false
+	end
+	return true
+end
+
+
+local function SpawnReceivedItem(item)
+	local item_id = item["item"]
+	if ShouldDeliverItem(item) then
+		if GameHasFlagRun("ap_spawn_kill_saver") then
+			SpawnItem(item_id, true)
+		elseif item_table[item_id].redeliverable then
+			SpawnItem(item_id, false)
+		end
+	end
+end
+
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(msg)
-	local recv_index = msg["index"]
-	if GlobalsGetValue(LOAD_KEY, "0") == "1" then
-		-- we're in sync or we're continuing the game and receiving items in async
-		local recv_count = #msg["items"]
-		local orb_count = 0
-		for _, item in pairs(msg["items"]) do
-			local item_id = item["item"]
-			local sender = item["player"]
-			local location_id = item["location"]
-
-			local cache_key = Cache.make_key(sender, location_id)
-			-- items given through the server console have a location ID of -1
-			if location_id == -1 and recv_index ~= 0 then
-				SpawnItem(item_id, true)
-				index = index + 1
-			elseif not Cache.ItemDelivery:is_set(cache_key) then
-				Cache.ItemDelivery:set(cache_key)
-
-				if not GameHasFlagRun("ap_spawn_kill_saver") and item_table[item_id].redeliverable then
-					SpawnItem(item_id, false)
-				elseif GameHasFlagRun("ap_spawn_kill_saver") then
-					if ShouldDeliverItem(item) then
-						SpawnItem(item_id, true)
-					end
-				end
-				stored_index = stored_index + 1
-				if stored_index ~= recv_index and not goal_reached then
-					SendCmd("Sync")
-					stored_index = recv_index + recv_count
-					print("stored index value was wrong, it is now " .. stored_index)
-				end
-			elseif item_id == AP.ORB_ITEM_ID then
-				orb_count = orb_count + 1
-			end
-		end
-		if recv_index == 0 then
-			GivePlayerOrbsOnSpawn(orb_count)
-		end
+	local next_item_index = msg["index"]
+	if next_item_index ~= 0 then
+		if not CheckItemSync(msg) then return end
 	else
-		-- we're starting a new game
-		local ng_items = {}
-		local sender = -1
-		local table_length = 0
-		for _, item in pairs(msg["items"]) do
-			stored_index = stored_index + 1
-			table_length = table_length + 1
-			local item_id = item["item"]
-			sender = item["player"]
-			local location_id = item["location"]
-			local cache_key = Cache.make_key(sender, location_id)
-			Cache.ItemDelivery:set(cache_key)
-			-- count up the items that should be delivered on new game
-			if item_table[item_id].newgame then
-				if ng_items[item_id] == nil then
-					ng_items[item_id] = 1
-				else
-					ng_items[item_id] = ng_items[item_id] + 1
-				end
-			end
-		end
-		if sender == current_player_slot and recv_index == 0 and table_length == 1 then
-			-- player found their own item as their first item
-		elseif table_length == 1 then
-			-- first received item was sent by another player
-			for item, _ in ng_items do
-				if GameHasFlagRun("ap_spawn_kill_saver") and item_table[item].redeliverable == true then
-					SpawnItem(item, false)
-				else
-					SpawnItem(item, true)
-				end
-			end
-		else
-			NGSpawnItems(ng_items)
-		end
-		GlobalsSetValue(LOAD_KEY, "1")
+		-- TODO: Abandon previous inventory?
+		-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 	end
+
+	local orb_count = 0
+	for i, item in ipairs(msg["items"]) do
+		local current_item_index = next_item_index + i
+
+		-- we're in sync or we're continuing the game and receiving items in async
+		if not Cache.ItemDelivery:is_set(current_item_index) then
+			Cache.ItemDelivery:set(current_item_index, item)
+			SpawnReceivedItem(item)
+		elseif item["item"] == AP.ORB_ITEM_ID then
+			orb_count = orb_count + 1
+		end
+	end
+	GivePlayerOrbsOnSpawn(orb_count)
 end
 
 
@@ -648,14 +627,6 @@ local function CheckGlobalsAndFlags()
 end
 
 
-local function CheckPlayerMovement()
-	local movement = isMovingRight()
-	if movement then
-		GlobalsSetValue(LOAD_KEY, "1")
-	end
-end
-
-
 ----------------------------------------------------------------------------------------------------
 -- NOITA CALLBACKS
 ----------------------------------------------------------------------------------------------------
@@ -668,9 +639,6 @@ function OnWorldPostUpdate()
 	if is_player_spawned then
 		CheckNetworkMessages()
 		CheckGlobalsAndFlags()
-	end
-	if GlobalsGetValue(LOAD_KEY, "0") == "0" then
-		CheckPlayerMovement()
 	end
 end
 

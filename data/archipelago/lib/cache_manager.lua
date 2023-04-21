@@ -52,11 +52,6 @@ function Cache:write()
 	_G[self.dirty_id] = false
 end
 
-function Cache.make_key(...)
-	local arg = {...}
-	return table.concat(arg, "|")
-end
-
 function Cache:check_dirty()
 	if _G[self.dirty_id] then
 		self:restore()

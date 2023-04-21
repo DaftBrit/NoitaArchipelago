@@ -155,12 +155,6 @@ function DecreaseExtraLife(entity_id)
 end
 
 
-function isMovingRight()
-	local control = EntityGetFirstComponent(get_player(), "ControlsComponent")
-	return ComponentGetValue2(control, "mButtonDownRight")
-end
-
-
 -- health and money functions from the cheatgui mod
 function get_health()
 	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
