@@ -275,7 +275,6 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected(msg)
-	SendCmd("Sync")
 	GamePrint("$ap_connected_to_server")
 	current_player_slot = msg["slot"]
 	slot_options = msg["slot_data"]
