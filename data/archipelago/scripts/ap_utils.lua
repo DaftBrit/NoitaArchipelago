@@ -312,6 +312,28 @@ function create_foreign_item_entity(location, x, y)
 end
 
 
+function countdown_fun()
+	local player_id = get_player()
+	local x, y = EntityGetTransform(player_id)
+	for i = 0, 1 do
+		local projectile_id = shoot_projectile(player_id, "data/entities/projectiles/deck/bullet.xml", x - 5 + 10 * i, y, -400 + 800 * i, -400)
+		EntityAddComponent2(projectile_id, "ParticleEmitterComponent", {
+			emitted_material_name="material_rainbow",
+			emit_real_particles=true,
+			color_is_based_on_pos=true,
+			x_pos_offset_min=-2.236,
+			y_pos_offset_min=-2.236,
+			x_pos_offset_max=2.236,
+			y_pos_offset_max=2.236,
+			emission_interval_min_frames=0,
+			emission_interval_max_frames=0,
+			is_trail=true,
+			draw_as_long=true,
+		})
+	end
+end
+
+
 function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
