@@ -446,6 +446,7 @@ local function ParseJSONParts(data)
 end
 
 
+local prev_countdown_number = -1
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
 function RECV_MSG.PrintJSON(msg)
 	if msg["type"] == "ItemSend" then
@@ -463,6 +464,18 @@ function RECV_MSG.PrintJSON(msg)
 			GamePrintImportant(item_name, msg_str)
 		else
 			GamePrint(msg_str)
+		end
+	elseif msg["type"] == "Countdown" then
+		local countdown_number = msg["countdown"]
+		if countdown_number == 0 then
+			countdown_fun()
+			GamePrint("GO!")
+		else
+			-- it displays 10 twice otherwise
+			if countdown_number ~= prev_countdown_number then
+				GamePrint(countdown_number)
+			end
+			prev_countdown_number = countdown_number
 		end
 	else
 		Log.Warn("Unsupported PrintJSON type " .. msg["type"])

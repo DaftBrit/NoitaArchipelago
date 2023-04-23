@@ -1,4 +1,5 @@
 dofile("data/scripts/lib/mod_settings.lua") -- see this file for documentation on some of the features.
+dofile("data/scripts/lib/utilities.lua") -- for GUI_OPTION
 
 -- This file can't access other files from this or other mods in all circumstances.
 -- Settings will be automatically saved.
@@ -69,9 +70,24 @@ local function translate(msg)
 	return translation_table[lang_id] or translation_table["en"] or msg
 end
 
+-- Global override to create clear field buttons (pretty much just a hack)
+OldGuiTextInput = GuiTextInput
+GuiTextInput = function(gui, id, x, y, text, width, max_length, allowed_characters)
+	GuiOptionsAdd(gui, GUI_OPTION.Layout_InsertOutsideRight)
+	GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 0.5)
+	local cleared = GuiButton(gui, id + 69420, x + 100, y, "X")
+	GuiOptionsRemove(gui, GUI_OPTION.Layout_InsertOutsideRight)
+
+	local value = OldGuiTextInput(gui, id, x, y, text, width, max_length, allowed_characters)
+	if cleared then
+		return ""
+	end
+	return value
+end
+
 local mod_id = "archipelago" -- This should match the name of your mod's folder.
 mod_settings_version = 1 -- This is a magic global that can be used to migrate settings to new mod versions. call mod_settings_get_version() before mod_settings_update() to get the old value. 
-mod_settings = 
+local mod_settings = 
 {
 	{
 		image_filename = "data/archipelago/logo.png",
