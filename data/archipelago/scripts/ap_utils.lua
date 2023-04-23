@@ -48,10 +48,11 @@ function spawn_potion(potion, x, y)
 	end
 
 	local potion_entity = EntityLoad(potion, random_offset(x, y))
-	local physics_damage_comp = EntityGetFirstComponentIncludingDisabled(potion_entity, "PhysicsBodyCollisionDamageComponent")
-	if physics_damage_comp ~= nil then
-		ComponentSetValue2(physics_damage_comp, "damage_multiplier", 0)
+	local damage_model_comp = EntityGetFirstComponentIncludingDisabled(potion_entity, "DamageModelComponent")
+	if damage_model_comp ~= nil then
+		ComponentSetValue2(damage_model_comp, "invincibility_frames", 90)
 	end
+	EntityConvertToMaterial(potion_entity, "ap_gorilla_glass")
 
 	EntityAddComponent(potion_entity, "LuaComponent", {
 		script_source_file="data/archipelago/scripts/items/potion_saver_remover.lua",

@@ -348,7 +348,11 @@ function RECV_MSG.ReceivedItems(msg)
 			local location_id = item["location"]
 
 			local cache_key = Cache.make_key(sender, location_id)
-			if not Cache.ItemDelivery:is_set(cache_key) then
+			-- items given through the server console have a location ID of -1
+			if location_id == -1 and recv_index ~= 0 then
+				SpawnItem(item_id, true)
+				index = index + 1
+			elseif not Cache.ItemDelivery:is_set(cache_key) then
 				Cache.ItemDelivery:set(cache_key)
 
 				if not GameHasFlagRun("ap_spawn_kill_saver") and item_table[item_id].redeliverable then
@@ -478,7 +482,8 @@ function RECV_MSG.PrintJSON(msg)
 			prev_countdown_number = countdown_number
 		end
 	else
-		Log.Warn("Unsupported PrintJSON type " .. msg["type"])
+		local msg_type = msg["type"] or "none"
+		Log.Warn("Unsupported PrintJSON type " .. msg_type)
 		if msg["data"] ~= nil then
 			local msg_str = ParseJSONParts(msg["data"])
 			GamePrint(msg_str)

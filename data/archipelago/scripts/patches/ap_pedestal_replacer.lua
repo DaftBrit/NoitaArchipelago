@@ -55,6 +55,24 @@ local function APPedestalReplacer()
 					_tags="archipelago",
 					script_item_picked_up="data/archipelago/scripts/items/ap_pedestal_processed.lua",
 				})
+				local particle_comp = EntityAddComponent(ap_pedestal_id, "SpriteParticleEmitterComponent", {
+					sprite_file="data/archipelago/entities/items/icon-useful.png",
+					lifetime=6,
+					additive=true,
+					emissive=true,
+					velocity_slowdown=5,
+					velocity_always_away_from_center=true,
+					count_min=1,
+					count_max=1,
+					emission_interval_min_frames=60,
+					emission_interval_max_frames=90,
+				})
+				-- EntityAddComponent can't set multi-value types
+				ComponentSetValue2(particle_comp, "color", 1, 1, 1, .4)
+				ComponentSetValue2(particle_comp, "color_change", 0, 0, 0, -.2)
+				ComponentSetValue2(particle_comp, "scale", 0.15, 0.15)
+				ComponentSetValue2(particle_comp, "scale_velocity", 0.2, 0.2)
+				ComponentSetValue2(particle_comp, "randomize_rotation", 0, 50)
 				return true
 			end
 		end
