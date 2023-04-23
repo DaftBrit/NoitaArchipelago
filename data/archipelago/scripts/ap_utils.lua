@@ -48,9 +48,13 @@ function spawn_potion(potion, x, y)
 	end
 
 	local potion_entity = EntityLoad(potion, random_offset(x, y))
-	local physics_damage_comp = EntityGetFirstComponentIncludingDisabled(potion_entity, "PhysicsBodyCollisionDamageComponent")
-	if physics_damage_comp ~= nil then
-		ComponentSetValue2(physics_damage_comp, "damage_multiplier", 0)
+	local damage_model_comp = EntityGetFirstComponentIncludingDisabled(potion_entity, "DamageModelComponent")
+	local explode_comp = EntityGetFirstComponentIncludingDisabled(potion_entity, "ExplodeOnDamageComponent")
+	if damage_model_comp ~= nil then
+		ComponentSetValue2(damage_model_comp, "invincibility_frames", 90)
+	end
+	if explode_comp ~= nil then
+		ComponentSetValue2(explode_comp, "physics_body_destruction_required", 1)
 	end
 
 	EntityAddComponent(potion_entity, "LuaComponent", {
