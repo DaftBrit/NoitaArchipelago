@@ -1,4 +1,4 @@
-<Entity tags="teleportable_NOT,item_physics,chest,item_pickup,indestructible,ap_chest">
+<Entity tags="teleportable_NOT,item_physics,chest,item_pickup,indestructible,ap_chest,forgeable">
     <UIInfoComponent
             name="$ap_chest_random"
     >

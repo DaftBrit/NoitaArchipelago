@@ -4,7 +4,7 @@
     name="ap_gorilla_glass"
     ui_name="$mat_potion_glass_box2d"
     tags="[box2d],[matter_eater_ignore_list],[sunbaby_ignore_list],[indestructible]"
-    wang_color="ff223443"
+    wang_color="ff223447"
     durability="18"
     audio_physics_material_solid="glass"
     platform_type="1"
