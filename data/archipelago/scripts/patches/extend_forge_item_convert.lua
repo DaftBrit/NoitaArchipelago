@@ -39,6 +39,21 @@ local function ap_extend_forge_item_convert()
 			converted = true
 		end
 	end
+	for _, id in pairs(EntityGetInRadiusWithTag(pos_x, pos_y, 70, "ap_chest")) do
+		if EntityGetRootEntity(id) == id then
+			local x, y = EntityGetTransform(id)
+			local item_comps = EntityGetComponent( id, "ItemComponent" ) or {}
+			local item_name
+			for _, itemc in ipairs(item_comps) do
+				item_name = ComponentGetValue( itemc, "item_name" )
+				if ( item_name == "$ap_chest_random" ) then
+					EntityKill(id)
+					EntityLoad("data/entities/props/physics_skateboard.xml", x, y)
+					EntityLoad("data/entities/animals/longleg.xml", x, y-10)
+				end
+			end
+		end
+	end
 	if converted then
 		GameTriggerMusicFadeOutAndDequeueAll( 3.0 )
 		GameTriggerMusicEvent( "music/oneshot/dark_01", true, pos_x, pos_y )
