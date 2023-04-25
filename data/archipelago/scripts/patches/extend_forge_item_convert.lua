@@ -49,7 +49,9 @@ local function ap_extend_forge_item_convert()
 				if ( item_name == "$ap_chest_random" ) then
 					EntityKill(id)
 					EntityLoad("data/entities/props/physics_skateboard.xml", x, y)
-					EntityLoad("data/entities/animals/longleg.xml", x, y-10)
+					local hamis = EntityLoad("data/entities/animals/longleg.xml", x, y-10)
+					local ai_comp = EntityGetFirstComponent(hamis, "AnimalAIComponent")
+					ComponentSetValue2(ai_comp, "mAggression", 0)
 				end
 			end
 		end
