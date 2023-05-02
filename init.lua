@@ -276,9 +276,9 @@ function RECV_MSG.Connected(msg)
 		Cache.ItemDelivery:reset()
 		--GlobalsSetValue(LOAD_KEY, "1")
 		ResetOrbID()
-		if ModSettingGet("archipelago.debug_items") == true then
-			give_debug_items()
-		end
+		--if ModSettingGet("archipelago.debug_items") == true then
+		--	give_debug_items()
+		--end
 	end
 
 	-- Retrieve all chest location ids the server is considering
