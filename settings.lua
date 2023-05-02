@@ -147,13 +147,13 @@ local mod_settings =
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
-			{
-				id = "debug_items",
-				ui_name = translate("$ap_menu_server_settings_debug_items_name"),
-				ui_description = translate("$ap_menu_server_settings_debug_items_desc"),
-				value_default = false,
-				scope = MOD_SETTING_SCOPE_NEW_GAME,
-			},
+			--{
+			--	id = "debug_items",
+			--	ui_name = translate("$ap_menu_server_settings_debug_items_name"),
+			--	ui_description = translate("$ap_menu_server_settings_debug_items_desc"),
+			--	value_default = false,
+			--	scope = MOD_SETTING_SCOPE_NEW_GAME,
+			--},
 		},
 	},
 }
