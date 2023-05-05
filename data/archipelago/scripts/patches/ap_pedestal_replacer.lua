@@ -46,11 +46,6 @@ local function APPedestalReplacer()
 				local ap_pedestal_id = nil
 				if location.is_our_item and item and item_id ~= AP.TRAP_ID then
 					ap_pedestal_id = create_our_item_entity(item, x, y)
-					addNewInternalVariable(ap_pedestal_id, "ap_location_id", "value_int", i)
-					EntityAddComponent(ap_pedestal_id, "LuaComponent", {
-						_tags="archipelago",
-						script_item_picked_up="data/archipelago/scripts/items/ap_pedestal_processed.lua",
-					})
 					local particle_comp = EntityAddComponent(ap_pedestal_id, "SpriteParticleEmitterComponent", {
 						sprite_file="data/archipelago/entities/items/icon-useful.png",
 						lifetime=6,
@@ -72,6 +67,11 @@ local function APPedestalReplacer()
 				else
 					ap_pedestal_id = create_foreign_item_entity(location, x, y)
 				end
+				addNewInternalVariable(ap_pedestal_id, "ap_location_id", "value_int", i)
+				EntityAddComponent(ap_pedestal_id, "LuaComponent", {
+					_tags="archipelago",
+					script_item_picked_up="data/archipelago/scripts/items/ap_pedestal_processed.lua",
+				})
 				return true
 			end
 		end

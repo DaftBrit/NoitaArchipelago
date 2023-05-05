@@ -5,7 +5,7 @@ local Log = dofile("data/archipelago/scripts/logger.lua")
 
 
 function contains_element(tbl, elem)
-	for _, v in ipairs(tbl) do
+	for _, v in ipairs(tbl or {}) do
 		if v == elem then return true end
 	end
 	return false
