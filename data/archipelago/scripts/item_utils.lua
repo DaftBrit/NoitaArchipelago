@@ -112,7 +112,7 @@ function NGSpawnItems(item_counts)
 				give_perk(item_table[item].perk)
 			end
 			item_table[item] = nil
-		else
+		elseif item ~= AP.TRAP_ID then
 			-- spawn the rest of the items on the cave floor
 			for _ = 1, quantity do
 				if #item_table[item].items > 0 then
