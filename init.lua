@@ -266,9 +266,9 @@ local function RestoreNewGameItems()
 		ResetOrbID()
 		SpawnAllNewGameItems()
 
-		if ModSettingGet("archipelago.debug_items") == true then
-			give_debug_items()
-		end
+		--if ModSettingGet("archipelago.debug_items") == true then
+		--	give_debug_items()
+		--end
 	end
 end
 
