@@ -373,7 +373,7 @@ end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
-function RECV_MSG.i(msg)
+function RECV_MSG.ReceivedItems(msg)
 	local next_item_index = msg["index"]
 	if next_item_index ~= 0 then
 		if not CheckItemSync(msg) then return end
