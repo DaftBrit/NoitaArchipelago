@@ -90,6 +90,7 @@ function Cache:is_empty()
 end
 
 function Cache:reference()
+	self:check_dirty()
 	return _G[self.cache_id]
 end
 
