@@ -17,7 +17,7 @@ function not_empty(s)
 end
 
 
-local function get_player()
+function get_player()
 	return EntityGetWithTag("player_unit")[1]
 end
 
@@ -152,12 +152,6 @@ function DecreaseExtraLife(entity_id)
 		end
 	end
 	return false
-end
-
-
-function isMovingRight()
-	local control = EntityGetFirstComponent(get_player(), "ControlsComponent")
-	return ComponentGetValue2(control, "mButtonDownRight")
 end
 
 

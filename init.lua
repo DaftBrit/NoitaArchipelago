@@ -648,9 +648,11 @@ local function CheckGlobalsAndFlags()
 end
 
 
-local function CheckPlayerMovement()
-	local movement = isMovingRight()
-	if movement then
+local function CheckPlayerEntered()
+	local player_id = get_player() or -1
+	local x, _ = EntityGetTransform(player_id) or 0
+	if x > 575 then
+		print("setting load key in CheckPlayerEntered")
 		GlobalsSetValue(LOAD_KEY, "1")
 	end
 end
@@ -670,7 +672,7 @@ function OnWorldPostUpdate()
 		CheckGlobalsAndFlags()
 	end
 	if GlobalsGetValue(LOAD_KEY, "0") == "0" then
-		CheckPlayerMovement()
+		CheckPlayerEntered()
 	end
 end
 
