@@ -253,7 +253,9 @@ local function SpawnAllNewGameItems()
 	local ng_items = {}
 	for _, item in ipairs(Cache.ItemDelivery:reference()) do
 		local item_id = item["item"]
-		ng_items[item_id] = (ng_items[item_id] or 0) + 1
+		if item_table[item_id].newgame then
+			ng_items[item_id] = (ng_items[item_id] or 0) + 1
+		end
 	end
 	Log.Info("spawning starting items: " .. JSON:encode(ng_items))
 
