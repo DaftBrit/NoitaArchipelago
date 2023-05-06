@@ -255,6 +255,8 @@ local function SpawnAllNewGameItems()
 		local item_id = item["item"]
 		ng_items[item_id] = (ng_items[item_id] or 0) + 1
 	end
+	Log.Info("spawning starting items: " .. JSON:encode(ng_items))
+
 	NGSpawnItems(ng_items)
 end
 
@@ -343,7 +345,7 @@ end
 local function CheckItemSync(msg)
 	local next_item_index = msg["index"]
 
-	local num_received_items = #Cache.ItemDelivery.num_items()
+	local num_received_items = Cache.ItemDelivery.num_items()
 	if next_item_index ~= num_received_items then
 		local items_missed = next_item_index - num_received_items
 		Log.Error("Missed " .. tostring(items_missed) .. " item(s) from the server, attempting to resync.")
