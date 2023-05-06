@@ -347,7 +347,7 @@ end
 local function CheckItemSync(msg)
 	local next_item_index = msg["index"]
 
-	local num_received_items = Cache.ItemDelivery.num_items()
+	local num_received_items = Cache.ItemDelivery:num_items()
 	if next_item_index ~= num_received_items then
 		local items_missed = next_item_index - num_received_items
 		Log.Error("Missed " .. tostring(items_missed) .. " item(s) from the server, attempting to resync.")
@@ -373,7 +373,7 @@ end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
-function RECV_MSG.ReceivedItems(msg)
+function RECV_MSG.i(msg)
 	local next_item_index = msg["index"]
 	if next_item_index ~= 0 then
 		if not CheckItemSync(msg) then return end
