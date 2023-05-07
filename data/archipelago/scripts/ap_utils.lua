@@ -355,10 +355,11 @@ local function dir_exists(dirname)
 	-- Universal way of checking whether a file or directory exists
 	local ok, err = os.rename(dirname, dirname)
 	if not ok and err then
-		 if err:find("permission") then
+		 if err:find("[Pp]ermission") then
 				-- Permission denied, but it exists
 				return true
 		 end
+		 Log.Error(err)
 	end
 	return ok
 end

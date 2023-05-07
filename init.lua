@@ -318,11 +318,11 @@ function RECV_MSG.DataPackage(msg)
 	for game, data in pairs(msg["data"]["games"]) do
 		for item_name, item_id in pairs(data["item_name_to_id"]) do
 			-- Some games like Hollow Knight use underscores for whatever reason
-			item_names[item_id] = string.gsub(item_name, "_", " ")
+			item_names[tostring(item_id)] = string.gsub(item_name, "_", " ")
 		end
 
 		for location_name, location_id in pairs(data["location_name_to_id"]) do
-			location_names[location_id] = string.gsub(location_name, "_", " ")
+			location_names[tostring(location_id)] = string.gsub(location_name, "_", " ")
 		end
 
 		checksums[game] = data["checksum"]
@@ -421,9 +421,9 @@ local function ParseJSONPart(part)
 	if part["type"] == "player_id" then
 		result = player_slot_to_name[tonumber(part["text"])]
 	elseif part["type"] == "item_id" then
-		result = Cache.ItemNames:get(tonumber(part["text"]))
+		result = Cache.ItemNames:get(part["text"])
 	elseif part["type"] == "location_id" then
-		result = Cache.LocationNames:get(tonumber(part["text"]))
+		result = Cache.LocationNames:get(part["text"])
 	elseif part["type"] == "color" then
 		Log.Info("Found colour in message: " .. part["color"])
 		result = ""	-- TODO color not supported
