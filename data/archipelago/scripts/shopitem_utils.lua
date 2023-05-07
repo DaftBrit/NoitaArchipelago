@@ -40,8 +40,8 @@ function ShopItems.create_our_item_entity(item, x, y)
 		-- our item is something else (random choice)
 		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
 		if item.gold_amount ~= 0 then
-				local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
-				EntityRemoveComponent(entity_id, life_comp)
+			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+			EntityRemoveComponent(entity_id, life_comp)
 		end
 		return entity_id
 	else -- error?
@@ -102,7 +102,10 @@ function ShopItems.generate_ap_shop_item_entity(location_id, x, y)
 	local item = item_table[item_id]
 
 	if location.is_our_item and item and item_id ~= AP.TRAP_ID then
-		return ShopItems.create_our_item_entity(item, x, y), false
+		local shop_item_id = ShopItems.create_our_item_entity(item, x, y)
+		EntityAddTag(shop_item_id, "my_ap_item")
+		addNewInternalVariable(shop_item_id, "ap_location_id", "value_string", location_id)
+		return shop_item_id, false
 	else
 		return ShopItems.create_foreign_item_entity(location, x, y), true
 	end

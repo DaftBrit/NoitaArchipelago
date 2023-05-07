@@ -143,11 +143,19 @@ end
 
 
 local function ShouldDeliverItem(item)
+	local item_id = item["item"]
+	local location_id = item["location"]
 	if item["player"] == current_player_slot then
-		if item["location"] >= AP.FIRST_SHOP_LOCATION_ID and item["location"] <= AP.LAST_SHOP_LOCATION_ID then
-			return false	-- Don't deliver shopitems, they are given locally
-		elseif item["location"] >= AP.FIRST_BIOME_LOCATION_ID and item["location"] <= AP.LAST_BIOME_LOCATION_ID then
-			return false	-- Don't deliver biome items, they are given locally
+		if GameHasFlagRun("ap" .. item_id) then
+			if location_id >= AP.FIRST_SHOP_LOCATION_ID and location_id <= AP.LAST_SHOP_LOCATION_ID then
+				return false	-- Don't deliver shopitems, they are given locally
+			elseif location_id >= AP.FIRST_BIOME_LOCATION_ID and location_id <= AP.LAST_BIOME_LOCATION_ID then
+				return false	-- Don't deliver biome items, they are given locally
+			end
+			GameRemoveFlagRun("ap" .. item_id)
+		else
+			-- this is an item your co-op partner picked up in slot co-op
+			remove_slot_coop_item(location_id)
 		end
 	end
 	return true
@@ -362,6 +370,7 @@ end
 
 local function SpawnReceivedItem(item)
 	local item_id = item["item"]
+	GameAddFlagRun("ap" .. item_id)
 	if ShouldDeliverItem(item) then
 		if GameHasFlagRun("ap_spawn_kill_saver") then
 			SpawnItem(item_id, true)
