@@ -17,7 +17,7 @@ function not_empty(s)
 end
 
 
-local function get_player()
+function get_player()
 	return EntityGetWithTag("player_unit")[1]
 end
 
