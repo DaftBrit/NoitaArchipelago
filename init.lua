@@ -257,12 +257,43 @@ function SendConnect()
 end
 
 
-local function SpawnAllNewGameItems()
+local function SpawnReceivedItem(item)
+	local item_id = item["item"]
+	GameAddFlagRun("ap" .. item_id)
+	if ShouldDeliverItem(item) then
+		if GameHasFlagRun("ap_spawn_kill_saver") then
+			SpawnItem(item_id, true)
+		elseif item_table[item_id].redeliverable then
+			SpawnItem(item_id, false)
+		end
+	end
+end
+
+
+local function SpawnAllNewGameItems(first_connect_msg)
 	local ng_items = {}
-	for _, item in ipairs(Cache.ItemDelivery:reference()) do
-		local item_id = item["item"]
-		if item_table[item_id].newgame then
-			ng_items[item_id] = (ng_items[item_id] or 0) + 1
+	if #Cache.ItemDelivery:reference() == 0 then
+		print("first time connected, do modified new game items during ReceivedItems")
+		GameAddFlagRun("ap_first_time_connected")
+	end
+	if first_connect_msg then
+		local next_item_index = 0
+		for i, item in ipairs(first_connect_msg["items"]) do
+			local current_item_index = next_item_index + i
+			Cache.ItemDelivery:set(current_item_index, item)
+			local item_id = item["item"]
+			if item_table[item_id].newgame then
+				ng_items[item_id] = (ng_items[item_id] or 0) + 1
+			elseif item_table[item_id].redeliverable and item_id ~= AP.REFRESH_ITEM_ID then
+				SpawnReceivedItem(item)
+			end
+		end
+	else
+		for _, item in ipairs(Cache.ItemDelivery:reference()) do
+			local item_id = item["item"]
+			if item_table[item_id].newgame then
+				ng_items[item_id] = (ng_items[item_id] or 0) + 1
+			end
 		end
 	end
 	Log.Info("spawning starting items: " .. JSON:encode(ng_items))
@@ -368,19 +399,6 @@ local function CheckItemSync(msg)
 end
 
 
-local function SpawnReceivedItem(item)
-	local item_id = item["item"]
-	GameAddFlagRun("ap" .. item_id)
-	if ShouldDeliverItem(item) then
-		if GameHasFlagRun("ap_spawn_kill_saver") then
-			SpawnItem(item_id, true)
-		elseif item_table[item_id].redeliverable then
-			SpawnItem(item_id, false)
-		end
-	end
-end
-
-
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(msg)
 	local next_item_index = msg["index"]
@@ -392,6 +410,10 @@ function RECV_MSG.ReceivedItems(msg)
 	end
 
 	local orb_count = 0
+	if GameHasFlagRun("ap_first_time_connected") then
+		SpawnAllNewGameItems(msg)
+		GameRemoveFlagRun("ap_first_time_connected")
+	end
 	for i, item in ipairs(msg["items"]) do
 		local current_item_index = next_item_index + i
 

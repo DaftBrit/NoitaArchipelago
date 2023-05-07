@@ -105,7 +105,7 @@ function NGSpawnItems(item_counts)
 		
 		elseif item == AP.MAP_PERK_ID then
 			-- spawn the map perk on the ground, in case you find it distracting
-			perk_spawn(813, -90, item_table[item].perk)
+			perk_spawn(813, -96, item_table[item].perk)
 			item_counts[item] = nil
 			
 		elseif item_table[item].perk ~= nil then
