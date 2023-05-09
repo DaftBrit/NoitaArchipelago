@@ -84,5 +84,6 @@ function item_pickup(entity_item, entity_who_picked, name)
 	local data = get_transferred_values(entity_item)
 	local component_id = get_variable_storage_component(entity_item, "ap_shop_data")
 	EntityRemoveComponent(entity_item, component_id)
+	GameAddFlagRun("ap" .. data.location_id)
 	Globals.LocationUnlockQueue:append(data.location_id)
 end

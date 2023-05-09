@@ -259,7 +259,6 @@ end
 
 local function SpawnReceivedItem(item)
 	local item_id = item["item"]
-	GameAddFlagRun("ap" .. item_id)
 	if ShouldDeliverItem(item) then
 		if GameHasFlagRun("ap_spawn_kill_saver") then
 			SpawnItem(item_id, true)
@@ -430,13 +429,12 @@ end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#RoomUpdate
+-- [{"cmd":"RoomUpdate","hint_points":2,"checked_locations":[110002]}] when you pick up an item
+-- when someone else checks a location, this is not sent. It is only sent when you send a location check.
 function RECV_MSG.RoomUpdate(msg)
-	local players = msg["players"] -- list in format [ { "team": 0, "slot": 1, "alias": "Alias Name", "name": "Slot Name"} , ]
-	local locations = msg["checked_locations"] -- list[int]
-	if locations then
-		for id in locations do
-			remove_slot_coop_item(id)
-		end
+	local location_id = msg["checked_locations"]
+	if GameHasFlagRun("ap" .. location_id) then
+		remove_slot_coop_item(location_id)
 	end
 end
 

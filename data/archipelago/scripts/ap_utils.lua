@@ -307,6 +307,7 @@ function create_foreign_item_entity(location, x, y)
 end
 
 
+-- todo: figure out if it will remove items that are far away from the player, like in a shop you passed by
 -- for use with same slot co-op
 function remove_slot_coop_item(location_id)
 	local ap_entities = EntityGetWithTag("my_ap_item")
