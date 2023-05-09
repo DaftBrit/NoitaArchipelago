@@ -429,6 +429,17 @@ function RECV_MSG.ReceivedItems(msg)
 end
 
 
+function RECV_MSG.RoomUpdate(msg)
+	local players = msg["players"] -- list in format [ { "team": 0, "slot": 1, "alias": "Alias Name", "name": "Slot Name"} , ]
+	local locations = msg["checked_locations"] -- list[int]
+	if locations then
+		for id in locations do
+			remove_slot_coop_item(id)
+		end
+	end
+end
+
+
 local function ParseJSONPart(part)
 	local result = ""
 	if part["type"] == "player_id" then
