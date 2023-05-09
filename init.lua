@@ -284,7 +284,7 @@ local function SpawnAllNewGameItems(first_connect_msg)
 			local item_id = item["item"]
 			if item_table[item_id].newgame then
 				ng_items[item_id] = (ng_items[item_id] or 0) + 1
-			elseif item_table[item_id].redeliverable and item_id ~= AP.REFRESH_ITEM_ID then
+			elseif item_table[item_id].redeliverable then
 				SpawnReceivedItem(item)
 			end
 		end
@@ -429,6 +429,7 @@ function RECV_MSG.ReceivedItems(msg)
 end
 
 
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#RoomUpdate
 function RECV_MSG.RoomUpdate(msg)
 	local players = msg["players"] -- list in format [ { "team": 0, "slot": 1, "alias": "Alias Name", "name": "Slot Name"} , ]
 	local locations = msg["checked_locations"] -- list[int]
@@ -437,6 +438,27 @@ function RECV_MSG.RoomUpdate(msg)
 			remove_slot_coop_item(id)
 		end
 	end
+end
+
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Retrieved
+function RECV_MSG.Retrieved(msg)
+	local keys = msg["keys"] -- dict[str, any]
+	-- todo: something here so that we are checking if it is our first load of the multiworld or not
+	print("received Retrieved packet with some keys and values probably")
+	for k, v in pairs(keys) do
+		print(k, v)
+	end
+end
+
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#SetReply
+function RECV_MSG.SetReply(msg)
+	-- nothing yet
+	local key = msg["key"]
+	local value = msg["value"]
+	local original_value = msg["original value"]
+	print("received set reply with contents " .. key, value, original_value)
 end
 
 
