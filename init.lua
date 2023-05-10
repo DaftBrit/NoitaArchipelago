@@ -465,7 +465,7 @@ function RECV_MSG.Retrieved(msg)
 		print("first time connecting, do first time connected things")
 		GameAddFlagRun("ap_first_time_connected")
 		SendSet("noita_" .. current_player_slot, 0, false, {operation = "replace", value = 1})
-		--SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
+		SetTimeOut(10, "data/archipelago/scripts/first_connect_flag_remover.lua")
 	end
 end
 
