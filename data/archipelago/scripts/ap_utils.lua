@@ -313,7 +313,7 @@ function remove_slot_coop_item(location_id)
 	local ap_entities = EntityGetWithTag("my_ap_item")
 	for _, entity_id in pairs(ap_entities) do
 		print(_, entity_id)
-		local stored_location_id = getInternalVariableValue(entity_id, "ap_location_id", "value_string")
+		local stored_location_id = getInternalVariableValue(entity_id, "ap_location_id", "value_int")
 		if stored_location_id == location_id then
 			print("removed entity because slot coop partner picked it up already")
 			EntityKill(entity_id)

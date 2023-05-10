@@ -465,13 +465,14 @@ function RECV_MSG.Retrieved(msg)
 		print("first time connecting, do first time connected things")
 		GameAddFlagRun("ap_first_time_connected")
 		SendSet("noita_" .. current_player_slot, 0, false, {operation = "replace", value = 1})
+		--SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
 	end
 end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#SetReply
 function RECV_MSG.SetReply(msg)
-	-- nothing yet
+	-- nothing yet, we aren't using this for anything at the moment, but it's here
 	local key = msg["key"]
 	local value = msg["value"]
 	local original_value = msg["original value"]

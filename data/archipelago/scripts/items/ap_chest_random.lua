@@ -25,6 +25,7 @@ function on_open(entity_item)
 				local item_id = location.item_id
 				if location.is_our_item then
 					SpawnItem(item_id, true)
+					GameAddFlagRun("ap" .. i)
 				end
 				item_spawned = true
 				break
