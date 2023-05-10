@@ -143,16 +143,15 @@ end
 
 
 local function ShouldDeliverItem(item)
-	local item_id = item["item"]
 	local location_id = item["location"]
 	if item["player"] == current_player_slot then
-		if GameHasFlagRun("ap" .. item_id) then
+		if GameHasFlagRun("ap" .. location_id) then
 			if location_id >= AP.FIRST_SHOP_LOCATION_ID and location_id <= AP.LAST_SHOP_LOCATION_ID then
 				return false	-- Don't deliver shopitems, they are given locally
 			elseif location_id >= AP.FIRST_BIOME_LOCATION_ID and location_id <= AP.LAST_BIOME_LOCATION_ID then
 				return false	-- Don't deliver biome items, they are given locally
 			end
-			GameRemoveFlagRun("ap" .. item_id)
+			GameRemoveFlagRun("ap" .. location_id)
 		else
 			-- this is an item your co-op partner picked up in slot co-op
 			remove_slot_coop_item(location_id)
@@ -257,6 +256,25 @@ function SendConnect()
 end
 
 
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Set
+function SendSet(key, default, want_reply, operations)
+	SendCmd("Set", {
+		key = key,
+		default = default,
+		want_reply = want_reply,
+		operations = {operations}
+	})
+end
+
+
+-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Get
+function SendGet(keys)
+	SendCmd("Get", {
+		keys = {keys}
+	})
+end
+
+
 local function SpawnReceivedItem(item)
 	local item_id = item["item"]
 	if ShouldDeliverItem(item) then
@@ -271,10 +289,6 @@ end
 
 local function SpawnAllNewGameItems(first_connect_msg)
 	local ng_items = {}
-	if #Cache.ItemDelivery:reference() == 0 then
-		print("first time connected, do modified new game items during ReceivedItems")
-		GameAddFlagRun("ap_first_time_connected")
-	end
 	if first_connect_msg then
 		local next_item_index = 0
 		for i, item in ipairs(first_connect_msg["items"]) do
@@ -323,6 +337,8 @@ function RECV_MSG.Connected(msg)
 
 	Globals.PlayerSlot:set(current_player_slot)
 	ConnIcon:setConnected()
+
+	SendGet("noita_" .. current_player_slot)
 
 	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
 	RestoreNewGameItems()
@@ -432,9 +448,12 @@ end
 -- [{"cmd":"RoomUpdate","hint_points":2,"checked_locations":[110002]}] when you pick up an item
 -- when someone else checks a location, this is not sent. It is only sent when you send a location check.
 function RECV_MSG.RoomUpdate(msg)
-	local location_id = msg["checked_locations"]
-	if GameHasFlagRun("ap" .. location_id) then
-		remove_slot_coop_item(location_id)
+	local locations = msg["checked_locations"]
+	for k, v in pairs(locations) do
+		print(k, v)
+		if GameHasFlagRun("ap" .. v) then
+			remove_slot_coop_item(v)
+		end
 	end
 end
 
@@ -442,10 +461,10 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Retrieved
 function RECV_MSG.Retrieved(msg)
 	local keys = msg["keys"] -- dict[str, any]
-	-- todo: something here so that we are checking if it is our first load of the multiworld or not
-	print("received Retrieved packet with some keys and values probably")
-	for k, v in pairs(keys) do
-		print(k, v)
+	if keys["noita_" .. current_player_slot] == nil then
+		print("first time connecting, do first time connected things")
+		GameAddFlagRun("ap_first_time_connected")
+		SendSet("noita_" .. current_player_slot, 0, false, {operation = "replace", value = 1})
 	end
 end
 
