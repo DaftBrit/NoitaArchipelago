@@ -338,7 +338,7 @@ function RECV_MSG.Connected(msg)
 	Globals.PlayerSlot:set(current_player_slot)
 	ConnIcon:setConnected()
 
-	SendGet("noita_" .. current_player_slot)
+	--SendGet("noita_" .. current_player_slot)
 
 	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
 	RestoreNewGameItems()
@@ -425,9 +425,8 @@ function RECV_MSG.ReceivedItems(msg)
 	end
 
 	local orb_count = 0
-	if GameHasFlagRun("ap_first_time_connected") then
+	if not Cache.ItemDelivery:is_set(1) and not GameHasFlagRun("ap_spawn_kill_saver") then
 		SpawnAllNewGameItems(msg)
-		GameRemoveFlagRun("ap_first_time_connected")
 	end
 	for i, item in ipairs(msg["items"]) do
 		local current_item_index = next_item_index + i
@@ -461,12 +460,15 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Retrieved
 function RECV_MSG.Retrieved(msg)
 	local keys = msg["keys"] -- dict[str, any]
-	if keys["noita_" .. current_player_slot] == nil then
-		print("first time connecting, do first time connected things")
-		GameAddFlagRun("ap_first_time_connected")
-		SendSet("noita_" .. current_player_slot, 0, false, {operation = "replace", value = 1})
-		SetTimeOut(10, "data/archipelago/scripts/first_connect_flag_remover.lua")
-	end
+	--GameAddFlagRun("ap_retrieved_responded")
+	print("retrieved is happening here")
+	-- todo: remove this and other commented out stuff once we have the first connection stuff working
+	--if keys["noita_" .. current_player_slot] == nil then
+	--	print("first time connecting, do first time connected things")
+	--	GameAddFlagRun("ap_first_time_connected")
+	--	SendSet("noita_" .. current_player_slot, 0, false, {operation = "replace", value = 1})
+	--	SetTimeOut(10, "data/archipelago/scripts/first_connect_flag_remover.lua")
+	--end
 end
 
 
