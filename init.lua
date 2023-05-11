@@ -287,28 +287,28 @@ local function SpawnReceivedItem(item)
 end
 
 
-local function SpawnAllNewGameItems(first_connect_msg)
+local function SpawnAllNewGameItems()
 	local ng_items = {}
-	if first_connect_msg then
-		local next_item_index = 0
-		for i, item in ipairs(first_connect_msg["items"]) do
-			local current_item_index = next_item_index + i
-			Cache.ItemDelivery:set(current_item_index, item)
-			local item_id = item["item"]
-			if item_table[item_id].newgame then
-				ng_items[item_id] = (ng_items[item_id] or 0) + 1
-			elseif item_table[item_id].redeliverable then
-				SpawnReceivedItem(item)
-			end
-		end
-	else
+	--if first_connect_msg then
+	--	local next_item_index = 0
+	--	for i, item in ipairs(first_connect_msg["items"]) do
+	--		local current_item_index = next_item_index + i
+	--		Cache.ItemDelivery:set(current_item_index, item)
+	--		local item_id = item["item"]
+	--		if item_table[item_id].newgame then
+	--			ng_items[item_id] = (ng_items[item_id] or 0) + 1
+	--		elseif item_table[item_id].redeliverable then
+	--			SpawnReceivedItem(item)
+	--		end
+	--	end
+	--else
 		for _, item in ipairs(Cache.ItemDelivery:reference()) do
 			local item_id = item["item"]
 			if item_table[item_id].newgame then
 				ng_items[item_id] = (ng_items[item_id] or 0) + 1
 			end
 		end
-	end
+	--end
 	Log.Info("spawning starting items: " .. JSON:encode(ng_items))
 
 	NGSpawnItems(ng_items)
@@ -425,21 +425,29 @@ function RECV_MSG.ReceivedItems(msg)
 	end
 
 	local orb_count = 0
-	if Cache.ItemDelivery:num_items() == 0 and not GameHasFlagRun("ap_spawn_kill_saver") then
-		SpawnAllNewGameItems(msg)
-	end
+	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
+	local spawn_kill_saver = GameHasFlagRun("ap_spawn_kill_saver") -- True a couple seconds after Connected
 	for i, item in ipairs(msg["items"]) do
 		local current_item_index = next_item_index + i
 
 		-- we're in sync or we're continuing the game and receiving items in async
 		if not Cache.ItemDelivery:is_set(current_item_index) then
 			Cache.ItemDelivery:set(current_item_index, item)
-			SpawnReceivedItem(item)
+			local item_id = item["item"]
+			if is_first_time_connected and not item_table[item_id].newgame and item_table[item_id].redeliverable then
+				SpawnReceivedItem(item)
+			elseif not is_first_time_connected then
+				SpawnReceivedItem(item)
+			end
 		elseif item["item"] == AP.ORB_ITEM_ID then
 			orb_count = orb_count + 1
 		end
 	end
 	GivePlayerOrbsOnSpawn(orb_count)
+
+	if is_first_time_connected then
+		SpawnAllNewGameItems()
+	end
 end
 
 
