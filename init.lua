@@ -447,12 +447,12 @@ end
 -- [{"cmd":"RoomUpdate","hint_points":2,"checked_locations":[110002]}] when you pick up an item
 -- when someone else checks a location, this is not sent. It is only sent when you send a location check.
 function RECV_MSG.RoomUpdate(msg)
-	local locations = msg["checked_locations"]
+	local locations = msg["checked_locations"] or {}
 	for k, v in pairs(locations) do
 		print(k, v)
-		if GameHasFlagRun("ap" .. v) then
-			remove_slot_coop_item(v)
-		end
+		--if GameHasFlagRun("ap" .. v) then
+			--remove_slot_coop_item(v)
+		--end
 	end
 end
 
