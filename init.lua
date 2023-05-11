@@ -425,7 +425,7 @@ function RECV_MSG.ReceivedItems(msg)
 	end
 
 	local orb_count = 0
-	if not Cache.ItemDelivery:is_set(1) and not GameHasFlagRun("ap_spawn_kill_saver") then
+	if Cache.ItemDelivery:num_items() == 0 and not GameHasFlagRun("ap_spawn_kill_saver") then
 		SpawnAllNewGameItems(msg)
 	end
 	for i, item in ipairs(msg["items"]) do
