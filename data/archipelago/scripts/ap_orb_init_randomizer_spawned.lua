@@ -8,7 +8,7 @@ local orbcomp = EntityGetComponent( entity_id, "OrbComponent" )
 local orb_id = tonumber(GlobalsGetValue("ap_orb_id"))
 
 if orb_id == nil then
-	orb_id = 20
+	orb_id = 53
 end
 
 --for _, comp_id in pairs(orbcomp) do
@@ -16,7 +16,7 @@ end
 --end
 
 for _, comp_id in pairs(orbcomp) do
-	ComponentSetValue( comp_id, "orb_id", orb_id )
+	ComponentSetValue( comp_id, "orb_id", orb_id + 33)
 end
 
 orb_id = orb_id + 1
