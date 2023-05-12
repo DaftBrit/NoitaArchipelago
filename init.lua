@@ -339,7 +339,7 @@ function RECV_MSG.Connected(msg)
 	ConnIcon:setConnected()
 
 	--SendGet("noita_" .. current_player_slot)
-
+	GameRemoveFlagRun("ap_spawn_kill_saver")
 	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
 	RestoreNewGameItems()
 
