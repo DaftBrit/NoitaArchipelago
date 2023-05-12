@@ -256,25 +256,6 @@ function SendConnect()
 end
 
 
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Set
-function SendSet(key, default, want_reply, operations)
-	SendCmd("Set", {
-		key = key,
-		default = default,
-		want_reply = want_reply,
-		operations = {operations}
-	})
-end
-
-
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Get
-function SendGet(keys)
-	SendCmd("Get", {
-		keys = {keys}
-	})
-end
-
-
 local function SpawnReceivedItem(item)
 	local item_id = item["item"]
 	if ShouldDeliverItem(item) then
@@ -324,7 +305,6 @@ function RECV_MSG.Connected(msg)
 	Globals.PlayerSlot:set(current_player_slot)
 	ConnIcon:setConnected()
 
-	--SendGet("noita_" .. current_player_slot)
 	GameRemoveFlagRun("ap_spawn_kill_saver")
 	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
 	RestoreNewGameItems()
@@ -438,45 +418,6 @@ function RECV_MSG.ReceivedItems(msg)
 end
 
 
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#RoomUpdate
--- [{"cmd":"RoomUpdate","hint_points":2,"checked_locations":[110002]}] when you pick up an item
--- when someone else checks a location, this is not sent. It is only sent when you send a location check.
-function RECV_MSG.RoomUpdate(msg)
-	local locations = msg["checked_locations"] or {}
-	for k, v in pairs(locations) do
-		print(k, v)
-		--if GameHasFlagRun("ap" .. v) then
-			--remove_slot_coop_item(v)
-		--end
-	end
-end
-
-
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Retrieved
-function RECV_MSG.Retrieved(msg)
-	local keys = msg["keys"] -- dict[str, any]
-	--GameAddFlagRun("ap_retrieved_responded")
-	print("retrieved is happening here")
-	-- todo: remove this and other commented out stuff once we have the first connection stuff working
-	--if keys["noita_" .. current_player_slot] == nil then
-	--	print("first time connecting, do first time connected things")
-	--	GameAddFlagRun("ap_first_time_connected")
-	--	SendSet("noita_" .. current_player_slot, 0, false, {operation = "replace", value = 1})
-	--	SetTimeOut(10, "data/archipelago/scripts/first_connect_flag_remover.lua")
-	--end
-end
-
-
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#SetReply
-function RECV_MSG.SetReply(msg)
-	-- nothing yet, we aren't using this for anything at the moment, but it's here
-	local key = msg["key"]
-	local value = msg["value"]
-	local original_value = msg["original value"]
-	print("received set reply with contents " .. key, value, original_value)
-end
-
-
 local function ParseJSONPart(part)
 	local result = ""
 	if part["type"] == "player_id" then
@@ -536,7 +477,7 @@ function RECV_MSG.PrintJSON(msg)
 			countdown_fun()
 			GamePrint("GO!")
 		else
-			-- it displays 10 twice otherwise
+			-- it displays the first number twice otherwise
 			if countdown_number ~= prev_countdown_number then
 				GamePrint(countdown_number)
 			end
