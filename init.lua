@@ -289,26 +289,12 @@ end
 
 local function SpawnAllNewGameItems()
 	local ng_items = {}
-	--if first_connect_msg then
-	--	local next_item_index = 0
-	--	for i, item in ipairs(first_connect_msg["items"]) do
-	--		local current_item_index = next_item_index + i
-	--		Cache.ItemDelivery:set(current_item_index, item)
-	--		local item_id = item["item"]
-	--		if item_table[item_id].newgame then
-	--			ng_items[item_id] = (ng_items[item_id] or 0) + 1
-	--		elseif item_table[item_id].redeliverable then
-	--			SpawnReceivedItem(item)
-	--		end
-	--	end
-	--else
-		for _, item in ipairs(Cache.ItemDelivery:reference()) do
-			local item_id = item["item"]
-			if item_table[item_id].newgame then
-				ng_items[item_id] = (ng_items[item_id] or 0) + 1
-			end
+	for _, item in ipairs(Cache.ItemDelivery:reference()) do
+		local item_id = item["item"]
+		if item_table[item_id].newgame then
+			ng_items[item_id] = (ng_items[item_id] or 0) + 1
 		end
-	--end
+	end
 	Log.Info("spawning starting items: " .. JSON:encode(ng_items))
 
 	NGSpawnItems(ng_items)
@@ -426,7 +412,6 @@ function RECV_MSG.ReceivedItems(msg)
 
 	local orb_count = 0
 	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
-	local spawn_kill_saver = GameHasFlagRun("ap_spawn_kill_saver") -- True a couple seconds after Connected
 	for i, item in ipairs(msg["items"]) do
 		local current_item_index = next_item_index + i
 
@@ -434,6 +419,8 @@ function RECV_MSG.ReceivedItems(msg)
 		if not Cache.ItemDelivery:is_set(current_item_index) then
 			Cache.ItemDelivery:set(current_item_index, item)
 			local item_id = item["item"]
+			-- when connected for the first time, you get receiveditems along with connected
+			-- but also, you want to give the player gold and stuff that got sent before spawning
 			if is_first_time_connected and not item_table[item_id].newgame and item_table[item_id].redeliverable then
 				SpawnReceivedItem(item)
 			elseif not is_first_time_connected then
