@@ -21,12 +21,14 @@ end
 
 
 function GivePlayerOrbsOnSpawn(orb_count)
-	local fake_orb_entity = EntityLoadAtPlayer("data/archipelago/entities/items/orbs/fake_orb.xml")
-	if orb_count > 0 and fake_orb_entity ~= nil then
-		for i = 1, orb_count do
-			EntityAddComponent2(fake_orb_entity, "OrbComponent", {orb_id = i + 20})
+	if orb_count > 0 then
+		local fake_orb_entity = EntityLoadAtPlayer("data/archipelago/entities/items/orbs/fake_orb.xml")
+		if fake_orb_entity ~= nil then
+			for i = 1, orb_count do
+				EntityAddComponent2(fake_orb_entity, "OrbComponent", {orb_id = i + 20})
+			end
+			GameAddFlagRun("orb_check")
 		end
-		GameAddFlagRun("orb_check")
 	end
 end
 
@@ -103,7 +105,7 @@ function NGSpawnItems(item_counts)
 		
 		elseif item == AP.MAP_PERK_ID then
 			-- spawn the map perk on the ground, in case you find it distracting
-			perk_spawn(813, -90, item_table[item].perk)
+			perk_spawn(813, -96, item_table[item].perk)
 			item_counts[item] = nil
 			
 		elseif item_table[item].perk ~= nil then

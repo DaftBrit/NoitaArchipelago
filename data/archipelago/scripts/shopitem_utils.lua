@@ -35,13 +35,16 @@ end -- generate_item_price
 -- Spawn in an item or perk entity for the shop
 function ShopItems.create_our_item_entity(item, x, y)
 	if item.perk ~= nil then
-		return perk_spawn(x, y, item.perk, true)
+		local perk_id = perk_spawn(x, y, item.perk, true)
+		EntityAddTag(perk_id, "my_ap_item")
+		return perk_id
 	elseif item.items ~= nil and #item.items > 0 then
 		-- our item is something else (random choice)
 		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
+		EntityAddTag(entity_id, "my_ap_item")
 		if item.gold_amount ~= 0 then
-				local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
-				EntityRemoveComponent(entity_id, life_comp)
+			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+			EntityRemoveComponent(entity_id, life_comp)
 		end
 		return entity_id
 	else -- error?
@@ -102,7 +105,10 @@ function ShopItems.generate_ap_shop_item_entity(location_id, x, y)
 	local item = item_table[item_id]
 
 	if location.is_our_item and item and item_id ~= AP.TRAP_ID then
-		return ShopItems.create_our_item_entity(item, x, y), false
+		local shop_item_id = ShopItems.create_our_item_entity(item, x, y)
+		EntityAddTag(shop_item_id, "my_ap_item")
+		addNewInternalVariable(shop_item_id, "ap_location_id", "value_int", location_id)
+		return shop_item_id, false
 	else
 		return ShopItems.create_foreign_item_entity(location, x, y), true
 	end
