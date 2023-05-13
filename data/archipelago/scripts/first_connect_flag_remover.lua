@@ -1,0 +1,1 @@
+GameRemoveFlagRun("ap_first_time_connected")

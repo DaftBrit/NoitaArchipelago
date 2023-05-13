@@ -17,7 +17,7 @@ function not_empty(s)
 end
 
 
-local function get_player()
+function get_player()
 	return EntityGetWithTag("player_unit")[1]
 end
 
@@ -284,11 +284,11 @@ function create_our_item_entity(item, x, y)
 			return perk_spawn(x, y, item.perk, true)
 		elseif item.items ~= nil and #item.items > 0 then
 			-- our item is something else (random choice)
-		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
-		local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
-		if life_comp ~= nil then
-			EntityRemoveComponent(entity_id, life_comp)
-		end
+			local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
+			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+			if life_comp ~= nil then
+				EntityRemoveComponent(entity_id, life_comp)
+			end
 		return entity_id
 		else
 			Log.Error("Failed to load our own item at x = " .. x .. ", y = " .. y)
@@ -304,6 +304,21 @@ function create_foreign_item_entity(location, x, y)
 	-- Change item name
 	change_entity_ingame_name(entity_id, name, description)
 	return entity_id
+end
+
+
+-- todo: figure out if it will remove items that are far away from the player, like in a shop you passed by
+-- for use with same slot co-op
+function remove_slot_coop_item(location_id)
+	local ap_entities = EntityGetWithTag("my_ap_item")
+	for _, entity_id in pairs(ap_entities) do
+		print(_, entity_id)
+		local stored_location_id = getInternalVariableValue(entity_id, "ap_location_id", "value_int")
+		if stored_location_id == location_id then
+			print("removed entity because slot coop partner picked it up already")
+			EntityKill(entity_id)
+		end
+	end
 end
 
 

@@ -20,6 +20,7 @@ return {
 
 	-- Item IDs for items where we want to spawn them a little differently
 	HEART_ITEM_ID = 110001,
+	REFRESH_ITEM_ID = 110002,
 	POTION_ITEM_ID = 110003,
 	FIRST_WAND_ITEM_ID = 110006,
 	LAST_WAND_ITEM_ID = 110012,

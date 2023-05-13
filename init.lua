@@ -143,11 +143,18 @@ end
 
 
 local function ShouldDeliverItem(item)
+	local location_id = item["location"]
 	if item["player"] == current_player_slot then
-		if item["location"] >= AP.FIRST_SHOP_LOCATION_ID and item["location"] <= AP.LAST_SHOP_LOCATION_ID then
-			return false	-- Don't deliver shopitems, they are given locally
-		elseif item["location"] >= AP.FIRST_BIOME_LOCATION_ID and item["location"] <= AP.LAST_BIOME_LOCATION_ID then
-			return false	-- Don't deliver biome items, they are given locally
+		if GameHasFlagRun("ap" .. location_id) then
+			if location_id >= AP.FIRST_SHOP_LOCATION_ID and location_id <= AP.LAST_SHOP_LOCATION_ID then
+				return false	-- Don't deliver shopitems, they are given locally
+			elseif location_id >= AP.FIRST_BIOME_LOCATION_ID and location_id <= AP.LAST_BIOME_LOCATION_ID then
+				return false	-- Don't deliver biome items, they are given locally
+			end
+			GameRemoveFlagRun("ap" .. location_id)
+		else
+			-- this is an item your co-op partner picked up in slot co-op
+			remove_slot_coop_item(location_id)
 		end
 	end
 	return true
@@ -249,6 +256,18 @@ function SendConnect()
 end
 
 
+local function SpawnReceivedItem(item)
+	local item_id = item["item"]
+	if ShouldDeliverItem(item) then
+		if GameHasFlagRun("ap_spawn_kill_saver") then
+			SpawnItem(item_id, true)
+		elseif item_table[item_id].redeliverable then
+			SpawnItem(item_id, false)
+		end
+	end
+end
+
+
 local function SpawnAllNewGameItems()
 	local ng_items = {}
 	for _, item in ipairs(Cache.ItemDelivery:reference()) do
@@ -286,6 +305,7 @@ function RECV_MSG.Connected(msg)
 	Globals.PlayerSlot:set(current_player_slot)
 	ConnIcon:setConnected()
 
+	GameRemoveFlagRun("ap_spawn_kill_saver")
 	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
 	RestoreNewGameItems()
 
@@ -360,18 +380,6 @@ local function CheckItemSync(msg)
 end
 
 
-local function SpawnReceivedItem(item)
-	local item_id = item["item"]
-	if ShouldDeliverItem(item) then
-		if GameHasFlagRun("ap_spawn_kill_saver") then
-			SpawnItem(item_id, true)
-		elseif item_table[item_id].redeliverable then
-			SpawnItem(item_id, false)
-		end
-	end
-end
-
-
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(msg)
 	local next_item_index = msg["index"]
@@ -383,18 +391,30 @@ function RECV_MSG.ReceivedItems(msg)
 	end
 
 	local orb_count = 0
+	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
 	for i, item in ipairs(msg["items"]) do
 		local current_item_index = next_item_index + i
 
 		-- we're in sync or we're continuing the game and receiving items in async
 		if not Cache.ItemDelivery:is_set(current_item_index) then
 			Cache.ItemDelivery:set(current_item_index, item)
-			SpawnReceivedItem(item)
+			local item_id = item["item"]
+			-- when connected for the first time, you get receiveditems along with connected
+			-- but also, you want to give the player gold and stuff that got sent before spawning
+			if is_first_time_connected and not item_table[item_id].newgame and item_table[item_id].redeliverable then
+				SpawnReceivedItem(item)
+			elseif not is_first_time_connected then
+				SpawnReceivedItem(item)
+			end
 		elseif item["item"] == AP.ORB_ITEM_ID then
 			orb_count = orb_count + 1
 		end
 	end
 	GivePlayerOrbsOnSpawn(orb_count)
+
+	if is_first_time_connected then
+		SpawnAllNewGameItems()
+	end
 end
 
 
@@ -457,7 +477,7 @@ function RECV_MSG.PrintJSON(msg)
 			countdown_fun()
 			GamePrint("GO!")
 		else
-			-- it displays 10 twice otherwise
+			-- it displays the first number twice otherwise
 			if countdown_number ~= prev_countdown_number then
 				GamePrint(countdown_number)
 			end
