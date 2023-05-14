@@ -62,6 +62,12 @@ local translations = {
 	["$ap_menu_server_settings_debug_items_desc"] = {
 		en="Makes debug items and perks spawn when starting a new run."
 	},
+	["$ap_orb_art_settings_name"] = {
+		en="Orb Art"
+	},
+	["$ap_orb_art_settings_desc"] = {
+		en="Changes the appearance of orbs spawned by the randomizer.\nDoes not affect orbs spawned by the game itself."
+	}
 }
 
 local function translate(msg)
@@ -147,13 +153,27 @@ local mod_settings =
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
-			--{
-			--	id = "debug_items",
-			--	ui_name = translate("$ap_menu_server_settings_debug_items_name"),
-			--	ui_description = translate("$ap_menu_server_settings_debug_items_desc"),
-			--	value_default = false,
-			--	scope = MOD_SETTING_SCOPE_NEW_GAME,
-			--},
+			{
+				id = "orb_art",
+				ui_name = translate("$ap_orb_art_settings_name"),
+				ui_description = translate("$ap_orb_art_settings_desc"),
+				value_default = "vanilla",
+				values = {
+					{"vanilla", "Vanilla"},
+					{"ap_logo", "AP Logo"},
+					{"spinny_logo", "Spinny Logo"},
+					{"porb", "Porb"}
+				},
+				scope = MOD_SETTING_SCOPE_NEW_GAME,
+			},
+			{
+				id = "debug_items",
+				ui_name = translate("$ap_menu_server_settings_debug_items_name"),
+				ui_description = translate("$ap_menu_server_settings_debug_items_desc"),
+				value_default = false,
+				scope = MOD_SETTING_SCOPE_NEW_GAME,
+				hidden = true,
+			},
 		},
 	},
 }
