@@ -27,8 +27,6 @@ local sprite_image = "ap_orb"
 
 local orb_art_setting = ModSettingGet("archipelago.orb_art")
 
-print("orb art setting")
-print(orb_art_setting)
 
 if orb_art_setting == "Vanilla" then
 	sprite_image = "vanilla_orb"
