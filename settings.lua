@@ -157,7 +157,7 @@ local mod_settings =
 				id = "orb_art",
 				ui_name = translate("$ap_orb_art_settings_name"),
 				ui_description = translate("$ap_orb_art_settings_desc"),
-				value_default = "vanilla",
+				value_default = "ap_logo",
 				values = {
 					{"vanilla", "Vanilla"},
 					{"ap_logo", "AP Logo"},
