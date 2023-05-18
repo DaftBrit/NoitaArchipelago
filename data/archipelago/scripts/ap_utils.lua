@@ -2,6 +2,7 @@ dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua")
 
 
 function contains_element(tbl, elem)
@@ -307,7 +308,6 @@ function create_foreign_item_entity(location, x, y)
 end
 
 
--- todo: figure out if it will remove items that are far away from the player, like in a shop you passed by
 -- for use with same slot co-op
 function remove_slot_coop_item(location_id)
 	local ap_entities = EntityGetWithTag("my_ap_item")
@@ -317,6 +317,7 @@ function remove_slot_coop_item(location_id)
 		if stored_location_id == location_id then
 			print("removed entity because slot coop partner picked it up already")
 			EntityKill(entity_id)
+			Globals.MissingLocationsSet:remove_key(location_id)
 		end
 	end
 end
@@ -361,7 +362,6 @@ function give_debug_items()
 	set_money(100000000)
 	set_health(80, 80)
 	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/pw_teleporter.xml", 60)
-	EntityLoadAtPlayer("mods/archipelago/data/archipelago/entities/items/ap_kantele.xml", 30)
 	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world
 	-- don't aim other directions. the linear arc means it snaps to 8 directions
 end
