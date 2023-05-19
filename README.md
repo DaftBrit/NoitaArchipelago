@@ -85,6 +85,9 @@ work well:
 
 ### Incompatible Mods (that we know about)
 
-Below is a list of mods that have been reported not to work with this mod. This list will just include mods where you generally would expect them to work, but they don't.
+Below is a list of mods that do not to work with this mod.
 
-Or, it would, if we had a list of any at the moment. If you find an incompatibility, please let us know and we will add it to this list.
+* Noita Arena
+* Noita - Pinball Mode
+* Ride & Drive Mode
+
