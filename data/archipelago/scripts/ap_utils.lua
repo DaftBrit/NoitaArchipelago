@@ -317,9 +317,9 @@ function remove_slot_coop_item(location_id)
 		if stored_location_id == location_id then
 			print("removed entity because slot coop partner picked it up already")
 			EntityKill(entity_id)
-			Globals.MissingLocationsSet:remove_key(location_id)
 		end
 	end
+	Globals.MissingLocationsSet:remove_key(location_id)
 end
 
 
