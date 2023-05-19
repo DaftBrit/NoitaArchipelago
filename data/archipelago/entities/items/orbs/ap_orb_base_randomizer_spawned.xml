@@ -1,4 +1,4 @@
-<Entity tags="hittable,teleportable_NOT,polymorphable_NOT">
+<Entity tags="hittable,teleportable_NOT,polymorphable_NOT,my_ap_item">
 	
 	<VelocityComponent>
 	</VelocityComponent>
@@ -28,22 +28,10 @@
     	play_pick_sound="0"
 		enable_orb_hacks="1" >
 	</ItemComponent>
-	
-	<CameraBoundComponent
-	  max_count="20"
-	  distance="160000">
-	</CameraBoundComponent>
 
 	<OrbComponent
 		orb_id="0" >
 	</OrbComponent>
-
-	<!-- cosmetic 
-		tag meanings:
-		orb_undiscovered 	- enabled when orb has never been found
-		orb_discovered 		- enabled when orb has been found during a previous run
-		orb_picked 			- enabled when orb has been found during this run
-	-->
 
 	<LightComponent 
 		_tags="enabled_in_world"
@@ -92,11 +80,6 @@
 		offset_y="0"
 		z_index="20" >
 	</SpriteComponent>
-	
-	<VariableStorageComponent
-		name="card_name"
-		value_string="LIGHT_BULLET"
-	/>
 
 	<LuaComponent
         _enabled="1"

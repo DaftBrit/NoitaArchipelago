@@ -110,7 +110,11 @@ function ShopItems.generate_ap_shop_item_entity(location_id, x, y)
 		addNewInternalVariable(shop_item_id, "ap_location_id", "value_int", location_id)
 		return shop_item_id, false
 	else
-		return ShopItems.create_foreign_item_entity(location, x, y), true
+		local shop_item_id = ShopItems.create_foreign_item_entity(location, x, y)
+		if location.is_our_item and item_id == AP.TRAP_ID then
+			EntityAddTag(shop_item_id, "my_ap_item")
+		end
+		return shop_item_id, true
 	end
 end -- generate_ap_shop_item_entity
 

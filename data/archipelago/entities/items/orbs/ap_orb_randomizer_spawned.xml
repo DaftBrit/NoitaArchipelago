@@ -2,7 +2,6 @@
 	<Base file="data/archipelago/entities/items/orbs/ap_orb_base_randomizer_spawned.xml">
 		<OrbComponent orb_id="80" />
 		<SpriteComponent image_file="data/archipelago/entities/items/orbs/ap_orb.xml" />
-		<VariableStorageComponent name="card_name" value_string="FIREWORK" />
 	</Base>
 	<Entity>
 		<InheritTransformComponent>
