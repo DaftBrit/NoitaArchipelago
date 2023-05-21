@@ -403,16 +403,21 @@ function RECV_MSG.ReceivedItems(msg)
 			-- but also, you want to give the player gold and stuff that got sent before spawning
 			if is_first_time_connected and not item_table[item_id].newgame and item_table[item_id].redeliverable then
 				SpawnReceivedItem(item)
-			elseif not is_first_time_connected then
+			elseif not is_first_time_connected or GameHasFlagRun("ap_spawn_kill_saver") then
 				SpawnReceivedItem(item)
 			end
 		elseif item["item"] == AP.ORB_ITEM_ID then
 			orb_count = orb_count + 1
 		end
 	end
-	GivePlayerOrbsOnSpawn(orb_count)
+	if not GameHasFlagRun("orb_check") then
+		-- not sure if we should have this or not. We probably had it here for a reason, but I can't recall what
+		-- only case I found where this is used, the new game spawn items happened too which gave the orbs before this
+		print("if there's a bug in orbs being given, it's probably here") -- delete this after testing
+		--GivePlayerOrbsOnSpawn(orb_count)
+	end
 
-	if is_first_time_connected then
+	if is_first_time_connected and not GameHasFlagRun("ap_spawn_kill_saver") then
 		SpawnAllNewGameItems()
 	end
 end

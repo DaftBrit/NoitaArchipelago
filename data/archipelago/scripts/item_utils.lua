@@ -27,9 +27,9 @@ function GivePlayerOrbsOnSpawn(orb_count)
 			for i = 1, orb_count do
 				EntityAddComponent2(fake_orb_entity, "OrbComponent", {orb_id = i + 20})
 			end
-			GameAddFlagRun("orb_check")
 		end
 	end
+	GameAddFlagRun("orb_check") -- delete this after testing
 end
 
 
