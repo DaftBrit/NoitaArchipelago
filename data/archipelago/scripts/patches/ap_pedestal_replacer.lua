@@ -8,6 +8,7 @@ local function APPedestalReplacer()
 
 	local ap_old_spawn_wands = spawn_wands
 	local ap_old_spawn_potions = spawn_potions
+	local ap_old_spawn_trapwand = spawn_trapwand
 
 	local function ap_replace_pedestals(x, y, replaced_pedestal)
 		local biome_name = BiomeMapGetName(x, y)
@@ -18,12 +19,12 @@ local function APPedestalReplacer()
 		for i = biome_data.first_ped, biome_data.first_ped + 19 do
 			if Globals.MissingLocationsSet:has_key(i) and Globals.PedestalLocationsSet:has_key(i) then
 				-- spawn the pedestal item, tell it its ID
-				Globals.PedestalLocationsSet:remove_key(i)
+				--Globals.PedestalLocationsSet:remove_key(i)
 				local location = Globals.LocationScouts:get_key(i)
 				local item_id = location.item_id
 
 				if not location.is_our_item then
-					if replaced_pedestal == "wand" then
+					if replaced_pedestal == ("wand" or "trapwand") then
 						y = y - 6
 						x = x + 0.5
 					elseif replaced_pedestal == "potion" then
@@ -77,6 +78,12 @@ local function APPedestalReplacer()
 					_tags="archipelago",
 					script_item_picked_up="data/archipelago/scripts/items/ap_pedestal_processed.lua",
 				})
+				if replaced_pedestal == "trapwand" then
+					EntityAddTag(ap_pedestal_id, "trap_wand")
+					EntityAddComponent(ap_pedestal_id, "LuaComponent", {
+						script_item_picked_up="data/archipelago/scripts/items/pedestal_trap_pickup.lua"
+					})
+				end
 				return true
 			end
 		end
@@ -104,6 +111,21 @@ local function APPedestalReplacer()
 			end
 		else
 			ap_old_spawn_potions(x, y)
+		end
+	end
+
+	spawn_trapwand = function(x, y)
+		if GameHasFlagRun("AP_LocationInfo_received") then
+			if not ap_replace_pedestals(x, y, "trapwand") then
+				ap_old_spawn_trapwand(x, y)
+				print("vanilla trap at " .. x, y)
+			else
+				print("trap wand spawned at " .. x, y)
+			end
+		else
+			ap_old_spawn_trapwand(x, y)
+			print("trapwand pedestal spawned vanilla because it spawned beore location info was done")
+			print("this spawned at " .. x, y)
 		end
 	end
 end
