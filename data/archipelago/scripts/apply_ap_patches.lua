@@ -28,7 +28,8 @@ ModLuaFileAppend("data/entities/animals/boss_gate/gate_monster_death.lua", "data
 ModLuaFileAppend("data/scripts/items/orb_init.lua", "data/archipelago/scripts/patches/ap_orb_init_random.lua")
 ModLuaFileAppend("data/scripts/items/orb_pickup.lua", "data/archipelago/scripts/patches/ap_orb_pickup_random.lua")
 
-ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/patches/ap_heart_replacer.lua")
+ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/patches/ap_heart_and_chest_replacer.lua")
+ModLuaFileAppend("data/scripts/biomes/coalmine.lua", "data/archipelago/scripts/patches/ap_heart_and_chest_replacer.lua")
 ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/patches/ap_pedestal_replacer.lua")
 ModLuaFileAppend("data/scripts/biomes/coalmine.lua", "data/archipelago/scripts/patches/ap_pedestal_replacer.lua")
 
