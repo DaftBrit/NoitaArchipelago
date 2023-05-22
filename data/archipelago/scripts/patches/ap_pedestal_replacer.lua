@@ -115,7 +115,6 @@ local function APPedestalReplacer()
 		if GameHasFlagRun("AP_LocationInfo_received") then
 			if not ap_replace_pedestals(x, y, "trapwand") then
 				ap_old_spawn_trapwand(x, y)
-			else
 			end
 		else
 			ap_old_spawn_trapwand(x, y)
