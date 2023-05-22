@@ -14,7 +14,6 @@ local function APHeartAndChestReplacer()
 		-- check if the biome has checks left, if not then just spawn a chest/heart as normal
 		if Biomes[biome_name] ~= nil then
 			local biome_data = Biomes[biome_name]
-			-- hearts/chests have a 30% chance not to spawn in the base game
 			-- the r given here should be exactly the same as the r given by ap_old_spawn_heart
 			local r = ProceduralRandom(x, y)
 			SetRandomSeed(x, y)
@@ -50,7 +49,6 @@ local function APHeartAndChestReplacer()
 	spawn_chest = function(x, y)
 		ap_replace_heart_or_chest(x, y, "chest")
 	end
-
 end
 
 APHeartAndChestReplacer()

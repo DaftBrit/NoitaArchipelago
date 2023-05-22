@@ -97,7 +97,6 @@ local function APPedestalReplacer()
 			end
 		else
 			ap_old_spawn_wands(x, y)
-			print("wand pedestal spawned vanilla because it spawned beore location info was done")
 		end
 	end
 
@@ -116,14 +115,10 @@ local function APPedestalReplacer()
 		if GameHasFlagRun("AP_LocationInfo_received") then
 			if not ap_replace_pedestals(x, y, "trapwand") then
 				ap_old_spawn_trapwand(x, y)
-				print("vanilla trap at " .. x, y)
 			else
-				print("trap wand spawned at " .. x, y)
 			end
 		else
 			ap_old_spawn_trapwand(x, y)
-			print("trapwand pedestal spawned vanilla because it spawned beore location info was done")
-			print("this spawned at " .. x, y)
 		end
 	end
 end
