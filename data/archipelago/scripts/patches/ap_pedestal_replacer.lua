@@ -19,7 +19,7 @@ local function APPedestalReplacer()
 		for i = biome_data.first_ped, biome_data.first_ped + 19 do
 			if Globals.MissingLocationsSet:has_key(i) and Globals.PedestalLocationsSet:has_key(i) then
 				-- spawn the pedestal item, tell it its ID
-				--Globals.PedestalLocationsSet:remove_key(i)
+				Globals.PedestalLocationsSet:remove_key(i)
 				local location = Globals.LocationScouts:get_key(i)
 				local item_id = location.item_id
 
@@ -52,10 +52,8 @@ local function APPedestalReplacer()
 					local particle_comp = EntityAddComponent(ap_pedestal_id, "SpriteParticleEmitterComponent", {
 						sprite_file="data/archipelago/entities/items/icon-useful.png",
 						lifetime=6,
-						additive=true,
-						emissive=true,
 						velocity_slowdown=5,
-						velocity_always_away_from_center=true,
+						velocity_always_away_from_center=1,
 						count_min=1,
 						count_max=1,
 						emission_interval_min_frames=60,

@@ -30,6 +30,7 @@ ModLuaFileAppend("data/scripts/items/orb_pickup.lua", "data/archipelago/scripts/
 
 ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/patches/ap_heart_and_chest_replacer.lua")
 ModLuaFileAppend("data/scripts/biomes/coalmine.lua", "data/archipelago/scripts/patches/ap_heart_and_chest_replacer.lua")
+ModLuaFileAppend("data/scripts/biomes/tower.lua", "data/archipelago/scripts/patches/ap_heart_and_chest_replacer.lua")
 ModLuaFileAppend("data/scripts/biome_scripts.lua", "data/archipelago/scripts/patches/ap_pedestal_replacer.lua")
 ModLuaFileAppend("data/scripts/biomes/coalmine.lua", "data/archipelago/scripts/patches/ap_pedestal_replacer.lua")
 
