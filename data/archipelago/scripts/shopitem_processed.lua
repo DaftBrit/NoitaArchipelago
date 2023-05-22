@@ -60,11 +60,15 @@ function init(entity_id)
 		z_index="-1",
 	})
 
+	local is_stealable = 0
+	if BiomeMapGetName(x, y) == "$biome_holymountain" then
+		is_stealable = 1
+	end
 	-- https://noita.wiki.gg/wiki/Documentation:_ItemCostComponent
 	EntityAddComponent(entity_id, "ItemCostComponent", { 
 		_tags="shop_cost,enabled_in_world",
 		cost=data.price,
-		stealable=BiomeMapGetName(x, y) == "$biome_holymountain"
+		stealable=is_stealable
 	})
 
 	-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent
