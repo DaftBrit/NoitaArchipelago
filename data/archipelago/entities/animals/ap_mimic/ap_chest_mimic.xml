@@ -26,7 +26,7 @@
             hp="3"
             ragdoll_material="wood_prop"
 			ragdoll_filenames_file="" 
-			blood_material=""
+			blood_material="ap_chest_liquid"
 			fire_probability_of_ignition="20"
 			>
 		</DamageModelComponent>
