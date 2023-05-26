@@ -40,10 +40,9 @@ local function APHeartAndChestReplacer()
 								spawn_mimic_sign(x, y)
 							end
 							if rnd <= 95 then
-								EntityLoad("data/archipelago/entities/animals/ap_mimic/ap_chest_mimic.xml", x, y)
+								EntityLoad("data/entities/animals/ap_chest_mimic.xml", x, y)
 							else
-								-- todo: put together a leggy ap mimic, put that here
-								EntityLoad("data/archipelago/entities/animals/ap_mimic/ap_chest_mimic.xml", x, y)
+								EntityLoad("data/archipelago/entities/animals/ap_mimic/ap_chest_leggy.xml", x, y)
 							end
 							has_spawned = true
 							break
