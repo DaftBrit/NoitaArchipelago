@@ -21,11 +21,32 @@ local function APHeartAndChestReplacer()
 			if r > 0.3 and name == "heart" or name == "chest" then
 				for i = biome_data.first_hc, biome_data.first_hc + 19 do
 					if Globals.MissingLocationsSet:has_key(i) then
-						-- spawn the chest, set ap_chest_id equal to its entity ID
-						local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml",x,y)
-						has_spawned = true
-						addNewInternalVariable(ap_chest_id, "biome_name", "value_string", biome_name)
-						break
+						-- do stuff that the vanilla spawn_heart does
+						SetRandomSeed(x + 45, y - 2123)
+						local rnd = Random(1, 100)
+						-- if it replacing spawn_chest, it cannot be a mimic
+						if ((rnd <= 90) or (y < 512 * 3)) and name ~= "chest" then
+							rnd = Random(1, 1000)
+							if Random(1,300) == 1 then
+								spawn_mimic_sign(x, y)
+							end
+							-- spawn the chest, set ap_chest_id equal to its entity ID
+							local ap_chest_id = EntityLoad("data/archipelago/entities/items/pickup/ap_chest_random.xml",x,y)
+							has_spawned = true
+							addNewInternalVariable(ap_chest_id, "biome_name", "value_string", biome_name)
+							break
+						else
+							if Random(1, 30) == 1 then
+								spawn_mimic_sign(x, y)
+							end
+							if rnd <= 95 then
+								EntityLoad("data/entities/animals/ap_chest_mimic.xml", x, y)
+							else
+								EntityLoad("data/archipelago/entities/animals/ap_mimic/ap_chest_leggy.xml", x, y)
+							end
+							has_spawned = true
+							break
+						end
 					end
 				end
 			end
