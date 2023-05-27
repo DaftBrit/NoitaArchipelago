@@ -624,8 +624,8 @@ local function CheckNetworkMessages()
 			if errmsg ~= nil then
 				ConnectionError(errmsg)
 				if errmsg:find("TLS") or errmsg:find("-2146893048") then
-					Log.Error("Something related to TLS failed, attempting to connect on unsecure protocol")
-					InitSocket(false)
+					Log.Error("Something related to TLS failed, attempting to connect on secure protocol")
+					InitSocket(true)
 				end
 			end
 			break
@@ -697,7 +697,7 @@ function OnModInit()
 	GameRemoveFlagRun("AP_LocationInfo_received")
 	create_dir("archipelago_cache")
 	ConnIcon:create()
-	InitSocket(true)
+	InitSocket(false)
 end
 
 function OnPlayerSpawned()
