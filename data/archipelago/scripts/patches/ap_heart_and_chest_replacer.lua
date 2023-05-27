@@ -24,10 +24,9 @@ local function APHeartAndChestReplacer()
 						-- do stuff that the vanilla spawn_heart does
 						SetRandomSeed(x + 45, y - 2123)
 						local rnd = Random(1, 100)
-						-- if it replacing spawn_chest, it cannot be a mimic
-						if ((rnd <= 90) or (y < 512 * 3)) and name ~= "chest" then
-							rnd = Random(1, 1000)
-							if Random(1,300) == 1 then
+						-- if it's replacing spawn_chest, it cannot be a mimic
+						if (rnd <= 90) or (y < 512 * 3) or name == "chest" then
+							if Random(1,300) == 1 and name ~= "chest" then
 								spawn_mimic_sign(x, y)
 							end
 							-- spawn the chest, set ap_chest_id equal to its entity ID
@@ -35,7 +34,7 @@ local function APHeartAndChestReplacer()
 							has_spawned = true
 							addNewInternalVariable(ap_chest_id, "biome_name", "value_string", biome_name)
 							break
-						else
+						elseif name ~= chest then
 							if Random(1, 30) == 1 then
 								spawn_mimic_sign(x, y)
 							end
