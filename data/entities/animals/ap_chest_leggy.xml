@@ -157,12 +157,12 @@
     >
   </LuaComponent>
   
-  <Entity> <InheritTransformComponent><Transform position.x="-6" position.y="0" /></InheritTransformComponent> <Base file="data/entities/animals/lukki/lukki_feet/chest_limb_left.xml" />  </Entity>
-  <Entity> <InheritTransformComponent><Transform position.x="-4" position.y="0" /></InheritTransformComponent> <Base file="data/entities/animals/lukki/lukki_feet/chest_limb_left.xml" />  </Entity>
-  <Entity> <InheritTransformComponent><Transform position.x="-2" position.y="0" /></InheritTransformComponent> <Base file="data/entities/animals/lukki/lukki_feet/chest_limb_left.xml" />  </Entity>
-  <Entity> <InheritTransformComponent><Transform position.x="2"  position.y="0" /></InheritTransformComponent> <Base file="data/entities/animals/lukki/lukki_feet/chest_limb_right.xml" />  </Entity>
-  <Entity> <InheritTransformComponent><Transform position.x="4"  position.y="0" /></InheritTransformComponent> <Base file="data/entities/animals/lukki/lukki_feet/chest_limb_right.xml" />  </Entity>
-  <Entity> <InheritTransformComponent><Transform position.x="6"  position.y="0" /></InheritTransformComponent> <Base file="data/entities/animals/lukki/lukki_feet/chest_limb_right.xml" />  </Entity>
+  <Entity> <InheritTransformComponent><Transform position.x="-6" position.y="0" /></InheritTransformComponent> <Base file="data/archipelago/entities/animals/legs/chest_limb_left_red.xml" />  </Entity>
+  <Entity> <InheritTransformComponent><Transform position.x="-4" position.y="0" /></InheritTransformComponent> <Base file="data/archipelago/entities/animals/legs/chest_limb_left_yellow.xml" />  </Entity>
+  <Entity> <InheritTransformComponent><Transform position.x="-2" position.y="0" /></InheritTransformComponent> <Base file="data/archipelago/entities/animals/legs/chest_limb_left_blue.xml" />  </Entity>
+  <Entity> <InheritTransformComponent><Transform position.x="2"  position.y="0" /></InheritTransformComponent> <Base file="data/archipelago/entities/animals/legs/chest_limb_right_green.xml" />  </Entity>
+  <Entity> <InheritTransformComponent><Transform position.x="4"  position.y="0" /></InheritTransformComponent> <Base file="data/archipelago/entities/animals/legs/chest_limb_right_pink.xml" />  </Entity>
+  <Entity> <InheritTransformComponent><Transform position.x="6"  position.y="0" /></InheritTransformComponent> <Base file="data/archipelago/entities/animals/legs/chest_limb_right_orange.xml" />  </Entity>
 
-  <Entity name="limb_attacker"> <InheritTransformComponent><Transform position.x="0"  position.y="0" /></InheritTransformComponent> <Base file="data/entities/animals/lukki/lukki_feet/chest_limb_attacker.xml" />  </Entity>
+  <Entity name="limb_attacker"> <InheritTransformComponent><Transform position.x="0"  position.y="0" /></InheritTransformComponent> <Base file="data/archipelago/entities/animals/legs/chest_limb_attacker.xml" />  </Entity>
 </Entity>
