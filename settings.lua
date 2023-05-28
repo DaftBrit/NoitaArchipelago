@@ -67,6 +67,12 @@ local translations = {
 	},
 	["$ap_orb_art_settings_desc"] = {
 		en="Changes the appearance of orbs spawned by the randomizer.\nDoes not affect orbs spawned by the game itself."
+	},
+	["$ap_death_link_settings_name"] = {
+		en="Disable Death Link"
+	},
+	["$ap_death_link_settings_desc"] = {
+		en="Allows you to disable death link for future runs.\nDoes nothing if you did not enable death link in your yaml."
 	}
 }
 
@@ -144,12 +150,19 @@ local mod_settings =
 				ui_name = translate("$ap_menu_server_settings_auto_release_name"),
 				ui_description = translate("$ap_menu_server_settings_auto_release_desc"),
 				value_default = false,
-				scope = MOD_SETTING_SCOPE_NEW_GAME,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},
 			{
 				id = "auto_collect",
 				ui_name = translate("$ap_menu_server_settings_auto_collect_name"),
 				ui_description = translate("$ap_menu_server_settings_auto_collect_desc"),
+				value_default = false,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				id = "death_link",
+				ui_name = translate("$ap_death_link_settings_name"),
+				ui_description = translate("$ap_death_link_settings_desc"),
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
