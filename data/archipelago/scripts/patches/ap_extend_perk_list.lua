@@ -15,13 +15,13 @@ local function ap_extend_perk_list()
 	remove_from_pool("EDIT_WANDS_EVERYWHERE")
 	remove_from_pool("REMOVE_FOG_OF_WAR")
 
-table.insert(perk_list,
-{
+	table.insert(perk_list,
+			{
 	id = "AP_LEGGY_FEET",
 	ui_name = "$perk_ap_leggy_feet",
 	ui_description = "$perkdesc_ap_leggy_feet",
-	ui_icon = "data/ui_gfx/perk_icons/leggy_feet.png",
-	perk_icon = "data/items_gfx/perks/leggy_feet.png",
+	ui_icon = "data/archipelago/entities/items/icons/ap_leggy_feet_perk_ui_icon.png",
+	perk_icon = "data/archipelago/entities/items/icons/ap_leggy_feet_perk_icon.png",
 	stackable = STACKABLE_YES,
 	stackable_is_rare = true,
 	usable_by_enemies = true,
