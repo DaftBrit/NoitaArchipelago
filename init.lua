@@ -77,6 +77,11 @@ local function UpdateDeathTime()
 end
 
 
+local function IsDeathLinkEnabled()
+	return slot_options.death_link and ModSettingGet("archipelago.death_link")
+end
+
+
 ----------------------------------------------------------------------------------------------------
 -- VICTORY CONDITIONS
 ----------------------------------------------------------------------------------------------------
@@ -507,7 +512,7 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
 function RECV_MSG.Bounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
-		if not slot_options.death_link or not ModSettingGet("archipelago.death_link") or not UpdateDeathTime() then return end
+		if not IsDeathLinkEnabled() or not UpdateDeathTime() then return end
 		local game_msg = GameTextGet("$ap_died", msg["data"]["source"])
 		GamePrintImportant(game_msg, msg["data"]["cause"])
 
@@ -678,7 +683,7 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-	if sock == nil or slot_options == nil or slot_options.death_link ~= 1 or not ModSettingGet("archipelago.death_link") or game_is_paused or not UpdateDeathTime() then return end
+	if slot_options == nil or not IsDeathLinkEnabled() or game_is_paused or not UpdateDeathTime() then return end
 	local death_msg = GetCauseOfDeath() or "skill issue"
 	local slotname = ModSettingGet("archipelago.slot_name")
 	SendCmd("Bounce", {
