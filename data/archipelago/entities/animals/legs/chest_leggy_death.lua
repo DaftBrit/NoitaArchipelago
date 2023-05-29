@@ -5,7 +5,7 @@ function death( damage_type_bit_field, damage_message, entity_thats_responsible,
 	local entity_id    = GetUpdatedEntityID()
 	local pos_x, pos_y = EntityGetTransform( entity_id )
 
-	local perk_id = perk_spawn( pos_x, pos_y, "LEGGY_FEET" )
+	local perk_id = perk_spawn( pos_x, pos_y, "AP_LEGGY_FEET" )
 	
 	if( perk_id ~= nil ) then
 		EntityAddComponent( perk_id, "VariableStorageComponent", 
