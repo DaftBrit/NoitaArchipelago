@@ -37,7 +37,8 @@ table.insert(perk_list,
 			EntityAddComponent2(child_id, "InheritTransformComponent")
 			walker_id = EntityGetFirstComponent(child_id, "IKLimbWalkerComponent")
 			ComponentSetValue2(walker_id, "affect_flying", true)
-			EntityAddTag(child_id, "perk_entity,ap_leggy_foot_walker")
+			EntityAddTag(child_id, "perk_entity")
+			EntityAddTag(child_id, "ap_leggy_foot_walker")
 			EntityAddChild(entity_who_picked, child_id)
 		end
 
