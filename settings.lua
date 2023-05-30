@@ -164,7 +164,7 @@ local mod_settings =
 				ui_name = translate("$ap_death_link_settings_name"),
 				ui_description = translate("$ap_death_link_settings_desc"),
 				value_default = true,
-				scope = MOD_SETTING_SCOPE_NEW_GAME,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},
 			{
 				id = "orb_art",
