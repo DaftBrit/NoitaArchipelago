@@ -27,19 +27,18 @@ local function ap_extend_perk_list()
 	usable_by_enemies = true,
 	not_in_default_perk_pool = true,
 	func = function( entity_perk_item, entity_who_picked, item_name, pickup_count )
-		local x,y = EntityGetTransform( entity_who_picked )
+		local x, y = EntityGetTransform( entity_who_picked )
 		local child_id
-		local walker_id
 		local is_stacking = GameHasFlagRun( "AP_ATTACK_FOOT_CLIMBER" )
 
 		local function add_leg(identifier)
-			child_id = EntityLoad("data/archipelago/entities/animals/legs/chest_limb_" .. identifier .. ".xml", x, y)
-			EntityAddComponent2(child_id, "InheritTransformComponent")
-			walker_id = EntityGetFirstComponent(child_id, "IKLimbWalkerComponent")
+			local leg_child_id = EntityLoad("data/archipelago/entities/animals/legs/chest_limb_" .. identifier .. ".xml", x, y)
+			EntityAddComponent2(leg_child_id, "InheritTransformComponent")
+			local walker_id = EntityGetFirstComponent(leg_child_id, "IKLimbWalkerComponent")
 			ComponentSetValue2(walker_id, "affect_flying", true)
-			EntityAddTag(child_id, "perk_entity")
-			EntityAddTag(child_id, "ap_leggy_foot_walker")
-			EntityAddChild(entity_who_picked, child_id)
+			EntityAddTag(leg_child_id, "perk_entity")
+			EntityAddTag(leg_child_id, "ap_leggy_foot_walker")
+			EntityAddChild(entity_who_picked, leg_child_id)
 		end
 
 		child_id = EntityLoad( "data/entities/misc/perks/attack_leggy/leggy_limb_attacker.xml", x, y )
@@ -84,8 +83,8 @@ local function ap_extend_perk_list()
 		end
 
 		local platformingcomponents = EntityGetComponent( entity_who_picked, "CharacterPlatformingComponent" )
-		if( platformingcomponents ~= nil ) then
-			for i,component in ipairs(platformingcomponents) do
+		if platformingcomponents ~= nil then
+			for _, component in ipairs(platformingcomponents) do
 				local run_speed = tonumber( ComponentGetMetaCustom( component, "run_velocity" ) ) * 1.25
 				local vel_x = math.abs( tonumber( ComponentGetMetaCustom( component, "velocity_max_x" ) ) ) * 1.25
 
@@ -100,7 +99,7 @@ local function ap_extend_perk_list()
 
 		perk_pickup_event("LUKKI")
 
-		if ( pickup_count <= 2 ) then
+		if pickup_count <= 2 then
 			add_lukkiness_level(entity_who_picked)
 		end
 	end,
@@ -108,8 +107,8 @@ local function ap_extend_perk_list()
 		reset_perk_pickup_event("LUKKI")
 		GameRemoveFlagRun( "AP_ATTACK_FOOT_CLIMBER" )
 		local platformingcomponents = EntityGetComponent( entity_who_picked, "CharacterPlatformingComponent" )
-		if( platformingcomponents ~= nil ) then
-			for i,component in ipairs(platformingcomponents) do
+		if platformingcomponents ~= nil then
+			for _, component in ipairs(platformingcomponents) do
 				ComponentSetMetaCustom( component, "run_velocity", 154 )
 				ComponentSetMetaCustom( component, "velocity_min_x", -57 )
 				ComponentSetMetaCustom( component, "velocity_max_x", 57 )
@@ -117,7 +116,6 @@ local function ap_extend_perk_list()
 		end
 	end,
 })
-
 
 end
 
