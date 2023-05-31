@@ -52,6 +52,7 @@ local function ap_extend_forge_item_convert()
 					local hamis = EntityLoad("data/entities/animals/longleg.xml", x, y-10)
 					local ai_comp = EntityGetFirstComponent(hamis, "AnimalAIComponent")
 					ComponentSetValue2(ai_comp, "mAggression", 0)
+					EntityRemoveTag(hamis, "enemy")
 				end
 			end
 		end
