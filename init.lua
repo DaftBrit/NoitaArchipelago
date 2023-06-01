@@ -78,7 +78,11 @@ end
 
 
 local function IsDeathLinkEnabled()
-	return slot_options.death_link and ModSettingGet("archipelago.death_link")
+	local slot_death = nil
+	if slot_options.death_link ~= 0 and slot_options.death_link ~= nil then
+		slot_death = true
+	end
+	return slot_death and ModSettingGet("archipelago.death_link")
 end
 
 
@@ -395,7 +399,7 @@ function RECV_MSG.ReceivedItems(msg)
 		-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 	end
 
-	local orb_count = 0
+	--local orb_count = 0
 	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
 	for i, item in ipairs(msg["items"]) do
 		local current_item_index = next_item_index + i
@@ -411,15 +415,7 @@ function RECV_MSG.ReceivedItems(msg)
 			elseif not is_first_time_connected or GameHasFlagRun("ap_spawn_kill_saver") then
 				SpawnReceivedItem(item)
 			end
-		elseif item["item"] == AP.ORB_ITEM_ID then
-			orb_count = orb_count + 1
 		end
-	end
-	if not GameHasFlagRun("orb_check") then
-		-- not sure if we should have this or not. We probably had it here for a reason, but I can't recall what
-		-- only case I found where this is used, the new game spawn items happened too which gave the orbs before this
-		print("if there's a bug in orbs being given, it's probably here") -- delete this after testing
-		--GivePlayerOrbsOnSpawn(orb_count)
 	end
 
 	if is_first_time_connected and not GameHasFlagRun("ap_spawn_kill_saver") then
