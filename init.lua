@@ -78,11 +78,7 @@ end
 
 
 local function IsDeathLinkEnabled()
-	local slot_death = nil
-	if slot_options.death_link ~= 0 and slot_options.death_link ~= nil then
-		slot_death = true
-	end
-	return slot_death and ModSettingGet("archipelago.death_link")
+	return slot_options.death_link == 1 and ModSettingGet("archipelago.death_link")
 end
 
 
