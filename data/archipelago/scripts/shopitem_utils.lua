@@ -73,6 +73,7 @@ function ShopItems.create_ap_entity_from_flags(location, x, y)
 	end
 
 	local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
+	EntityAddTag(item_entity, "not_my_ap_item")
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
 			 EntityAddComponent(item_entity, "LuaComponent", {
 					 _tags="archipelago",
@@ -111,8 +112,11 @@ function ShopItems.generate_ap_shop_item_entity(location_id, x, y)
 		return shop_item_id, false
 	else
 		local shop_item_id = ShopItems.create_foreign_item_entity(location, x, y)
+		addNewInternalVariable(shop_item_id, "ap_location_id", "value_int", location_id)
 		if location.is_our_item and item_id == AP.TRAP_ID then
 			EntityAddTag(shop_item_id, "my_ap_item")
+		else
+			EntityAddTag(shop_item_id, "not_my_ap_item")
 		end
 		return shop_item_id, true
 	end

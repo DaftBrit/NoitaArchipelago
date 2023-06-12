@@ -395,7 +395,6 @@ function RECV_MSG.ReceivedItems(msg)
 		-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 	end
 
-	--local orb_count = 0
 	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
 	for i, item in ipairs(msg["items"]) do
 		local current_item_index = next_item_index + i
@@ -552,6 +551,13 @@ function RECV_MSG.LocationInfo(msg)
 	end
 	Cache.LocationInfo:write()
 	ShareLocationScouts()
+end
+
+
+function RECV_MSG.RoomUpdate(msg)
+	for _, v in pairs(msg["checked_locations"]) do
+		remove_collected_item(v)
+	end
 end
 
 ----------------------------------------------------------------------------------------------------
