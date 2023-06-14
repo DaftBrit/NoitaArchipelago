@@ -78,7 +78,7 @@ end
 
 
 local function IsDeathLinkEnabled()
-	return slot_options.death_link and ModSettingGet("archipelago.death_link")
+	return slot_options.death_link == 1 and ModSettingGet("archipelago.death_link")
 end
 
 
@@ -159,7 +159,7 @@ local function ShouldDeliverItem(item)
 			GameRemoveFlagRun("ap" .. location_id)
 		else
 			-- this is an item your co-op partner picked up in slot co-op
-			remove_slot_coop_item(location_id)
+			remove_collected_item(location_id)
 		end
 	end
 	return true
@@ -255,7 +255,7 @@ function SendConnect()
 		name = player_name,
 		uuid = "NoitaClient",
 		tags = { "AP" },
-		version = { major = 0, minor = 4, build = 0, class = "Version" },
+		version = { major = 0, minor = 4, build = 1, class = "Version" },
 		items_handling = 7
 	})
 end
@@ -395,7 +395,6 @@ function RECV_MSG.ReceivedItems(msg)
 		-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
 	end
 
-	local orb_count = 0
 	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
 	for i, item in ipairs(msg["items"]) do
 		local current_item_index = next_item_index + i
@@ -408,16 +407,13 @@ function RECV_MSG.ReceivedItems(msg)
 			-- but also, you want to give the player gold and stuff that got sent before spawning
 			if is_first_time_connected and not item_table[item_id].newgame and item_table[item_id].redeliverable then
 				SpawnReceivedItem(item)
-			elseif not is_first_time_connected then
+			elseif not is_first_time_connected or GameHasFlagRun("ap_spawn_kill_saver") then
 				SpawnReceivedItem(item)
 			end
-		elseif item["item"] == AP.ORB_ITEM_ID then
-			orb_count = orb_count + 1
 		end
 	end
-	GivePlayerOrbsOnSpawn(orb_count)
 
-	if is_first_time_connected then
+	if is_first_time_connected and not GameHasFlagRun("ap_spawn_kill_saver") then
 		SpawnAllNewGameItems()
 	end
 end
@@ -555,6 +551,13 @@ function RECV_MSG.LocationInfo(msg)
 	end
 	Cache.LocationInfo:write()
 	ShareLocationScouts()
+end
+
+
+function RECV_MSG.RoomUpdate(msg)
+	for _, v in pairs(msg["checked_locations"]) do
+		remove_collected_item(v)
+	end
 end
 
 ----------------------------------------------------------------------------------------------------

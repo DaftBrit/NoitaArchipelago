@@ -1,4 +1,4 @@
-<Entity tags="teleportable_NOT,item,item_pickup">
+<Entity tags="teleportable_NOT,item,item_pickup,ap_item">
   <!-- I think we need this so the item can drop (stealing from the shop) -->
   <!-- https://noita.wiki.gg/wiki/Documentation:_VelocityComponent -->
   <VelocityComponent/>

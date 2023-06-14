@@ -286,6 +286,7 @@ function create_our_item_entity(item, x, y)
 		elseif item.items ~= nil and #item.items > 0 then
 			-- our item is something else (random choice)
 			local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
+			EntityAddTag(entity_id, "ap_item")
 			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
 			if life_comp ~= nil then
 				EntityRemoveComponent(entity_id, life_comp)
@@ -308,14 +309,13 @@ function create_foreign_item_entity(location, x, y)
 end
 
 
--- for use with same slot co-op
-function remove_slot_coop_item(location_id)
-	local ap_entities = EntityGetWithTag("my_ap_item")
+-- for use with same slot co-op and for collects
+function remove_collected_item(location_id)
+	local ap_entities = EntityGetWithTag("ap_item")
 	for _, entity_id in pairs(ap_entities) do
-		print(_, entity_id)
 		local stored_location_id = getInternalVariableValue(entity_id, "ap_location_id", "value_int")
 		if stored_location_id == location_id then
-			print("removed entity because slot coop partner picked it up already")
+			print("removed entity " .. entity_id .. " because it was collected or your co-op partner grabbed it")
 			EntityKill(entity_id)
 		end
 	end

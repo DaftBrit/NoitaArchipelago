@@ -1,4 +1,4 @@
-<Entity tags="hittable,teleportable_NOT,polymorphable_NOT,my_ap_item">
+<Entity tags="hittable,teleportable_NOT,polymorphable_NOT,ap_item">
 	
 	<VelocityComponent>
 	</VelocityComponent>
