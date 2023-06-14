@@ -159,7 +159,7 @@ local function ShouldDeliverItem(item)
 			GameRemoveFlagRun("ap" .. location_id)
 		else
 			-- this is an item your co-op partner picked up in slot co-op
-			remove_slot_coop_item(location_id)
+			remove_collected_item(location_id)
 		end
 	end
 	return true
@@ -255,7 +255,7 @@ function SendConnect()
 		name = player_name,
 		uuid = "NoitaClient",
 		tags = { "AP" },
-		version = { major = 0, minor = 4, build = 0, class = "Version" },
+		version = { major = 0, minor = 4, build = 1, class = "Version" },
 		items_handling = 7
 	})
 end

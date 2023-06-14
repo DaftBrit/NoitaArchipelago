@@ -36,12 +36,12 @@ end -- generate_item_price
 function ShopItems.create_our_item_entity(item, x, y)
 	if item.perk ~= nil then
 		local perk_id = perk_spawn(x, y, item.perk, true)
-		EntityAddTag(perk_id, "my_ap_item")
+		EntityAddTag(perk_id, "ap_item")
 		return perk_id
 	elseif item.items ~= nil and #item.items > 0 then
 		-- our item is something else (random choice)
 		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
-		EntityAddTag(entity_id, "my_ap_item")
+		EntityAddTag(entity_id, "ap_item")
 		if item.gold_amount ~= 0 then
 			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
 			EntityRemoveComponent(entity_id, life_comp)
@@ -73,7 +73,6 @@ function ShopItems.create_ap_entity_from_flags(location, x, y)
 	end
 
 	local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
-	EntityAddTag(item_entity, "not_my_ap_item")
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
 			 EntityAddComponent(item_entity, "LuaComponent", {
 					 _tags="archipelago",
@@ -107,17 +106,11 @@ function ShopItems.generate_ap_shop_item_entity(location_id, x, y)
 
 	if location.is_our_item and item and item_id ~= AP.TRAP_ID then
 		local shop_item_id = ShopItems.create_our_item_entity(item, x, y)
-		EntityAddTag(shop_item_id, "my_ap_item")
 		addNewInternalVariable(shop_item_id, "ap_location_id", "value_int", location_id)
 		return shop_item_id, false
 	else
 		local shop_item_id = ShopItems.create_foreign_item_entity(location, x, y)
 		addNewInternalVariable(shop_item_id, "ap_location_id", "value_int", location_id)
-		if location.is_our_item and item_id == AP.TRAP_ID then
-			EntityAddTag(shop_item_id, "my_ap_item")
-		else
-			EntityAddTag(shop_item_id, "not_my_ap_item")
-		end
 		return shop_item_id, true
 	end
 end -- generate_ap_shop_item_entity
