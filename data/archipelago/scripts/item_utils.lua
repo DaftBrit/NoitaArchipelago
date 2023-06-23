@@ -23,13 +23,20 @@ end
 function GivePlayerOrbsOnSpawn(orb_count)
 	if orb_count > 0 then
 		local fake_orb_entity = EntityLoadAtPlayer("data/archipelago/entities/items/orbs/fake_orb.xml")
+		local heart_count = 0
+		if GameHasFlagRun("ap_peaceful_goal") and orb_count > 33 then
+			heart_count = orb_count - 33
+			orb_count = 33
+		elseif GameHasFlagRun("ap_pure_goal") and orb_count > 11 then
+			heart_count = orb_count - 11
+			orb_count = 11
+		end
 		if fake_orb_entity ~= nil then
 			for i = 1, orb_count do
 				EntityAddComponent2(fake_orb_entity, "OrbComponent", {orb_id = i + 20})
 			end
 		end
 	end
-	GameAddFlagRun("orb_check") -- delete this after testing
 end
 
 
@@ -58,6 +65,13 @@ function SpawnItem(item_id, traps)
 	elseif item.potion ~= nil then
 		spawn_potion(item.items[1])
 		GlobalsSetValue("ap_random_hax", rand_x + 2)
+	elseif item.orb ~= nil then
+		local orb_count = GameGetOrbCountThisRun()
+		if GameHasFlagRun("ap_peaceful_goal") and orb_count >= 33 or GameHasFlagRun("ap_pure_goal") and orb_count >= 11 then
+			EntityLoadAtPlayer("data/entities/items/pickup/heart.xml")
+		else
+			EntityLoadAtPlayer(item.items[1])
+		end
 	elseif #item.items > 0 then
 		local item_to_spawn = item.items[Random(1, #item.items)]
 		EntityLoadAtPlayer(item_to_spawn, random_offset())

@@ -29,7 +29,7 @@ return {
 	[110020] = { perk = "MAP", redeliverable = true, newgame = true }, -- spatial awareness perk, for runs including toveri boss
 	[110021] = { perk = "RESPAWN", redeliverable = true }, -- extra life
 
-	[110022] = { items = { "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml" }, redeliverable = true, newgame = true },
+	[110022] = { items = { "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml" }, orb = true, redeliverable = true, newgame = true },
 
 	[110023] = { items = { "data/entities/items/pickup/potion_random_material.xml" }, potion = true }, -- random potion
 	[110024] = { items = { "data/entities/items/pickup/potion_secret.xml" }, potion = true }, -- secret potion

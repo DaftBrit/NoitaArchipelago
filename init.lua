@@ -340,6 +340,13 @@ function RECV_MSG.Connected(msg)
 	SetupLocationScouts(new_checksums)
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
+	-- Put the victory condition in a flag, for use in orb-related shenanigans
+	if slot_options.victory_condition == 1 then
+		GameAddFlagRun("ap_pure_goal")
+	end
+	if slot_options.victory_condition == 2 then
+		GameAddFlagRun("ap_peaceful_goal")
+	end
 end
 
 
