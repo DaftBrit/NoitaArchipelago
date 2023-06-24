@@ -3,6 +3,8 @@ dofile_once("data/scripts/gun/gun_actions.lua")
 dofile_once("data/scripts/game_helpers.lua")
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
+local AP = dofile("data/archipelago/scripts/constants.lua")
+local Log = dofile("data/archipelago/scripts/logger.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
 dofile_once("data/scripts/items/chest_random.lua")
 
@@ -14,7 +16,13 @@ function on_open(entity_item)
 	local item_spawned = false
 	if Biomes[biome_name] ~= nil then
 		local biome_data = Biomes[biome_name]
-		for i = biome_data.first_hc, biome_data.first_hc + 19 do
+		local start_num = biome_data.first_hc
+		if x <= -20000 then
+			start_num = biome_data.first_hc + AP.WEST_OFFSET
+		elseif x >= 20000 then
+			start_num = biome_data.first_hc + AP.EAST_OFFSET
+		end
+		for i = start_num, start_num + 19 do
 			if Globals.MissingLocationsSet:has_key(i) then
 				Globals.LocationUnlockQueue:append(i)
 				Globals.MissingLocationsSet:remove_key(i)
@@ -41,6 +49,5 @@ end
 
 function item_pickup( entity_item, entity_who_picked, name )
 	on_open( entity_item )
-
 	EntityKill( entity_item )
 end

@@ -151,10 +151,14 @@ local function ShouldDeliverItem(item)
 	local location_id = item["location"]
 	if item["player"] == current_player_slot then
 		if GameHasFlagRun("ap" .. location_id) then
-			if location_id >= AP.FIRST_SHOP_LOCATION_ID and location_id <= AP.LAST_SHOP_LOCATION_ID then
+			if location_id >= AP.FIRST_SHOP_LOCATION_ID and location_id <= AP.LAST_SHOP_LOCATION_ID or
+					location_id >= AP.FIRST_SHOP_LOCATION_ID + AP.WEST_OFFSET and location_id <= AP.LAST_SHOP_LOCATION_ID + AP.WEST_OFFSET or
+					location_id >= AP.FIRST_SHOP_LOCATION_ID + AP.EAST_OFFSET and location_id <= AP.LAST_SHOP_LOCATION_ID + AP.EAST_OFFSET then
 				return false	-- Don't deliver shopitems, they are given locally
-			elseif location_id >= AP.FIRST_BIOME_LOCATION_ID and location_id <= AP.LAST_BIOME_LOCATION_ID then
-				return false	-- Don't deliver biome items, they are given locally
+			elseif location_id >= AP.FIRST_BIOME_LOCATION_ID and location_id <= AP.LAST_BIOME_LOCATION_ID or
+					location_id >= AP.FIRST_BIOME_LOCATION_ID + AP.WEST_OFFSET and location_id <= AP.LAST_BIOME_LOCATION_ID + AP.WEST_OFFSET or
+					location_id >= AP.FIRST_BIOME_LOCATION_ID + AP.EAST_OFFSET and location_id <= AP.LAST_BIOME_LOCATION_ID + AP.EAST_OFFSET then
+				return false	-- Don't deliver pedestal or chest items, they're given locally
 			end
 			GameRemoveFlagRun("ap" .. location_id)
 		else
@@ -184,22 +188,38 @@ local function SetupLocationScouts(new_checksum)
 		for i = AP.FIRST_SHOP_LOCATION_ID, AP.LAST_SHOP_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
+				if slot_options.path_option == 4 then
+					table.insert(locations, i + AP.WEST_OFFSET)
+					table.insert(locations, i + AP.EAST_OFFSET)
+				end
 			end
 		end
 		for i = AP.FIRST_ORB_LOCATION_ID, AP.LAST_ORB_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
+				if slot_options.orbs_as_checks == 4 and i ~= 110661 then
+					table.insert(locations, i + AP.WEST_OFFSET)
+					table.insert(locations, i + AP.EAST_OFFSET)
+				end
 			end
 		end
 		for _, biome_data in pairs(Biomes) do
 			for i = biome_data.first_hc, biome_data.first_hc + 19 do
 				if Globals.MissingLocationsSet:has_key(i) then
 					table.insert(locations, i)
+					if slot_options.path_option == 4 then
+						table.insert(locations, i + AP.WEST_OFFSET)
+						table.insert(locations, i + AP.EAST_OFFSET)
+					end
 				end
 			end
 			for i = biome_data.first_ped, biome_data.first_ped + 19 do
 				if Globals.MissingLocationsSet:has_key(i) then
 					table.insert(locations, i)
+					if slot_options.path_option == 4 then
+						table.insert(locations, i + AP.WEST_OFFSET)
+						table.insert(locations, i + AP.EAST_OFFSET)
+					end
 				end
 			end
 		end
@@ -307,6 +327,14 @@ function RECV_MSG.Connected(msg)
 	current_player_slot = msg["slot"]
 	slot_options = msg["slot_data"]
 
+	-- need these two elsewhere
+	if slot_options.victory_condition == 1 then
+		GameAddFlagRun("ap_pure_goal")
+	end
+	if slot_options.victory_condition == 2 then
+		GameAddFlagRun("ap_peaceful_goal")
+	end
+
 	Globals.PlayerSlot:set(current_player_slot)
 	ConnIcon:setConnected()
 
@@ -322,6 +350,10 @@ function RECV_MSG.Connected(msg)
 		-- TODO move this out to biome_mapping.lua as `is_pedestal_location`
 		for i = biome_data.first_ped, biome_data.first_ped + 19 do
 			peds_list[i] = true
+			if slot_options.path_option == 4 and i <= biome_data.first_ped + 9 then
+				peds_list[i + AP.WEST_OFFSET] = true
+				peds_list[i + AP.EAST_OFFSET] = true
+			end
 		end
 	end
 	for _, location in ipairs(msg["missing_locations"]) do
@@ -341,12 +373,6 @@ function RECV_MSG.Connected(msg)
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
 	-- Put the victory condition in a flag, for use in orb-related shenanigans
-	if slot_options.victory_condition == 1 then
-		GameAddFlagRun("ap_pure_goal")
-	end
-	if slot_options.victory_condition == 2 then
-		GameAddFlagRun("ap_peaceful_goal")
-	end
 end
 
 
