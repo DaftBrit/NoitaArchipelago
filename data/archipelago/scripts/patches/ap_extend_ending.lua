@@ -30,7 +30,7 @@ local function ap_extend_ending()
 				-- peaceful ending
 				GameAddFlagRun("ap_peaceful_ending")
 			end
-			if (orb_count == 11) then
+			if (orb_count >= 11) then
 				-- pure ending
 				GameAddFlagRun("ap_pure_ending")
 			elseif (orb_count < 33) then
