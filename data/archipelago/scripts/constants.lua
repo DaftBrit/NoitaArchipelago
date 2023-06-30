@@ -21,6 +21,11 @@ return {
 	WEST_OFFSET = 669,
 	EAST_OFFSET = 1338,
 
+	-- Parallel world exclusions
+	LAVA_LAKE_ORB = 110661,
+	FIRST_NON_PW_SHOP = 110036,
+	LAST_NON_PW_SHOP = 110045,
+
 
 	-- Item IDs for items where we want to spawn them a little differently
 	HEART_ITEM_ID = 110001,

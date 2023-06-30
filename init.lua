@@ -188,7 +188,7 @@ local function SetupLocationScouts(new_checksum)
 		for i = AP.FIRST_SHOP_LOCATION_ID, AP.LAST_SHOP_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
-				if slot_options.path_option == 4 then
+				if slot_options.path_option == 4 and i < AP.FIRST_NON_PW_SHOP then -- no lab or secret shop
 					table.insert(locations, i + AP.WEST_OFFSET)
 					table.insert(locations, i + AP.EAST_OFFSET)
 				end
@@ -197,7 +197,7 @@ local function SetupLocationScouts(new_checksum)
 		for i = AP.FIRST_ORB_LOCATION_ID, AP.LAST_ORB_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
-				if slot_options.orbs_as_checks == 4 and i ~= 110661 then
+				if slot_options.orbs_as_checks == 4 and i ~= 110661 then -- lava lake orb
 					table.insert(locations, i + AP.WEST_OFFSET)
 					table.insert(locations, i + AP.EAST_OFFSET)
 				end
