@@ -17,8 +17,6 @@ local function APPedestalReplacer()
 
 		local biome_data = Biomes[biome_name]
 		local start_num = biome_data.first_ped
-		print(start_num)
-		print("start_num above")
 		if x <= -20000 then
 			start_num = start_num + AP.WEST_OFFSET
 		elseif x >= 20000 then
