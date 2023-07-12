@@ -1,0 +1,20 @@
+<Entity>
+  <Base file="data/archipelago/entities/items/base_ap_shopitem.xml" />
+
+  <!-- this is so physics items can spawn in the shop without being kickable -->
+  <SpriteComponent 
+    _tags="enabled_in_world,item"
+    offset_x="4"
+    offset_y="4"
+    image_file="data/archipelago/entities/items/icon-junk.png"
+    update_transform_rotation="0"
+  />
+
+  <LuaComponent
+    _tags="archipelago"
+    execute_every_n_frame="-1"
+    call_init_function="1"
+    script_item_picked_up="data/archipelago/scripts/physics_shopitem_processed.lua"
+  />
+
+</Entity>

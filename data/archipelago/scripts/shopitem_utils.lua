@@ -40,11 +40,28 @@ function ShopItems.create_our_item_entity(item, x, y)
 		return perk_id
 	elseif item.items ~= nil and #item.items > 0 then
 		-- our item is something else (random choice)
-		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
-		EntityAddTag(entity_id, "ap_item")
-		if item.gold_amount ~= 0 then
-			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
-			EntityRemoveComponent(entity_id, life_comp)
+		local entity_id = 0
+		if item.alt_shop then
+			entity_id = EntityLoad("data/archipelago/entities/items/ap_physics_shopitem.xml", x, y)
+			if item.potion or item.pouch then
+				-- TODO: get a material from the spawn list for the item, put it in a variable storage component
+				local material = "water"
+				addNewInternalVariable(entity_id, "material_name", "value_string", material)
+			end
+			addNewInternalVariable(entity_id, "item_file", "value_string", item.items[1])
+			print(item.items[1])
+			print("item above")
+			local sprite_comp = EntityGetFirstComponent(entity_id, "SpriteComponent")
+			local sprite_image = item.sprite_path
+			ComponentSetValue2(sprite_comp, "image_file", sprite_image)
+			change_entity_ingame_name(entity_id, item.name, "test name")
+		else
+			entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
+			EntityAddTag(entity_id, "ap_item")
+			if item.gold_amount ~= 0 then
+				local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+				EntityRemoveComponent(entity_id, life_comp)
+			end
 		end
 		return entity_id
 	else -- error?
