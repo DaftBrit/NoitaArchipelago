@@ -38,10 +38,13 @@ local function ap_extend_temple_altar()
 		local location_id = get_shop_location_id(x, y)
 		local is_not_obtained = Globals.MissingLocationsSet:has_key(location_id)
 		local is_ap_shopitem = remaining_ap_items > 0 and Randomf() <= remaining_ap_items / total_remaining_items
-		if x <= -20000 then
-			location_id = location_id + AP.WEST_OFFSET
-		elseif x >= 20000 then
-			location_id = location_id + AP.EAST_OFFSET
+		-- if pw path is on, generate pw shops differently. Otherwise, generate them like normal.
+		if GameHasFlagRun("ap_parallel_worlds") then
+			if x <= -20000 then
+				location_id = location_id + AP.WEST_OFFSET
+			elseif x >= 20000 then
+				location_id = location_id + AP.EAST_OFFSET
+			end
 		end
 
 		if is_not_obtained and is_ap_shopitem then
@@ -105,10 +108,13 @@ local function ap_extend_temple_altar()
 		-- This part would otherwise be a spell refresher
 
 		local location_id = AP.FIRST_SPELL_REFRESH_LOCATION_ID + (get_shop_num(y) - 1) * 6
-		if x <= -20000 then
-			location_id = location_id + AP.WEST_OFFSET
-		elseif x >= 20000 then
-			location_id = location_id + AP.EAST_OFFSET
+		-- if parallel worlds path is chosen, spawn pw item, otherwise spawn main world item
+		if GameHasFlagRun("ap_parallel_worlds") then
+			if x <= -20000 then
+				location_id = location_id + AP.WEST_OFFSET
+			elseif x >= 20000 then
+				location_id = location_id + AP.EAST_OFFSET
+			end
 		end
 		local is_not_obtained = Globals.MissingLocationsSet:has_key(location_id)
 		if is_not_obtained then

@@ -17,10 +17,13 @@ local function APPedestalReplacer()
 
 		local biome_data = Biomes[biome_name]
 		local start_num = biome_data.first_ped
-		if x <= -20000 then
-			start_num = start_num + AP.WEST_OFFSET
-		elseif x >= 20000 then
-			start_num = start_num + AP.EAST_OFFSET
+		-- if parallel worlds path is chosen, spawn pw pedestal items, otherwise spawn main world items
+		if GameHasFlagRun("ap_parallel_worlds") then
+			if x <= -20000 then
+				start_num = start_num + AP.WEST_OFFSET
+			elseif x >= 20000 then
+				start_num = start_num + AP.EAST_OFFSET
+			end
 		end
 		for i = start_num, start_num + 19 do
 			if Globals.MissingLocationsSet:has_key(i) and Globals.PedestalLocationsSet:has_key(i) then

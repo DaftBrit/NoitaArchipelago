@@ -21,10 +21,13 @@ local function APHeartAndChestReplacer()
 			-- spawn_heart has a 70% chance of spawning, while spawn_chest always spawns
 			if r > 0.3 and name == "heart" or name == "chest" then
 				local start_num = biome_data.first_hc
-				if x <= -20000 then
-					start_num = start_num + AP.WEST_OFFSET
-				elseif x >= 20000 then
-					start_num = start_num + AP.EAST_OFFSET
+				-- if parallel worlds path is chosen, spawn pw items, otherwise spawn main world items
+				if GameHasFlagRun("ap_parallel_worlds") then
+					if x <= -20000 then
+						start_num = start_num + AP.WEST_OFFSET
+					elseif x >= 20000 then
+						start_num = start_num + AP.EAST_OFFSET
+					end
 				end
 				for i = start_num, start_num + 19 do
 					if Globals.MissingLocationsSet:has_key(i) then

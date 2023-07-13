@@ -22,12 +22,17 @@ end
 function ShopItems.generate_item_price(biomeid, cheap_item)
 	if biomeid == 0 then return 0 end
 
+	-- second term is the default value, to be taken if no value is received, for compatibility
+	local price_multiplier = tonumber(GlobalsGetValue("ap_shop_price", 100))/100
+
 	biomeid = (0.5 * biomeid) + ( 0.5 * biomeid * biomeid )
 	local price = (50 + biomeid * 210) + (Random(-15, 15) * 10)
 
 	if( cheap_item ) then
 		price = 0.5 * price
 	end
+	price = price * price_multiplier
+
 	return math.floor(price)
 end -- generate_item_price
 

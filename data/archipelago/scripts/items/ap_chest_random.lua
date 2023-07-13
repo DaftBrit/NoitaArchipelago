@@ -17,10 +17,13 @@ function on_open(entity_item)
 	if Biomes[biome_name] ~= nil then
 		local biome_data = Biomes[biome_name]
 		local start_num = biome_data.first_hc
-		if x <= -20000 then
-			start_num = biome_data.first_hc + AP.WEST_OFFSET
-		elseif x >= 20000 then
-			start_num = biome_data.first_hc + AP.EAST_OFFSET
+		-- if parallel worlds path is chosen, spawn pw chests, otherwise spawn main world chests
+		if GameHasFlagRun("ap_parallel_worlds") then
+			if x <= -20000 then
+				start_num = biome_data.first_hc + AP.WEST_OFFSET
+			elseif x >= 20000 then
+				start_num = biome_data.first_hc + AP.EAST_OFFSET
+			end
 		end
 		for i = start_num, start_num + 19 do
 			if Globals.MissingLocationsSet:has_key(i) then
