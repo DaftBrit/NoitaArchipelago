@@ -23,12 +23,9 @@ end
 function GivePlayerOrbsOnSpawn(orb_count)
 	if orb_count > 0 then
 		local fake_orb_entity = EntityLoadAtPlayer("data/archipelago/entities/items/orbs/fake_orb.xml")
-		local heart_count = 0
 		if GameHasFlagRun("ap_peaceful_goal") and orb_count > 33 then
-			heart_count = orb_count - 33
 			orb_count = 33
 		elseif GameHasFlagRun("ap_pure_goal") and orb_count > 11 then
-			heart_count = orb_count - 11
 			orb_count = 11
 		end
 		if fake_orb_entity ~= nil then
