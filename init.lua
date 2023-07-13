@@ -327,7 +327,7 @@ function RECV_MSG.Connected(msg)
 	current_player_slot = msg["slot"]
 	slot_options = msg["slot_data"]
 
-	-- need these two elsewhere
+	-- need these elsewhere
 	if slot_options.victory_condition == 1 then
 		GameAddFlagRun("ap_pure_goal")
 	end
@@ -376,7 +376,6 @@ function RECV_MSG.Connected(msg)
 	SetupLocationScouts(new_checksums)
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
-	-- Put the victory condition in a flag, for use in orb-related shenanigans
 end
 
 
