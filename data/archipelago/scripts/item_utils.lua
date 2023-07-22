@@ -23,13 +23,17 @@ end
 function GivePlayerOrbsOnSpawn(orb_count)
 	if orb_count > 0 then
 		local fake_orb_entity = EntityLoadAtPlayer("data/archipelago/entities/items/orbs/fake_orb.xml")
+		if GameHasFlagRun("ap_peaceful_goal") and orb_count > 33 then
+			orb_count = 33
+		elseif GameHasFlagRun("ap_pure_goal") and orb_count > 11 then
+			orb_count = 11
+		end
 		if fake_orb_entity ~= nil then
 			for i = 1, orb_count do
 				EntityAddComponent2(fake_orb_entity, "OrbComponent", {orb_id = i + 20})
 			end
 		end
 	end
-	GameAddFlagRun("orb_check") -- delete this after testing
 end
 
 
@@ -58,6 +62,13 @@ function SpawnItem(item_id, traps)
 	elseif item.potion ~= nil then
 		spawn_potion(item.items[1])
 		GlobalsSetValue("ap_random_hax", rand_x + 2)
+	elseif item.orb ~= nil then
+		local orb_count = GameGetOrbCountThisRun()
+		if GameHasFlagRun("ap_peaceful_goal") and orb_count >= 33 or GameHasFlagRun("ap_pure_goal") and orb_count >= 11 then
+			EntityLoadAtPlayer("data/entities/items/pickup/heart.xml")
+		else
+			EntityLoadAtPlayer(item.items[1])
+		end
 	elseif #item.items > 0 then
 		local item_to_spawn = item.items[Random(1, #item.items)]
 		EntityLoadAtPlayer(item_to_spawn, random_offset())
@@ -149,6 +160,30 @@ local LocationFlags = {
 	[110666] = "ap_orb_8", -- Hell
 	[110667] = "ap_orb_9", -- Snow Chasm
 	[110668] = "ap_orb_10", -- Wizard's Den
+
+	[111327] = "ap_orb_128", -- West Floating Island
+	[111328] = "ap_orb_129", -- West Pyramid
+	[111329] = "ap_orb_130", -- West Frozen Vault
+	-- no lava lake orb in PWs
+	[111331] = "ap_orb_132", -- West Sandcave
+	[111332] = "ap_orb_133", -- West Magical Temple
+	[111333] = "ap_orb_134", -- West Lukki Lair
+	[111334] = "ap_orb_135", -- West Abyss
+	[111335] = "ap_orb_136", -- West Hell
+	[111336] = "ap_orb_137", -- West Snow Chasm
+	[111337] = "ap_orb_138", -- West Wizard's Den
+
+	[111996] = "ap_orb_256", -- East Floating Island
+	[111997] = "ap_orb_257", -- East Pyramid
+	[111998] = "ap_orb_258", -- East Frozen Vault
+	-- no lava lake orb in PWs
+	[112000] = "ap_orb_260", -- East Sandcave
+	[112001] = "ap_orb_261", -- East Magical Temple
+	[112002] = "ap_orb_262", -- East Lukki Lair
+	[112003] = "ap_orb_263", -- East Abyss
+	[112004] = "ap_orb_264", -- East Hell
+	[112005] = "ap_orb_265", -- East Snow Chasm
+	[112006] = "ap_orb_266", -- East Wizard's Den
 
 	[110646] = "ap_kolmi_is_dead",
 	[110647] = "ap_maggot_is_dead",

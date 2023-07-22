@@ -16,7 +16,16 @@ local function APPedestalReplacer()
 		if Biomes[biome_name] == nil then return false end
 
 		local biome_data = Biomes[biome_name]
-		for i = biome_data.first_ped, biome_data.first_ped + 19 do
+		local start_num = biome_data.first_ped
+		-- if parallel worlds path is chosen, spawn pw pedestal items, otherwise spawn main world items
+		if GameHasFlagRun("ap_parallel_worlds") then
+			if x <= -20000 then
+				start_num = start_num + AP.WEST_OFFSET
+			elseif x >= 20000 then
+				start_num = start_num + AP.EAST_OFFSET
+			end
+		end
+		for i = start_num, start_num + 19 do
 			if Globals.MissingLocationsSet:has_key(i) and Globals.PedestalLocationsSet:has_key(i) then
 				-- spawn the pedestal item, tell it its ID
 				Globals.PedestalLocationsSet:remove_key(i)

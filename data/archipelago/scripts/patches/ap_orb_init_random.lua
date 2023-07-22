@@ -1,11 +1,10 @@
-dofile_once( "data/scripts/game_helpers.lua" )
+dofile_once("data/scripts/game_helpers.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 local function APOrbInitRandom()
 	local AP = dofile("data/archipelago/scripts/constants.lua")
 	local Globals = dofile("data/archipelago/scripts/globals.lua")
-	local Constants = dofile("data/archipelago/scripts/constants.lua")
 
 	local entity_id = GetUpdatedEntityID()
 	local pos_x, pos_y = EntityGetTransform(entity_id)
@@ -19,7 +18,15 @@ local function APOrbInitRandom()
 		EntityRemoveComponent(entity_id, comp_id)
 	end
 
-	local location_id = orb_id + Constants.FIRST_ORB_LOCATION_ID
+	local pw_offset = 0
+	if pos_x <= -17920 then
+		-- west orbs have orb_id increased by 128, and location_ids are increased by 669
+		pw_offset = AP.WEST_OFFSET - 128
+	elseif pos_x >= 17920 then
+		-- east orbs have orb_id increased by 256, and location_ids are increased by 1338
+		pw_offset = AP.EAST_OFFSET - 256
+	end
+	local location_id = orb_id + AP.FIRST_ORB_LOCATION_ID + pw_offset
 	if not Globals.MissingLocationsSet:has_key(location_id) then return end
 
 	local location = Globals.LocationScouts:get_key(location_id)
