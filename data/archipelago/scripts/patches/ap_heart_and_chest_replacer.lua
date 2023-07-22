@@ -1,4 +1,5 @@
 dofile_once("data/archipelago/scripts/ap_utils.lua")
+local AP = dofile("data/archipelago/scripts/constants.lua")
 
 local function APHeartAndChestReplacer()
     local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
@@ -19,7 +20,16 @@ local function APHeartAndChestReplacer()
 			SetRandomSeed(x, y)
 			-- spawn_heart has a 70% chance of spawning, while spawn_chest always spawns
 			if r > 0.3 and name == "heart" or name == "chest" then
-				for i = biome_data.first_hc, biome_data.first_hc + 19 do
+				local start_num = biome_data.first_hc
+				-- if parallel worlds path is chosen, spawn pw items, otherwise spawn main world items
+				if GameHasFlagRun("ap_parallel_worlds") then
+					if x <= -20000 then
+						start_num = start_num + AP.WEST_OFFSET
+					elseif x >= 20000 then
+						start_num = start_num + AP.EAST_OFFSET
+					end
+				end
+				for i = start_num, start_num + 19 do
 					if Globals.MissingLocationsSet:has_key(i) then
 						-- do stuff that the vanilla spawn_heart does
 						SetRandomSeed(x + 45, y - 2123)
@@ -34,7 +44,7 @@ local function APHeartAndChestReplacer()
 							has_spawned = true
 							addNewInternalVariable(ap_chest_id, "biome_name", "value_string", biome_name)
 							break
-						elseif name ~= chest then
+						elseif name ~= "chest" then
 							if Random(1, 30) == 1 then
 								spawn_mimic_sign(x, y)
 							end

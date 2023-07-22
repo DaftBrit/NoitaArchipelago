@@ -29,7 +29,7 @@ return {
 	[110020] = { perk = "MAP", redeliverable = true, newgame = true }, -- spatial awareness perk, for runs including toveri boss
 	[110021] = { perk = "RESPAWN", redeliverable = true }, -- extra life
 
-	[110022] = { items = { "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml" }, redeliverable = true, newgame = true },
+	[110022] = { items = { "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml" }, orb = true, redeliverable = true, newgame = true },
 
 	[110023] = { items = { "data/entities/items/pickup/potion_random_material.xml" }, potion = true }, -- random potion
 	[110024] = { items = { "data/entities/items/pickup/potion_secret.xml" }, potion = true }, -- secret potion
@@ -40,4 +40,6 @@ return {
 	[110029] = { items = { "data/entities/items/pickup/gourd.xml" }, redeliverable = true, newgame = true }, -- gourd
 	[110030] = { items = { "data/entities/items/pickup/beamstone.xml" }, redeliverable = true, newgame = true }, -- sadekivi
 	[110031] = { items = { "data/entities/items/pickup/broken_wand.xml" }, redeliverable = true, newgame = true }, -- broken wand
+
+	[110032] = { items = { "data/archipelago/entities/items/pw_teleporter.xml" }, redeliverable = true, newgame = true, wand = true } -- pw teleporter for pw options
 }
