@@ -119,7 +119,9 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Creates a name based on the player_id, item_id, and flags to be presented as the name of an AP item
 local function GetItemName(player_id, item_id, flags)
-	local item_name = Cache.ItemNames:get(item_id)
+	local game_name = Cache.PlayerGames:get(player_id)
+	local item_names = Cache.ItemNames:get(game_name)
+	local item_name = item_names[tostring(item_id)]
 	if item_name == nil then
 		error("item_name is nil")
 		item_name = "problem with LocationScouts"
@@ -327,6 +329,13 @@ function RECV_MSG.Connected(msg)
 	current_player_slot = msg["slot"]
 	slot_options = msg["slot_data"]
 
+	-- PlayerGames cache is a table showing what game each slot is playing, necessary for removing data version from ap
+	local players_info = Cache.PlayerGames:reference()
+	for slot, info in pairs(msg["slot_info"]) do
+		players_info[slot] = info["game"]
+	end
+	Cache.PlayerGames:write()
+
 	-- need these elsewhere
 	if slot_options.victory_condition == 1 then
 		GameAddFlagRun("ap_pure_goal")
@@ -342,6 +351,7 @@ function RECV_MSG.Connected(msg)
 	Globals.PlayerSlot:set(current_player_slot)
 	ConnIcon:setConnected()
 
+	-- spawn kill saver makes it so you won't get traps in the first couple seconds after connecting
 	GameRemoveFlagRun("ap_spawn_kill_saver")
 	SetTimeOut(2, "data/archipelago/scripts/spawn_kill_saver.lua")
 	RestoreNewGameItems()
@@ -386,15 +396,19 @@ function RECV_MSG.DataPackage(msg)
 	local checksums = Cache.ChecksumVersions:reference()
 
 	for game, data in pairs(msg["data"]["games"]) do
+		local item_data = {}
+		local location_data = {}
 		for item_name, item_id in pairs(data["item_name_to_id"]) do
 			-- Some games like Hollow Knight use underscores for whatever reason
-			item_names[tostring(item_id)] = string.gsub(item_name, "_", " ")
+			item_data[tostring(item_id)] = string.gsub(item_name, "_", " ")
 		end
 
 		for location_name, location_id in pairs(data["location_name_to_id"]) do
-			location_names[tostring(location_id)] = string.gsub(location_name, "_", " ")
+			location_data[tostring(location_id)] = string.gsub(location_name, "_", " ")
 		end
 
+		item_names[game] = item_data
+		location_names[game] = location_data
 		checksums[game] = data["checksum"]
 	end
 
@@ -460,9 +474,13 @@ local function ParseJSONPart(part)
 	if part["type"] == "player_id" then
 		result = player_slot_to_name[tonumber(part["text"])]
 	elseif part["type"] == "item_id" then
-		result = Cache.ItemNames:get(part["text"])
+		local game = Cache.PlayerGames:get(part["player"])
+		local item_names = Cache.ItemNames:get(game)
+		result = item_names[tostring(part["text"])]
 	elseif part["type"] == "location_id" then
-		result = Cache.LocationNames:get(part["text"])
+		local game = Cache.PlayerGames:get(part["player"])
+		local location_names = Cache.LocationNames:get(game)
+		result = location_names[tostring(part["text"])]
 	elseif part["type"] == "color" then
 		Log.Info("Found colour in message: " .. part["color"])
 		result = ""	-- TODO color not supported
@@ -503,7 +521,9 @@ function RECV_MSG.PrintJSON(msg)
 		local is_source_player = source_player_id == current_player_slot
 
 		if (is_destination_player or is_source_player) and destination_player_id ~= source_player_id then
-			local item_name = Cache.ItemNames:get(item_id)
+			local game = Cache.PlayerGames:get(destination_player_id)
+			local item_names = Cache.ItemNames:get(game)
+			local item_name = item_names[tostring(item_id)]
 			GamePrintImportant(item_name, msg_str)
 		else
 			GamePrint(msg_str)

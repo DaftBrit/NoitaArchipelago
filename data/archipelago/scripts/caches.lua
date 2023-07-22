@@ -7,4 +7,5 @@ return {
 	LocationNames = SeedCache("data_package_location_ids_to_name"),
 	LocationInfo = SeedCache("location_scouts_info"),
 	ChecksumVersions = SeedCache("checksum_versions"),
+	PlayerGames = SeedCache("player_games")
 }
