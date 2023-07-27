@@ -18,4 +18,5 @@ return {
 	["$biome_robobase"] = { main_world = true, first_hc = 110486, first_ped = 110506,},
 	["$biome_vault_frozen"] = { main_world = true, first_hc = 110566, first_ped = 110586,},
 	["$biome_tower"] = { main_world = true, first_hc = 110606, first_ped = 110626,},
+	["$biome_meat"] = { main_world = true, first_hc = 110086, first_ped = 110106,},
 }
