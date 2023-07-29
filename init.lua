@@ -343,7 +343,9 @@ function RECV_MSG.Connected(msg)
 	if slot_options.victory_condition == 2 then
 		GameAddFlagRun("ap_peaceful_goal")
 	end
-	GlobalsSetValue("ap_shop_price", slot_options.shop_price)
+	if slot_options.shop_price ~= nil then
+		GlobalsSetValue("ap_shop_price", slot_options.shop_price)
+	end
 	if slot_options.path_option == 4 then
 		GameAddFlagRun("ap_parallel_worlds")
 	end
