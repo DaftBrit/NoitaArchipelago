@@ -73,7 +73,13 @@ local translations = {
 	},
 	["$ap_death_link_settings_desc"] = {
 		en="When enabled, the death link setting in your Archipelago YAML will be used.\nWhen disabled, this will override your YAML and disable death link in future runs."
-	}
+	},
+	["$ap_secure_settings_name"] = {
+		en="Secure Connection"
+	},
+	["$ap_secure_settings_desc"] = {
+		en="When enabled, the game will attempt to connect to the server with a secure connection.\nIf this is disabled, it will attempt to connect with an insecure connection first, then fall back to a secure connection."
+	},
 }
 
 local function translate(msg)
@@ -143,6 +149,13 @@ local mod_settings =
 				ui_description = translate("$ap_menu_server_settings_password_desc"),
 				value_default = "",
 				text_max_length = 120,
+				scope = MOD_SETTING_SCOPE_NEW_GAME,
+			},
+			{
+				id = "secure_conn",
+				ui_name = translate("$ap_secure_settings_name"),
+				ui_description = translate("$ap_secure_settings_desc"),
+				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
