@@ -241,7 +241,8 @@ end
 local RECV_MSG = {}
 
 local function ConnectionError(msg_str)
-	Log.Error(msg_str)
+	-- commented out since it makes the user think there's a problem when there isn't one
+	-- Log.Error(msg_str)
 	ConnIcon:setDisconnected(msg_str)
 end
 
@@ -645,6 +646,10 @@ function InitSocket(secure)
 	if secure then
 		prefix = "wss://"
 	end
+	-- if the user puts in ws:// or wss:// or http:// or https://, don't add a prefix
+	if string.find(host, "//") then
+		prefix = ""
+	end
 	local url = prefix .. host .. ":" .. port
 	Log.Info("Connecting to " .. url .. "...")
 
@@ -690,7 +695,7 @@ local function CheckNetworkMessages()
 			if errmsg ~= nil then
 				ConnectionError(errmsg)
 				if errmsg:find("TLS") or errmsg:find("-2146893048") then
-					Log.Error("Something related to TLS failed, attempting to connect on unsecure protocol")
+					Log.Error("Connecting on an unsecure protocol...")
 					InitSocket(false)
 				end
 			end
