@@ -614,8 +614,8 @@ end
 
 
 function RECV_MSG.RoomUpdate(msg)
-	for _, v in pairs(msg["checked_locations"]) do
-		remove_collected_item(v)
+	for _, location_ids in pairs(msg["checked_locations"]) do
+		remove_collected_item(location_ids)
 	end
 end
 
