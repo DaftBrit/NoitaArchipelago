@@ -388,6 +388,9 @@ function RECV_MSG.Connected(msg)
 	SetupLocationScouts(new_checksums)
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
+
+	-- Set up the SetNotify for whatever things we need from datastorage
+	SendCmd("SetNotify", {keys = {"EnergyLink"}})
 end
 
 
@@ -618,6 +621,15 @@ function RECV_MSG.RoomUpdate(msg)
 	end
 end
 
+
+function RECV_MSG.SetReply(msg)
+	local msg_key = msg["key"]
+	local msg_value = msg["value"]
+	if msg_key == "EnergyLink" then
+		GlobalsSetValue("ap_bank_value", tonumber(msg_value))
+	end
+end
+
 ----------------------------------------------------------------------------------------------------
 -- CORE MESSAGE HANDLING
 ----------------------------------------------------------------------------------------------------
@@ -716,6 +728,18 @@ local function CheckGlobalsAndFlags()
 end
 
 
+local function CheckBankUsage()
+	if GameHasFlagRun("ap_bank_used") then
+		GameRemoveFlagRun("ap_bank_used")
+		local bank_value = tonumber(GlobalsGetValue("ap_bank_value", 0))
+		if bank_value >= 0 then
+			SendCmd("Set", {key = "EnergyLink", default = 0, want_reply = true,
+							operations = {{operation = "add", value = bank_value}}} )
+		end
+	end
+end
+
+
 ----------------------------------------------------------------------------------------------------
 -- NOITA CALLBACKS
 ----------------------------------------------------------------------------------------------------
@@ -728,6 +752,7 @@ function OnWorldPostUpdate()
 	if is_player_spawned then
 		CheckNetworkMessages()
 		CheckGlobalsAndFlags()
+		CheckBankUsage()
 	end
 end
 

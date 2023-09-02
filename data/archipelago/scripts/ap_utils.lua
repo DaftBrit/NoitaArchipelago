@@ -185,7 +185,14 @@ function fully_heal()
 end
 
 
-local function set_money(amt)
+function get_money()
+	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
+	local current_money = ComponentGetValue2(wallet, "money")
+	return current_money
+end
+
+
+function set_money(amt)
 	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
 	ComponentSetValue2(wallet, "money", amt)
 end

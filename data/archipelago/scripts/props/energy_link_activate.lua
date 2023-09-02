@@ -1,0 +1,17 @@
+dofile_once("data/archipelago/scripts/ap_utils.lua")
+dofile_once("data/scripts/lib/utilities.lua")
+dofile_once("data/archipelago/scripts/item_utils.lua")
+
+print("step 1")
+local current_money_amount = get_money()
+print("step 2")
+local current_bank_value = tonumber(GlobalsGetValue("ap_bank_value", 0))
+print("step 3")
+local new_bank_value = current_bank_value + current_money_amount
+print("step 4")
+set_money(0)
+print("step 5")
+GlobalsSetValue("ap_bank_value", new_bank_value)
+print("step 6")
+GameAddFlagRun("ap_bank_used")
+print("step 7")
