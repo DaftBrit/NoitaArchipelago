@@ -21,7 +21,7 @@ local Log = dofile("data/archipelago/scripts/logger.lua")
 
 local JSON = dofile("data/archipelago/lib/json.lua")
 function JSON:onDecodeError(message, text, location, etc)
-	Log.Error(message)
+	Log.Info(message)
 end
 
 -- SCRIPTS
