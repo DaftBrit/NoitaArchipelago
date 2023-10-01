@@ -27,7 +27,7 @@ return {
 	[110018] = { perk = "EDIT_WANDS_EVERYWHERE", redeliverable = true, newgame = true },
 	[110019] = { perk = "REMOVE_FOG_OF_WAR", redeliverable = true, newgame = true },
 	[110020] = { perk = "MAP", redeliverable = true, newgame = true }, -- spatial awareness perk, for runs including toveri boss
-	[110021] = { perk = "RESPAWN", redeliverable = true }, -- extra life
+	[110021] = { perk = "RESPAWN", redeliverable = true, newgame = true }, -- extra life
 
 	[110022] = { items = { "mods/archipelago/data/archipelago/entities/items/orbs/ap_orb_randomizer_spawned.xml" }, orb = true, redeliverable = true, newgame = true },
 
