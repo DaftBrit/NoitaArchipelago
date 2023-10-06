@@ -208,6 +208,6 @@ function CheckLocationFlags()
 		end
 	end
 	if #locations_checked > 0 then
-		SendCmd("LocationChecks", { locations = locations_checked })
+		ap:LocationChecks(locations_checked)
 	end
 end
