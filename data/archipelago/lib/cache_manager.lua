@@ -40,14 +40,18 @@ end
 
 function Cache:write()
 	local filename = self:get_filename()
+	print("io.open " .. filename)
 	local f, err = io.open(filename, "w")
 	if f == nil then
 		Log.Error("Failed to open cache for write: " .. filename .. "\n" .. tostring(err))
 		return
 	end
 
+	print("f:write " .. JSON:encode(_G[self.cache_id]))
 	f:write(JSON:encode(_G[self.cache_id]))
+	print("written")
 	f:close()
+	print("closed")
 	_G[self.dirty_id] = false
 end
 
@@ -58,9 +62,13 @@ function Cache:check_dirty()
 end
 
 function Cache:set(key, value)
+	print("set " .. tostring(key) .. JSON:encode(value))
 	self:check_dirty()
+	print("checkdirty")
 	_G[self.cache_id][key] = (value or true)
+	print("set cache")
 	self:write()
+	print("write")
 end
 
 function Cache:get(key, default_value)
