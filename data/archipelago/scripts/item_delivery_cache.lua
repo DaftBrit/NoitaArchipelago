@@ -8,7 +8,7 @@ end
 
 -- Assume/hope that json.lua doesn't write the keys as strings
 function ItemCache:num_items()
-  return #self:reference()
+	return #self:reference()
 end
 
 return ItemCache

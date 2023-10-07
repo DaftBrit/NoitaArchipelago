@@ -3,12 +3,6 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
--- CREDITS:
--- Noita API wrapper (for requires) taken from Dadido3/noita-mapcap
--- pollnet library (for websocket implementation) probable-basilisk/pollnet
--- noita-ws-api (for reference and initial websocket setup) probable-basilisk/noita-ws-api
--- cheatgui (for reference) probable-basilisk/cheatgui
-
 
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
@@ -16,13 +10,12 @@ ModMaterialsFileAdd("data/archipelago/materials.xml")
 ModMagicNumbersFileAdd("data/archipelago/magic_numbers.xml")
 
 --LIBS
---local pollnet = dofile("data/archipelago/lib/pollnet/pollnet.lua")
-local AP = require("mods.archipelago.bin.lua-apclientpp")
+local APLIB = require("mods.archipelago.bin.lua-apclientpp")
 local Log = dofile("data/archipelago/scripts/logger.lua")
 
 local JSON = dofile("data/archipelago/lib/json.lua")
 function JSON:onDecodeError(message, text, location, etc)
-	Log.Info(message)
+	Log.Warn(message)
 end
 
 -- SCRIPTS
@@ -32,7 +25,7 @@ dofile_once("data/scripts/lib/mod_settings.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
 
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
-local APC = dofile("data/archipelago/scripts/constants.lua")
+local AP = dofile("data/archipelago/scripts/constants.lua")
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 
 -- Modules
@@ -121,7 +114,7 @@ local function GetItemName(player_id, item_id, flags)
 		item_name = "problem with LocationScouts"
 	end
 
-	if bit.band(flags, APC.ITEM_FLAG_TRAP) ~= 0 then
+	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
 		item_name = GameTextGetTranslatedOrNot("$ap_trapname" .. Random(1, 10))
 	end
 
@@ -147,13 +140,13 @@ local function ShouldDeliverItem(item)
 	local location_id = item["location"]
 	if item["player"] == current_player_slot then
 		if GameHasFlagRun("ap" .. location_id) then
-			if location_id >= APC.FIRST_SHOP_LOCATION_ID and location_id <= APC.LAST_SHOP_LOCATION_ID or
-					location_id >= APC.FIRST_SHOP_LOCATION_ID + APC.WEST_OFFSET and location_id <= APC.LAST_SHOP_LOCATION_ID + APC.WEST_OFFSET or
-					location_id >= APC.FIRST_SHOP_LOCATION_ID + APC.EAST_OFFSET and location_id <= APC.LAST_SHOP_LOCATION_ID + APC.EAST_OFFSET then
+			if location_id >= AP.FIRST_SHOP_LOCATION_ID and location_id <= AP.LAST_SHOP_LOCATION_ID or
+					location_id >= AP.FIRST_SHOP_LOCATION_ID + AP.WEST_OFFSET and location_id <= AP.LAST_SHOP_LOCATION_ID + AP.WEST_OFFSET or
+					location_id >= AP.FIRST_SHOP_LOCATION_ID + AP.EAST_OFFSET and location_id <= AP.LAST_SHOP_LOCATION_ID + AP.EAST_OFFSET then
 				return false	-- Don't deliver shop items, they are given locally
-			elseif location_id >= APC.FIRST_BIOME_LOCATION_ID and location_id <= APC.LAST_BIOME_LOCATION_ID or
-					location_id >= APC.FIRST_BIOME_LOCATION_ID + APC.WEST_OFFSET and location_id <= APC.LAST_BIOME_LOCATION_ID + APC.WEST_OFFSET or
-					location_id >= APC.FIRST_BIOME_LOCATION_ID + APC.EAST_OFFSET and location_id <= APC.LAST_BIOME_LOCATION_ID + APC.EAST_OFFSET then
+			elseif location_id >= AP.FIRST_BIOME_LOCATION_ID and location_id <= AP.LAST_BIOME_LOCATION_ID or
+					location_id >= AP.FIRST_BIOME_LOCATION_ID + AP.WEST_OFFSET and location_id <= AP.LAST_BIOME_LOCATION_ID + AP.WEST_OFFSET or
+					location_id >= AP.FIRST_BIOME_LOCATION_ID + AP.EAST_OFFSET and location_id <= AP.LAST_BIOME_LOCATION_ID + AP.EAST_OFFSET then
 				return false	-- Don't deliver pedestal or chest items, they're given locally
 			end
 			GameRemoveFlagRun("ap" .. location_id)
@@ -181,21 +174,21 @@ end
 local function SetupLocationScouts()
 	if Cache.LocationInfo:is_empty() then
 		local locations = {}
-		for i = APC.FIRST_SHOP_LOCATION_ID, APC.LAST_SHOP_LOCATION_ID do
+		for i = AP.FIRST_SHOP_LOCATION_ID, AP.LAST_SHOP_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
-				if slot_options.path_option == 4 and i < APC.FIRST_NON_PW_SHOP then -- no lab or secret shop
-					table.insert(locations, i + APC.WEST_OFFSET)
-					table.insert(locations, i + APC.EAST_OFFSET)
+				if slot_options.path_option == 4 and i < AP.FIRST_NON_PW_SHOP then -- no lab or secret shop
+					table.insert(locations, i + AP.WEST_OFFSET)
+					table.insert(locations, i + AP.EAST_OFFSET)
 				end
 			end
 		end
-		for i = APC.FIRST_ORB_LOCATION_ID, APC.LAST_ORB_LOCATION_ID do
+		for i = AP.FIRST_ORB_LOCATION_ID, AP.LAST_ORB_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
 				if slot_options.orbs_as_checks == 4 and i ~= 110661 then -- lava lake orb
-					table.insert(locations, i + APC.WEST_OFFSET)
-					table.insert(locations, i + APC.EAST_OFFSET)
+					table.insert(locations, i + AP.WEST_OFFSET)
+					table.insert(locations, i + AP.EAST_OFFSET)
 				end
 			end
 		end
@@ -204,8 +197,8 @@ local function SetupLocationScouts()
 				if Globals.MissingLocationsSet:has_key(i) then
 					table.insert(locations, i)
 					if slot_options.path_option == 4 then
-						table.insert(locations, i + APC.WEST_OFFSET)
-						table.insert(locations, i + APC.EAST_OFFSET)
+						table.insert(locations, i + AP.WEST_OFFSET)
+						table.insert(locations, i + AP.EAST_OFFSET)
 					end
 				end
 			end
@@ -213,8 +206,8 @@ local function SetupLocationScouts()
 				if Globals.MissingLocationsSet:has_key(i) then
 					table.insert(locations, i)
 					if slot_options.path_option == 4 then
-						table.insert(locations, i + APC.WEST_OFFSET)
-						table.insert(locations, i + APC.EAST_OFFSET)
+						table.insert(locations, i + AP.WEST_OFFSET)
+						table.insert(locations, i + AP.EAST_OFFSET)
 					end
 				end
 			end
@@ -238,6 +231,7 @@ local RECV_MSG = {}
 local function ConnectionError(msg_str)
 	-- commented out since it makes the user think there's a problem when there isn't one
 	-- Log.Error(msg_str)
+	Log.Warn(msg_str)
 	ConnIcon:setDisconnected(msg_str)
 end
 
@@ -318,8 +312,8 @@ function RECV_MSG.Connected()
 		for i = biome_data.first_ped, biome_data.first_ped + 19 do
 			peds_list[i] = true
 			if slot_options.path_option == 4 and i <= biome_data.first_ped + 9 then
-				peds_list[i + APC.WEST_OFFSET] = true
-				peds_list[i + APC.EAST_OFFSET] = true
+				peds_list[i + AP.WEST_OFFSET] = true
+				peds_list[i + AP.EAST_OFFSET] = true
 			end
 		end
 	end
@@ -365,7 +359,7 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
 function RECV_MSG.PrintJSON(msg, extra)
-	local msg_str = ap:render_json(msg, AP.RenderFormat.TEXT)
+	local msg_str = ap:render_json(msg, APLIB.RenderFormat.TEXT)
 
 	if extra["type"] == "ItemSend" then
 		local destination_player_id = extra["receiving"]
@@ -441,12 +435,6 @@ function RECV_MSG.LocationInfo(items)
 end
 
 
-function RECV_MSG.RoomUpdate(msg)
-	for _, location_ids in pairs(msg["checked_locations"]) do
-		remove_collected_item(location_ids)
-	end
-end
-
 ----------------------------------------------------------------------------------------------------
 -- ASYNC THREAD
 ----------------------------------------------------------------------------------------------------
@@ -467,107 +455,90 @@ end
 local GAME_NAME = "Noita"
 local ITEMS_HANDLING = 7 -- full remote
 
-function connect()
+local function connect()
 	local host = ModSettingGet("archipelago.server_address")
 	local port = ModSettingGet("archipelago.server_port")
 	local slot_name = ModSettingGet("archipelago.slot_name")
 	local password = ModSettingGet("archipelago.passwd") or ""
 	local uuid = "NoitaClient"
 
-	function on_socket_connected()
-		print("Socket connected")
+	local function on_socket_connected()
+		Log.Info("Socket connected")
 	end
 
-	function on_socket_error(msg)
+	local function on_socket_error(msg)
 		ConnectionError(msg)
-		print("Socket error: " .. msg)
 	end
 
-	function on_socket_disconnected()
+	local function on_socket_disconnected()
 		ConnectionError("Socket disconnected")
 	end
 
-	function on_room_info()
-		print("Room info")
+	local function on_room_info()
+		Log.Info("on_room_info")
 		Globals.Seed:set(ap:get_seed())
 		-- client version 0.4.1
 		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, {"Lua-APClientPP"}, { 0, 4, 1 })
 	end
 
-	function on_slot_connected(slot_data)
-		print("Slot connected")
+	local function on_slot_connected(slot_data)
+		Log.Info("on_slot_connected: " .. JSON:encode(slot_data))
 		slot_options = slot_data
 		RECV_MSG.Connected()
 	end
 
-	function on_slot_refused(reasons)
+	local function on_slot_refused(reasons)
 		ConnectionError("Slot refused: " .. table.concat(reasons, ", "))
-		print("Slot refused: " .. table.concat(reasons, ", "))
 	end
 
-	function on_items_received(items)
-		print("Items received")
+	local function on_items_received(items)
+		Log.Info("on_items_received: " .. JSON:encode(items))
 		RECV_MSG.ReceivedItems(items)
 	end
 
-	function on_location_info(items)
-		print("Locations scouted")
+	local function on_location_info(items)
+		Log.Info("on_location_info: " .. JSON:encode(items))
 		RECV_MSG.LocationInfo(items)
 	end
 
-	function on_location_checked(locations)
-		print("Locations checked:" .. table.concat(locations, ", "))
-		--print("Checked locations: " .. table.concat(ap.checked_locations, ", "))
+	local function on_location_checked(locations)
+		Log.Info("on_location_checked: " .. JSON:encode(locations))
+		for _, location_id in pairs(locations) do
+			remove_collected_item(location_id)
+		end
 	end
 
-	function on_data_package_changed(data_package)
-		print("Data package changed:")
-		print(JSON:encode(data_package))
+	local function on_data_package_changed(data_package)
+		Log.Info("on_data_package_changed: " .. JSON:encode(data_package))
 	end
 
 	-- deprecated?
-	function on_print(msg)
+	local function on_print(msg)
 		GamePrint(msg)
-		print(msg)
+		Log.Info("on_print: " .. msg)
 	end
 
-	function on_print_json(msg, extra)
+	local function on_print_json(msg, extra)
 		RECV_MSG.PrintJSON(msg, extra)
 	end
 
-	function on_bounced(bounce)
-		print("Bounced:")
-		print(JSON:encode(bounce))
+	local function on_bounced(bounce)
+		Log.Info("on_bounced: " .. JSON:encode(bounce))
+		RECV_MSG.Bounced(bounce)
 	end
 
-	function on_retrieved(map, keys, extra)
-		print("Retrieved:")
-		-- since lua tables won't contain nil values, we can use keys array
-		for _, key in ipairs(keys) do
-			print("  " .. key .. ": " .. tostring(map[key]))
-		end
-		-- extra will include extra fields from Get
-		print("Extra:")
-		for key, value in pairs(extra) do
-			print("  " .. key .. ": " .. tostring(value))
-		end
-		-- both keys and extra are optional
+	local function on_retrieved(map, keys, extra)
+		Log.Info("on_retrieved (map): " .. JSON:encode(map))
+		Log.Info("on_retrieved (keys): " .. JSON:encode(map))
+		Log.Info("on_retrieved (extra): " .. JSON:encode(map))
 	end
 
-	function on_set_reply(message)
-		print("Set Reply:")
-		for key, value in pairs(message) do
-			print("  " .. key .. ": " .. tostring(value))
-			if key == "value" and type(value) == "table" then
-				for subkey, subvalue in pairs(value) do
-					print("    " .. subkey .. ": " .. tostring(subvalue))
-				end
-			end
-		end
+	local function on_set_reply(message)
+		Log.Info("on_set_reply: " .. JSON:encode(message))
 	end
 
 
-	ap = AP(uuid, GAME_NAME, host .. ":" .. port);
+	ap = APLIB(uuid, GAME_NAME, host .. ":" .. port);
 
 	ap:set_socket_connected_handler(on_socket_connected)
 	ap:set_socket_error_handler(on_socket_error)
