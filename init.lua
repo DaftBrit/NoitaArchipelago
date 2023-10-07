@@ -237,7 +237,6 @@ end
 
 
 local function SpawnReceivedItem(item)
-	print("SpawnReceivedItem item = " .. JSON:encode(item))
 	local item_id = item["item"]
 	if ShouldDeliverItem(item) then
 		if GameHasFlagRun("ap_spawn_kill_saver") then
@@ -250,10 +249,8 @@ end
 
 
 local function SpawnAllNewGameItems()
-	print("SpawnAllNewGameItems")
 	local ng_items = {}
 	for _, item in pairs(Cache.ItemDelivery:reference()) do
-		print("item id is " .. item["item"])
 		local item_id = item["item"]
 		if item_table[item_id].newgame then
 			ng_items[item_id] = (ng_items[item_id] or 0) + 1
@@ -337,23 +334,11 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(items)
-	print("received items starting")
-	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
-	local i = 0
-	for _, _ in pairs(Cache.ItemDelivery:reference()) do
-		i = i + 1
-	end
-	is_first_time_connected = i == 0
-	--print(Cache.ItemDelivery:num_items() .. " is cache delivery num items")
-	print("is_first_time_connected = " .. tostring(is_first_time_connected))
-	--print("items = " .. JSON:encode(items))
-	for number, item in pairs(items) do
+	local is_first_time_connected = Cache.ItemDelivery:is_empty()
+	for _, item in pairs(items) do
 		-- we're in sync or we're continuing the game and receiving items in async
-		print("Cache.ItemDelivery:is_set starting")
 		if not Cache.ItemDelivery:is_set(tostring(item.index)) then
-			--print("Cache.ItemDelivery:set(" .. tostring(item.index) .. ", " .. JSON:encode(item))
 			Cache.ItemDelivery:set(tostring(item.index), item)
-			--print("item_id")
 			local item_id = item["item"]
 			-- when connected for the first time, you get receiveditems along with connected
 			-- but also, you want to give the player gold and stuff that got sent before spawning
@@ -522,16 +507,6 @@ local function connect()
 		end
 	end
 
-	local function on_data_package_changed(data_package)
-		Log.Info("on_data_package_changed: " .. JSON:encode(data_package))
-	end
-
-	-- deprecated?
-	local function on_print(msg)
-		GamePrint(msg)
-		Log.Info("on_print: " .. msg)
-	end
-
 	local function on_print_json(msg, extra)
 		RECV_MSG.PrintJSON(msg, extra)
 	end
@@ -540,17 +515,6 @@ local function connect()
 		Log.Info("on_bounced: " .. JSON:encode(bounce))
 		RECV_MSG.Bounced(bounce)
 	end
-
-	local function on_retrieved(map, keys, extra)
-		Log.Info("on_retrieved (map): " .. JSON:encode(map))
-		Log.Info("on_retrieved (keys): " .. JSON:encode(map))
-		Log.Info("on_retrieved (extra): " .. JSON:encode(map))
-	end
-
-	local function on_set_reply(message)
-		Log.Info("on_set_reply: " .. JSON:encode(message))
-	end
-
 
 	ap = APLIB(uuid, GAME_NAME, host .. ":" .. port);
 
@@ -563,12 +527,8 @@ local function connect()
 	ap:set_items_received_handler(on_items_received)
 	ap:set_location_info_handler(on_location_info)
 	ap:set_location_checked_handler(on_location_checked)
-	ap:set_data_package_changed_handler(on_data_package_changed)
-	ap:set_print_handler(on_print)
 	ap:set_print_json_handler(on_print_json)
 	ap:set_bounced_handler(on_bounced)
-	ap:set_retrieved_handler(on_retrieved)
-	ap:set_set_reply_handler(on_set_reply)
 end
 
 
