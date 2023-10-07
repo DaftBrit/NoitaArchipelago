@@ -252,7 +252,8 @@ end
 local function SpawnAllNewGameItems()
 	print("SpawnAllNewGameItems")
 	local ng_items = {}
-	for _, item in ipairs(Cache.ItemDelivery:reference()) do
+	for _, item in pairs(Cache.ItemDelivery:reference()) do
+		print("item id is " .. item["item"])
 		local item_id = item["item"]
 		if item_table[item_id].newgame then
 			ng_items[item_id] = (ng_items[item_id] or 0) + 1
@@ -334,19 +335,25 @@ function RECV_MSG.Connected()
 	SetDeathLinkEnabled(slot_options.death_link)
 end
 
--- TODO CRITICAL -- Game crashes here when doing new game and not restarting, WTF?
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(items)
+	print("received items starting")
 	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
+	local i = 0
+	for _, _ in pairs(Cache.ItemDelivery:reference()) do
+		i = i + 1
+	end
+	is_first_time_connected = i == 0
+	--print(Cache.ItemDelivery:num_items() .. " is cache delivery num items")
 	print("is_first_time_connected = " .. tostring(is_first_time_connected))
-	print("items = " .. JSON:encode(items))
-	for _, item in ipairs(items) do
+	--print("items = " .. JSON:encode(items))
+	for number, item in pairs(items) do
 		-- we're in sync or we're continuing the game and receiving items in async
-		print("Cache.ItemDelivery:is_set")
-		if not Cache.ItemDelivery:is_set(items.index) then
-			print("Cache.ItemDelivery:set(" .. tostring(item.index) .. ", " .. JSON:encode(item))
-			Cache.ItemDelivery:set(item.index, item)
-			print("item_id")
+		print("Cache.ItemDelivery:is_set starting")
+		if not Cache.ItemDelivery:is_set(tostring(item.index)) then
+			--print("Cache.ItemDelivery:set(" .. tostring(item.index) .. ", " .. JSON:encode(item))
+			Cache.ItemDelivery:set(tostring(item.index), item)
+			--print("item_id")
 			local item_id = item["item"]
 			-- when connected for the first time, you get receiveditems along with connected
 			-- but also, you want to give the player gold and stuff that got sent before spawning
