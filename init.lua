@@ -438,6 +438,19 @@ end
 -- ASYNC THREAD
 ----------------------------------------------------------------------------------------------------
 
+local function CheckLocationFlags()
+	local locations_checked = {}
+	for location_id, flag in pairs(LocationFlags) do
+		if GameHasFlagRun(flag) then
+			table.insert(locations_checked, location_id)
+			GameRemoveFlagRun(flag)
+		end
+	end
+	if #locations_checked > 0 then
+		ap:LocationChecks(locations_checked)
+	end
+end
+
 -- Checks data toggled by external lua scripts that init.lua doesn't have access to
 local function CheckGlobalsAndFlags()
 	if slot_options ~= nil then
