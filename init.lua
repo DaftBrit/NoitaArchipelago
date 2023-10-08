@@ -608,7 +608,10 @@ function OnModInit()
 	connect()
 end
 
-function OnPlayerSpawned()
+function OnPlayerSpawned(player_entity)
 	is_player_spawned = true
 	GlobalsSetValue("ap_random_hax", 23)
+
+	local x, y = EntityGetTransform(player_entity)
+	EntityLoad( "data/archipelago/entities/buildings/ap_gift_interface.xml", x, y)
 end

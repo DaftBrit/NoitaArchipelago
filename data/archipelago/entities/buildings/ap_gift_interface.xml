@@ -13,6 +13,9 @@
   <!--ParticleEmitterComponent
   /-->
 
+  <!--AudioLoopComponent
+    /-->
+
   <!-- TODO do some animated graphic -->
 
 </Entity>
