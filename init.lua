@@ -81,7 +81,7 @@ end
 local function CheckVictoryConditionFor(flag, msg)
 	if GameHasFlagRun(flag) then
 		Log.Info(msg)
-		ap:StatusUpdate(30)	-- ClientStatus.CLIENT_GOAL
+		ap:StatusUpdate(ap.ClientStatus.GOAL)
 		GameRemoveFlagRun(flag)
 		if ModSettingGet("archipelago.auto_release") then
 			ap:Say("!release")
@@ -556,6 +556,8 @@ local function connect()
 	ap:set_location_checked_handler(on_location_checked)
 	ap:set_print_json_handler(on_print_json)
 	ap:set_bounced_handler(on_bounced)
+
+	GiftWindow:create(ap, gifting)
 end
 
 
@@ -604,7 +606,6 @@ function OnModInit()
 	GameRemoveFlagRun("AP_LocationInfo_received")
 	create_dir("archipelago_cache")
 	ConnIcon:create()
-	GiftWindow:create()
 	connect()
 end
 

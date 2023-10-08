@@ -3,18 +3,18 @@ dofile_once("data/scripts/lib/utilities.lua")
 
 local GiftWindow = {}
 
-local ID_WINDOW_BKG = 44570
-
-local ID_BTN_CLOSE = 44571
-local ID_BTN_ACCEPT_GIFT = 44572
-local ID_BTN_RETURN_GIFT = 44573
 local ID_BTN_SEND_GIFT = 44574
 
 local ID_SCROLL_PLAYERS = 44575
 local ID_SCROLL_GIFTS = 44576
 
-function GiftWindow:create()
+local ID_BTN_PLYRLIST = 45001
+
+function GiftWindow:create(ap, gifting)
 	self.gui = GuiCreate()
+	self.ap = ap
+	self.gifting = gifting
+	self.selected_player = -1
 	self:close()
 end
 
@@ -30,7 +30,34 @@ function GiftWindow:is_open()
 	return self.gui ~= nil and Globals.GiftWindowOpen:is_set()
 end
 
--- NOTE TO SELF: Register the function to make that pink pixel spawn the entity responsible for the gift interface
+function GiftWindow:show_player_radio(name, value, width)
+	local highlighted = value == self.selected_player
+
+	GuiBeginAutoBox(self.gui)
+
+	if highlighted then
+		GuiColorSetForNextWidget(self.gui, 1, 1, 0.6, 1)
+	end
+
+	if GuiButton(self.gui, ID_BTN_PLYRLIST + value, 0, 0, name) then
+		self.selected_player = value
+	end
+	--GuiLayoutEnd(self.gui)
+
+	GuiZSetForNextWidget(self.gui, 50)
+	GuiEndAutoBoxNinePiece(self.gui, -1, width)
+end
+
+function GiftWindow:show_players(width)
+	GuiLayoutBeginVertical(self.gui, 0, 0)
+
+	self:show_player_radio("Any Player (Random)", -1, width)
+	for idx, player in ipairs(self.ap:get_players()) do
+		self:show_player_radio(player.alias, player.slot, width)
+	end
+
+	GuiLayoutEnd(self.gui)
+end
 
 function GiftWindow:update()
 	if not self:is_open() then return end
@@ -50,16 +77,15 @@ function GiftWindow:update()
 				GuiLayoutBeginVertical(self.gui, 0, 0, false, 8)
 					GuiText(self.gui, 0, 0, "Players")
 					GuiBeginScrollContainer(self.gui, ID_SCROLL_PLAYERS, 0, 0, screen_width / 4, screen_height / 2)
-						-- TODO player list
-						GuiText(self.gui, 0, 0, "Players go here")
+						self:show_players(screen_width / 4)
 					GuiEndScrollContainer(self.gui)
 				GuiLayoutEnd(self.gui)
 
 				GuiLayoutBeginVertical(self.gui, 0, 0, false, 8)
-					GuiText(self.gui, 0, 0, "Gifts")
+					GuiText(self.gui, 0, 0, "Basin Inventory")
 					GuiBeginScrollContainer(self.gui, ID_SCROLL_GIFTS, 0, 0, screen_width / 4, screen_height / 2)
 						-- TODO gift list
-						GuiText(self.gui, 0, 0, "Gifts go here")
+						GuiText(self.gui, 0, 0, "Items to send go here")
 					GuiEndScrollContainer(self.gui)
 				GuiLayoutEnd(self.gui)
 
