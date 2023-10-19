@@ -33,7 +33,7 @@ local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 local Cache = dofile("data/archipelago/scripts/caches.lua")
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
-local GiftWindow = dofile("data/archipelago/ui/gift_window.lua")
+local GiftWindow = dofile("data/archipelago/ui/gift_sendbox.lua")
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet

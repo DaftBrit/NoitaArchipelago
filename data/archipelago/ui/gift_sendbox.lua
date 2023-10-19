@@ -19,15 +19,15 @@ function GiftWindow:create(ap, gifting)
 end
 
 function GiftWindow:open()
-	Globals.GiftWindowOpen:set(1)
+	Globals.GiftSendboxOpen:set(1)
 end
 
 function GiftWindow:close()
-	Globals.GiftWindowOpen:reset()
+	Globals.GiftSendboxOpen:reset()
 end
 
 function GiftWindow:is_open()
-	return self.gui ~= nil and Globals.GiftWindowOpen:is_set()
+	return self.gui ~= nil and Globals.GiftSendboxOpen:is_set()
 end
 
 function GiftWindow:show_player_radio(name, value, width)
