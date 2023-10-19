@@ -1,3 +1,6 @@
+local Common = dofile("data/archipelago/scripts/ui/gift_translate_common.lua")
+dofile_once("gun_actions")
+
 local GiftTranslate = {}
 
 
@@ -95,9 +98,12 @@ local function preprocess_gift(gift)
     duration = {},
 
     -- These are to be filled in gift processing to determine what it is
-    spawn_fn = nil,
-    spawn_arg1 = nil,
-    spawn_arg2 = nil,
+    spawn = {
+      spawn_fn = nil,
+      spawn_arg1 = nil,
+      spawn_arg2 = nil,
+      icon = nil,
+    }
   }
 
   for _, trait in ipairs(gift.Traits) do
@@ -112,25 +118,73 @@ local function preprocess_gift(gift)
 end
 
 -- TODO These will just be callback functions so we don't duplicate the if statements
-local function spawn_material(material_name, quantity)
+local function spawn_material(material_name, quantity, x, y)
+  GameCreateParticle(material_name, x, y, quantity, 0, 0, false)
+end
+
+local function spawn_entity(entity_name, quantity, x, y)
   -- TODO
 end
 
-local function spawn_entity(entity_name, quantity)
-  -- TODO
+local function spawn_spell(spell_name, quantity, x, y)
+  for _=1,quantity do
+    CreateItemActionEntity(spell_name, x, y)
+  end
 end
 
-local function spawn_spell(spell_name, quantity)
-  -- TODO
-end
-
-local function apply_status(status_name, duration)
+local function apply_status(status_name, duration, x, y)
   -- TODO
 end
 
 -- materials is a list of (material, quantity) pairs
-local function spawn_container(container_name, materials)
+local function spawn_container(container_name, materials, x, y)
 end
+
+local function process_liquid(name, quantity)
+  local internal_name = Common.GetInternalLiquidName(name);
+  if internal_name == nil then return nil end
+  return {
+    fn = spawn_material,
+    spawn_arg1 = internal_name,
+    spawn_arg2 = (quantity or 1) * 1000,
+    icon = Common.GetMaterialIcon(internal_name)
+  }
+end
+
+local function process_powder(name, quantity)
+  local internal_name = Common.GetInternalPowderName(name);
+  if internal_name == nil then return nil end
+  return {
+    fn = spawn_material,
+    spawn_arg1 = internal_name,
+    spawn_arg2 = (quantity or 1) * 1000,
+    icon = Common.GetMaterialIcon(internal_name)
+  }
+end
+
+local function process_entity(name, quantity)
+  -- TODO
+end
+
+local function process_spell(name, quantity)
+  local internal_name = Common.GetInternalSpellName(name);
+  if internal_name == nil then return nil end
+  return {
+    fn = spawn_spell,
+    spawn_arg1 = internal_name,
+    spawn_arg2 = quantity,
+    icon = Common.GetSpellIcon(internal_name)
+  }
+end
+
+local function process_status(name, duration)
+  -- TODO
+end
+
+local function process_container(name)
+  -- TODO
+end
+
 
 
 function GiftTranslate.ProcessGift(gift_raw)
@@ -139,7 +193,7 @@ function GiftTranslate.ProcessGift(gift_raw)
   if gift.Wand then
     -- TODO Noita Wand
   elseif gift.Spell then
-    -- TODO Noita Spell
+    gift.spawn = process_spell(gift.name)
   elseif gift.Book then
     -- TODO Noita book
   elseif gift.Flower then
@@ -147,7 +201,7 @@ function GiftTranslate.ProcessGift(gift_raw)
   elseif gift.Vine then
     -- TODO vine material
   elseif gift.Grass or gift.Fiber then
-    -- TODO grass material
+    gift.spawn = process_powder("grass")
   elseif gift.Cooking then
     if gift.Meat then
       -- Fully-cooked meat
@@ -183,21 +237,22 @@ function GiftTranslate.ProcessGift(gift_raw)
     -- TODO Animals
   elseif gift.Seed or gift.Seeds then
     -- Just use seed material for now until we dive into memeland
+    gift.spawn = process_powder("seed")
   elseif gift.Coal then
-    -- Coal material
+    gift.spawn = process_powder("coal")
   elseif gift.Ore then
     if gift.Iron then
       -- Iron Ore
     elseif gift.Copper then
-      -- Copper Ore
+      gift.spawn = process_powder("copper")
     elseif gift.Silver then
-      -- Silver Ore
+      gift.spawn = process_powder("silver")
     elseif gift.Gold then
-      -- Gold Ore
+      gift.spawn = process_powder("gold")
     elseif gift.Radioactive then
       -- Radioactive ore
     elseif gift.Metal then
-      -- Other metal ore
+      gift.spawn = process_powder("metal dust")
     else
       -- Other ore
     end
@@ -211,6 +266,9 @@ function GiftTranslate.ProcessGift(gift_raw)
     -- Silver material
   elseif gift.Gold then
     -- Gold
+    if gift.Radioactive then
+    else
+    end
   elseif gift.Metal then
     -- Other metal
   elseif gift.Gem then
@@ -233,7 +291,7 @@ function GiftTranslate.ProcessGift(gift_raw)
     if gift.Animal or gift.Fish then
       -- Meat of an innocent creature
     elseif gift.Radioactive then
-      -- Toxic Meat
+      gift.spawn = process_powder("toxic meat")
     elseif gift.Buff then
       -- Fully-cooked meat, Stinky Meat, Wobbly Meat, Worm Meat
     elseif gift.Trap then

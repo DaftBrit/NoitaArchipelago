@@ -1,4 +1,6 @@
 local Globals = dofile("data/archipelago/scripts/globals.lua")
+local IncomingGift = dofile("data/archipelago/scripts/ui/gift_translate_incoming.lua")
+
 dofile_once("data/scripts/lib/utilities.lua")
 
 local GiftWindow = {}
@@ -29,8 +31,8 @@ function GiftWindow:is_open()
 	return self.gui ~= nil and Globals.GiftMailboxOpen:is_set()
 end
 
-function GiftWindow:refresh()
-  -- TODO
+-- ?????? Maybe take an arg and call this with all tracked gifts, gifts go in a cache maybe?
+function GiftWindow:refresh_gifts()
 end
 
 function GiftWindow:show_gift_entry(name, value, width)
