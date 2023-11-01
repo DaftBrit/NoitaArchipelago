@@ -1,4 +1,4 @@
-<Entity tags="polymorphable_NOT,teleportable_NOT,glue_NOT" name="Gift Interface" >
+<Entity tags="polymorphable_NOT,teleportable_NOT,glue_NOT,ap_gift_interface" name="Gift Interface" >
 
   <LuaComponent 
     script_interacting="data/archipelago/entities/buildings/ap_gift_interface.lua"

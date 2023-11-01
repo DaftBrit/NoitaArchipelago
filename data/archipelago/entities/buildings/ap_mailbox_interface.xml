@@ -1,0 +1,21 @@
+<Entity tags="polymorphable_NOT,teleportable_NOT,glue_NOT,ap_mailbox" name="Mailbox Interface" >
+
+  <LuaComponent 
+    script_interacting="data/archipelago/entities/buildings/ap_mailbox_interface.lua"
+    />
+
+  <InteractableComponent
+    radius="20"
+    ui_text="$ap_mailbox_interface"
+    name="ap_mailbox_interface"
+  />
+
+  <!--ParticleEmitterComponent
+  /-->
+
+  <!--AudioLoopComponent
+    /-->
+
+  <!-- TODO do some animated graphic -->
+
+</Entity>

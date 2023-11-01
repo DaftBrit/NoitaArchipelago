@@ -34,6 +34,7 @@ local Globals = dofile("data/archipelago/scripts/globals.lua")
 local Cache = dofile("data/archipelago/scripts/caches.lua")
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
 local GiftWindow = dofile("data/archipelago/ui/gift_sendbox.lua")
+local GiftMailbox = dofile("data/archipelago/ui/gift_mailbox.lua")
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
@@ -558,6 +559,7 @@ local function connect()
 	ap:set_bounced_handler(on_bounced)
 
 	GiftWindow:create(ap, gifting)
+	GiftMailbox:create(ap, gifting)
 end
 
 
@@ -570,6 +572,7 @@ end
 function OnWorldPostUpdate()
 	ConnIcon:update()
 	GiftWindow:update()
+	GiftMailbox:update()
 
 	if is_player_spawned then
 		ap:poll()

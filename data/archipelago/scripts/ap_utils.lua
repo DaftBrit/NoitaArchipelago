@@ -23,6 +23,11 @@ function get_player()
 end
 
 
+function get_player_position()
+	return EntityGetTransform(get_player())
+end
+
+
 function random_offset(x, y)
 	if x == nil then x = 0 end
 	if y == nil then y = 0 end
