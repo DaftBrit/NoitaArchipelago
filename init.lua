@@ -461,20 +461,6 @@ local function CheckGlobalsAndFlags()
 	end
 end
 
-function CheckLocationFlags()
-	local locations_checked = {}
-	for location_id, flag in pairs(LocationFlags) do
-		if GameHasFlagRun(flag) then
-			table.insert(locations_checked, location_id)
-			GameRemoveFlagRun(flag)
-		end
-	end
-	if #locations_checked > 0 then
-		ap:LocationChecks(locations_checked)
-	end
-end
-
-
 ----------------------------------------------------------------------------------------------------
 -- NEW AP MESSAGE HANDLING
 ----------------------------------------------------------------------------------------------------
