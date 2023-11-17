@@ -1,2 +1,2 @@
 
-GameAddFlagRun("ap_mestarai_is_dead")
+GameAddFlagRun("ap_mestari_is_dead")
