@@ -1,0 +1,3 @@
+Using the following build:
+
+  lua51-clang32-dynamic

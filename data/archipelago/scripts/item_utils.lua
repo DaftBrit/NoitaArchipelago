@@ -148,7 +148,7 @@ function NGSpawnItems(item_counts)
 end
 
 
-local LocationFlags = {
+LocationFlags = {
 	[110658] = "ap_orb_0", -- Floating Island
 	[110659] = "ap_orb_1", -- Pyramid
 	[110660] = "ap_orb_2", -- Frozen Vault
@@ -198,16 +198,3 @@ local LocationFlags = {
 	[110656] = "ap_alchemist_is_dead",
 	[110657] = "ap_mecha_is_dead",
 }
-
-function CheckLocationFlags()
-	local locations_checked = {}
-	for location_id, flag in pairs(LocationFlags) do
-		if GameHasFlagRun(flag) then
-			table.insert(locations_checked, location_id)
-			GameRemoveFlagRun(flag)
-		end
-	end
-	if #locations_checked > 0 then
-		SendCmd("LocationChecks", { locations = locations_checked })
-	end
-end

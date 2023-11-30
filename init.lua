@@ -3,12 +3,6 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
--- CREDITS:
--- Noita API wrapper (for requires) taken from Dadido3/noita-mapcap
--- pollnet library (for websocket implementation) probable-basilisk/pollnet
--- noita-ws-api (for reference and initial websocket setup) probable-basilisk/noita-ws-api
--- cheatgui (for reference) probable-basilisk/cheatgui
-
 
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
@@ -16,12 +10,12 @@ ModMaterialsFileAdd("data/archipelago/materials.xml")
 ModMagicNumbersFileAdd("data/archipelago/magic_numbers.xml")
 
 --LIBS
-local pollnet = dofile("data/archipelago/lib/pollnet/pollnet.lua")
+local APLIB = require("mods.archipelago.bin.lua-apclientpp")
 local Log = dofile("data/archipelago/scripts/logger.lua")
 
 local JSON = dofile("data/archipelago/lib/json.lua")
 function JSON:onDecodeError(message, text, location, etc)
-	Log.Info(message)
+	Log.Warn(message)
 end
 
 -- SCRIPTS
@@ -44,15 +38,11 @@ local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
 local slot_options = nil
 
 local last_death_time = 0
-local game_list = {}
-local player_slot_to_name = {}
 local current_player_slot = -1
-local sock = nil
 local game_is_paused = false
-local stored_index = -1
-local new_checksums = false
 local is_player_spawned = false
-local goal_reached = false
+
+local ap = nil
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
@@ -60,11 +50,11 @@ local goal_reached = false
 
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
-	local conn_tags = { "AP" }
+	local conn_tags = { "Lua-APClientPP" }
 	if enabled ~= 0 and enabled ~= nil then
 		table.insert(conn_tags, "DeathLink")
 	end
-	SendCmd("ConnectUpdate", { tags = conn_tags })
+	ap:ConnectUpdate(nil, conn_tags);
 end
 
 
@@ -89,14 +79,13 @@ end
 local function CheckVictoryConditionFor(flag, msg)
 	if GameHasFlagRun(flag) then
 		Log.Info(msg)
-		SendCmd("StatusUpdate", {status = 30})
+		ap:StatusUpdate(30)	-- ClientStatus.CLIENT_GOAL
 		GameRemoveFlagRun(flag)
-		goal_reached = true
 		if ModSettingGet("archipelago.auto_release") then
-			SendCmd("Say", { text = "!release"})
+			ap:Say("!release")
 		end
 		if ModSettingGet("archipelago.auto_collect") then
-			SendCmd("Say", { text = "!collect"})
+			ap:Say("!collect")
 		end
 	end
 end
@@ -119,9 +108,7 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Creates a name based on the player_id, item_id, and flags to be presented as the name of an AP item
 local function GetItemName(player_id, item_id, flags)
-	local game_name = Cache.PlayerGames:get(player_id)
-	local item_names = Cache.ItemNames:get(game_name)
-	local item_name = item_names[tostring(item_id)]
+	local item_name = ap:get_item_name(item_id)
 	if item_name == nil then
 		error("item_name is nil")
 		item_name = "problem with LocationScouts"
@@ -135,7 +122,7 @@ local function GetItemName(player_id, item_id, flags)
 		return item_name
 	end
 
-	return GameTextGet("$ap_shopitem_name", player_slot_to_name[player_id], item_name)
+	return GameTextGet("$ap_shopitem_name", ap:get_player_alias(player_id), item_name)
 end
 
 
@@ -143,7 +130,7 @@ end
 local function CheckComponentItemsUnlocked()
 	local locations = Globals.LocationUnlockQueue:get_table()
 	if #locations > 0 then
-		SendCmd("LocationChecks", { locations = locations })
+		ap:LocationChecks(locations)
 	end
 	Globals.LocationUnlockQueue:reset()
 end
@@ -184,8 +171,8 @@ local function ShareLocationScouts()
 end
 
 -- Request items we need to display (i.e. shops)
-local function SetupLocationScouts(new_checksum)
-	if Cache.LocationInfo:is_empty() or new_checksum == true then
+local function SetupLocationScouts()
+	if Cache.LocationInfo:is_empty() then
 		local locations = {}
 		for i = AP.FIRST_SHOP_LOCATION_ID, AP.LAST_SHOP_LOCATION_ID do
 			if Globals.MissingLocationsSet:has_key(i) then
@@ -225,7 +212,8 @@ local function SetupLocationScouts(new_checksum)
 				end
 			end
 		end
-		SendCmd("LocationScouts", { locations = locations })
+
+		ap:LocationScouts(locations)
 	else
 		Log.Info("Restored LocationInfo from cache")
 		ShareLocationScouts()
@@ -243,44 +231,8 @@ local RECV_MSG = {}
 local function ConnectionError(msg_str)
 	-- commented out since it makes the user think there's a problem when there isn't one
 	-- Log.Error(msg_str)
+	Log.Warn(msg_str)
 	ConnIcon:setDisconnected(msg_str)
-end
-
-function RECV_MSG.RoomInfo(msg)
-	Globals.Seed:set(msg["seed_name"])
-	local checksum_info = msg["datapackage_checksums"]
-	-- todo: modify this after figuring out how to not overwrite entire cache when one checksum is different
-	local checksum_hax
-	for game, checksum in pairs(checksum_info) do
-		if Cache.ChecksumVersions:get(game) ~= checksum then
-			checksum_hax = true
-			--table.insert(game_list, game)
-		end
-		table.insert(game_list, game)
-	end
-
-	--new_checksums = (#game_list ~= 0)
-	if checksum_hax then
-		new_checksums = true
-		SendCmd("GetDataPackage", {games = game_list})
-	else
-		SendConnect()
-	end
-end
-
-
-function SendConnect()
-	local player_name = ModSettingGet("archipelago.slot_name")
-	local password = ModSettingGet("archipelago.passwd") or ""
-	SendCmd("Connect", {
-		password = password,
-		game = "Noita",
-		name = player_name,
-		uuid = "NoitaClient",
-		tags = { "AP" },
-		version = { major = 0, minor = 4, build = 1, class = "Version" },
-		items_handling = 7
-	})
 end
 
 
@@ -298,7 +250,7 @@ end
 
 local function SpawnAllNewGameItems()
 	local ng_items = {}
-	for _, item in ipairs(Cache.ItemDelivery:reference()) do
+	for _, item in pairs(Cache.ItemDelivery:reference()) do
 		local item_id = item["item"]
 		if item_table[item_id].newgame then
 			ng_items[item_id] = (ng_items[item_id] or 0) + 1
@@ -325,17 +277,9 @@ end
 
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
-function RECV_MSG.Connected(msg)
+function RECV_MSG.Connected()
 	GamePrint("$ap_connected_to_server")
-	current_player_slot = msg["slot"]
-	slot_options = msg["slot_data"]
-
-	-- PlayerGames cache is a table showing what game each slot is playing, necessary for removing data version from ap
-	local players_info = Cache.PlayerGames:reference()
-	for slot, info in pairs(msg["slot_info"]) do
-		players_info[slot] = info["game"]
-	end
-	Cache.PlayerGames:write()
+	ConnIcon:setConnected()
 
 	-- need these elsewhere
 	if slot_options.victory_condition == 1 then
@@ -351,8 +295,8 @@ function RECV_MSG.Connected(msg)
 		GameAddFlagRun("ap_parallel_worlds")
 	end
 
+	current_player_slot = ap:get_player_number()
 	Globals.PlayerSlot:set(current_player_slot)
-	ConnIcon:setConnected()
 
 	-- spawn kill saver makes it so you won't get traps in the first couple seconds after connecting
 	GameRemoveFlagRun("ap_spawn_kill_saver")
@@ -373,8 +317,10 @@ function RECV_MSG.Connected(msg)
 			end
 		end
 	end
-	for _, location in ipairs(msg["missing_locations"]) do
+
+	for _, location in ipairs(ap.missing_locations) do
 		missing_locations_set[location] = true
+		print("location is " .. location)
 		if peds_list[location] == true then
 			peds_checklist[location] = true
 		end
@@ -382,79 +328,18 @@ function RECV_MSG.Connected(msg)
 	Globals.MissingLocationsSet:set_table(missing_locations_set)
 	Globals.PedestalLocationsSet:set_table(peds_checklist)
 
-	for _, plr in pairs(msg["players"]) do
-		player_slot_to_name[plr["slot"]] = plr["name"]
-	end
-
-	SetupLocationScouts(new_checksums)
+	SetupLocationScouts()
 	-- Enable deathlink if the setting on the server said so
 	SetDeathLinkEnabled(slot_options.death_link)
 end
 
-
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#datapackage
-function RECV_MSG.DataPackage(msg)
-	local item_names = Cache.ItemNames:reference()
-	local location_names = Cache.LocationNames:reference()
-	local checksums = Cache.ChecksumVersions:reference()
-
-	for game, data in pairs(msg["data"]["games"]) do
-		local item_data = {}
-		local location_data = {}
-		for item_name, item_id in pairs(data["item_name_to_id"]) do
-			-- Some games like Hollow Knight use underscores for whatever reason
-			item_data[tostring(item_id)] = string.gsub(item_name, "_", " ")
-		end
-
-		for location_name, location_id in pairs(data["location_name_to_id"]) do
-			location_data[tostring(location_id)] = string.gsub(location_name, "_", " ")
-		end
-
-		item_names[game] = item_data
-		location_names[game] = location_data
-		checksums[game] = data["checksum"]
-	end
-
-	Cache.ItemNames:write()
-	Cache.LocationNames:write()
-	Cache.ChecksumVersions:write()
-	SendConnect()
-end
-
-
-local function CheckItemSync(msg)
-	local next_item_index = msg["index"]
-
-	local num_received_items = Cache.ItemDelivery:num_items()
-	if next_item_index ~= num_received_items then
-		local items_missed = next_item_index - num_received_items
-		Log.Error("Missed " .. tostring(items_missed) .. " item(s) from the server, attempting to resync.")
-		SendCmd("Sync")
-		-- TODO: We also need to send LocationChecks for everything we've checked, per the network API specification
-		-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
-		return false
-	end
-	return true
-end
-
-
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
-function RECV_MSG.ReceivedItems(msg)
-	local next_item_index = msg["index"]
-	if next_item_index ~= 0 then
-		if not CheckItemSync(msg) then return end
-	else
-		-- TODO: Abandon previous inventory?
-		-- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#synchronizing-items
-	end
-
-	local is_first_time_connected = Cache.ItemDelivery:num_items() == 0
-	for i, item in ipairs(msg["items"]) do
-		local current_item_index = next_item_index + i
-
+function RECV_MSG.ReceivedItems(items)
+	local is_first_time_connected = Cache.ItemDelivery:is_empty()
+	for _, item in pairs(items) do
 		-- we're in sync or we're continuing the game and receiving items in async
-		if not Cache.ItemDelivery:is_set(current_item_index) then
-			Cache.ItemDelivery:set(current_item_index, item)
+		if not Cache.ItemDelivery:is_set(tostring(item.index)) then
+			Cache.ItemDelivery:set(tostring(item.index), item)
 			local item_id = item["item"]
 			-- when connected for the first time, you get receiveditems along with connected
 			-- but also, you want to give the player gold and stuff that got sent before spawning
@@ -472,95 +357,32 @@ function RECV_MSG.ReceivedItems(msg)
 end
 
 
-local function ParseJSONPart(part)
-	local result = ""
-	if part["type"] == "player_id" then
-		result = player_slot_to_name[tonumber(part["text"])]
-	elseif part["type"] == "item_id" then
-		local game = Cache.PlayerGames:get(part["player"])
-		local item_names = Cache.ItemNames:get(game)
-		result = item_names[tostring(part["text"])]
-	elseif part["type"] == "location_id" then
-		local game = Cache.PlayerGames:get(part["player"])
-		local location_names = Cache.LocationNames:get(game)
-		result = location_names[tostring(part["text"])]
-	elseif part["type"] == "color" then
-		Log.Info("Found colour in message: " .. part["color"])
-		result = ""	-- TODO color not supported
-	else
-		-- text, player_name, item_name, location_name, entrance_name
-		result = part["text"]
-	end
-
-	if result == nil then
-		Log.Error("Failed to retrieve text for " .. part["type"] .. " " .. part["text"])
-		return ""
-	end
-	return result
-end
-
-
--- Builds the JSON message
-local function ParseJSONParts(data)
-	local msg_strs = {}
-	for _, part in ipairs(data) do
-		table.insert(msg_strs, ParseJSONPart(part))
-	end
-	return table.concat(msg_strs)
-end
-
-
-local prev_countdown_number = -1
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
-function RECV_MSG.PrintJSON(msg)
-	if msg["type"] == "ItemSend" then
-		local destination_player_id = msg["receiving"]
-		local source_player_id = msg["item"]["player"]
-		local item_id = msg["item"]["item"]
+function RECV_MSG.PrintJSON(msg, extra)
+	local msg_str = ap:render_json(msg, APLIB.RenderFormat.TEXT)
 
-		local msg_str = ParseJSONParts(msg["data"])
+	if extra["type"] == "ItemSend" then
+		local destination_player_id = extra["receiving"]
+		local source_player_id = extra["item"]["player"]
+		local item_id = extra["item"]["item"]
 
 		local is_destination_player = destination_player_id == current_player_slot
 		local is_source_player = source_player_id == current_player_slot
 
 		if (is_destination_player or is_source_player) and destination_player_id ~= source_player_id then
-			local game = Cache.PlayerGames:get(destination_player_id)
-			local item_names = Cache.ItemNames:get(game)
-			local item_name = item_names[tostring(item_id)]
+			local item_name = ap:get_item_name(item_id)
 			GamePrintImportant(item_name, msg_str)
-		else
-			GamePrint(msg_str)
+			return
 		end
-	elseif msg["type"] == "Countdown" then
-		local countdown_number = msg["countdown"]
+	elseif extra["type"] == "Countdown" then
+		local countdown_number = extra["countdown"]
 		if countdown_number == 0 then
 			countdown_fun()
-			GamePrint("GO!")
-		else
-			-- it displays the first number twice otherwise
-			if countdown_number ~= prev_countdown_number then
-				GamePrint(countdown_number)
-			end
-			prev_countdown_number = countdown_number
-		end
-	else
-		local msg_type = msg["type"] or "none"
-		Log.Warn("Unsupported PrintJSON type " .. msg_type)
-		if msg["data"] ~= nil then
-			local msg_str = ParseJSONParts(msg["data"])
-			GamePrint(msg_str)
 		end
 	end
-end
 
-
--- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#ConnectionRefused
-function RECV_MSG.ConnectionRefused(msg)
-	local msg_str = "Connection Refused"
-	if msg["errors"] then
-		msg_str = msg_str .. ": " .. table.concat(msg["errors"], ",")
-	end
-	ConnectionError(msg_str)
+	GamePrint(msg_str)
+	Log.Info(msg_str)
 end
 
 
@@ -593,11 +415,11 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#LocationInfo
 -- This is the reply to the LocationScouts request
-function RECV_MSG.LocationInfo(msg)
+function RECV_MSG.LocationInfo(items)
 	Cache.LocationInfo:reset() -- this is a workaround, if this isn't here it throws an error at Cache.LocationInfo:write()
 	local cache = Cache.LocationInfo:reference()
 	-- Set global shop item names to share with the shop lua context
-	for _, net_item in ipairs(msg["locations"]) do
+	for _, net_item in ipairs(items) do
 		local item_id = net_item.item
 
 		cache[net_item.location] = {
@@ -613,103 +435,22 @@ function RECV_MSG.LocationInfo(msg)
 end
 
 
-function RECV_MSG.RoomUpdate(msg)
-	for _, location_ids in pairs(msg["checked_locations"]) do
-		remove_collected_item(location_ids)
-	end
-end
-
-----------------------------------------------------------------------------------------------------
--- CORE MESSAGE HANDLING
-----------------------------------------------------------------------------------------------------
-
--- Note: These functions are not local because of some weird access shenanigans with Lua.
--- It'll break if they are local.
-
--- Encodes and sends a command over the socket
-function SendCmd(cmd, data)
-	data = data or {}
-	data["cmd"] = cmd
-
-	local cmd_str = JSON:encode({data})
-	Log.Info("SENT: " .. cmd_str)
-	sock:send(cmd_str)
-end
-
-
--- Initializes the socket for AP communication
-function InitSocket(secure)
-	local host = ModSettingGet("archipelago.server_address")
-	local port = ModSettingGet("archipelago.server_port")
-
-	local prefix = "ws://"
-	if secure then
-		prefix = "wss://"
-	end
-	-- if the user puts in ws:// or wss:// or http:// or https://, don't add a prefix
-	if string.find(host, "//") then
-		prefix = ""
-	end
-	local url = prefix .. host .. ":" .. port
-	Log.Info("Connecting to " .. url .. "...")
-
-	sock = pollnet.open_ws(url, 10 * 1024 * 1024)
-
-	local error_msg = sock:error_msg()
-	if error_msg ~= nil then
-		ConnectionError("Failed to connect to the Archipelago server. " .. error_msg)
-	end
-end
-
-
--- Retrieves the last message from the socket and parses it into a Lua-digestible format
-function GetMessages()
-	local raw_msg = sock:last_message()
-	if not raw_msg then return nil end
-
-	Log.Info("RECV: " .. raw_msg)
-	return JSON:decode(raw_msg)
-end
-
-
--- Finds the appropriate function in the lookup table for a message, and calls it
-function ProcessMsg(msg)
-	local cmd = msg["cmd"]
-
-	if RECV_MSG[cmd] then
-		RECV_MSG[cmd](msg)
-	else
-		Log.Warn("Unsupported command '" .. cmd .. "' received. " .. JSON:encode(msg))
-	end
-end
-
 ----------------------------------------------------------------------------------------------------
 -- ASYNC THREAD
 ----------------------------------------------------------------------------------------------------
 
--- Gets network messages waiting on the socket and processes them
-local function CheckNetworkMessages()
-	while true do
-		local success, errmsg = sock:poll()
-		if success == false then
-			if errmsg ~= nil then
-				ConnectionError(errmsg)
-				if errmsg:find("TLS") or errmsg:find("-2146893048") then
-					Log.Error("Connecting on an unsecure protocol...")
-					InitSocket(false)
-				end
-			end
-			break
-		end
-
-		local messages = GetMessages()
-		if messages == nil then break end
-		for _, msg in ipairs(messages) do
-			ProcessMsg(msg)
+local function CheckLocationFlags()
+	local locations_checked = {}
+	for location_id, flag in pairs(LocationFlags) do
+		if GameHasFlagRun(flag) then
+			table.insert(locations_checked, location_id)
+			GameRemoveFlagRun(flag)
 		end
 	end
+	if #locations_checked > 0 then
+		ap:LocationChecks(locations_checked)
+	end
 end
-
 
 -- Checks data toggled by external lua scripts that init.lua doesn't have access to
 local function CheckGlobalsAndFlags()
@@ -718,6 +459,89 @@ local function CheckGlobalsAndFlags()
 		CheckComponentItemsUnlocked()
 		CheckLocationFlags()
 	end
+end
+
+----------------------------------------------------------------------------------------------------
+-- NEW AP MESSAGE HANDLING
+----------------------------------------------------------------------------------------------------
+local GAME_NAME = "Noita"
+local ITEMS_HANDLING = 7 -- full remote
+
+local function connect()
+	local host = ModSettingGet("archipelago.server_address")
+	local port = ModSettingGet("archipelago.server_port")
+	local slot_name = ModSettingGet("archipelago.slot_name")
+	local password = ModSettingGet("archipelago.passwd") or ""
+	local uuid = "NoitaClient"
+
+	local function on_socket_connected()
+		Log.Info("Socket connected")
+	end
+
+	local function on_socket_error(msg)
+		ConnectionError(msg)
+	end
+
+	local function on_socket_disconnected()
+		ConnectionError("Socket disconnected")
+	end
+
+	local function on_room_info()
+		Log.Info("on_room_info")
+		Globals.Seed:set(ap:get_seed())
+		-- client version 0.4.1
+		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, {"Lua-APClientPP"}, { 0, 4, 1 })
+	end
+
+	local function on_slot_connected(slot_data)
+		Log.Info("on_slot_connected: " .. JSON:encode(slot_data))
+		slot_options = slot_data
+		RECV_MSG.Connected()
+	end
+
+	local function on_slot_refused(reasons)
+		ConnectionError("Slot refused: " .. table.concat(reasons, ", "))
+	end
+
+	local function on_items_received(items)
+		Log.Info("on_items_received: " .. JSON:encode(items))
+		RECV_MSG.ReceivedItems(items)
+	end
+
+	local function on_location_info(items)
+		Log.Info("on_location_info: " .. JSON:encode(items))
+		RECV_MSG.LocationInfo(items)
+	end
+
+	local function on_location_checked(locations)
+		Log.Info("on_location_checked: " .. JSON:encode(locations))
+		for _, location_id in pairs(locations) do
+			remove_collected_item(location_id)
+		end
+	end
+
+	local function on_print_json(msg, extra)
+		RECV_MSG.PrintJSON(msg, extra)
+	end
+
+	local function on_bounced(bounce)
+		Log.Info("on_bounced: " .. JSON:encode(bounce))
+		RECV_MSG.Bounced(bounce)
+	end
+
+	ap = APLIB(uuid, GAME_NAME, host .. ":" .. port);
+
+	ap:set_socket_connected_handler(on_socket_connected)
+	ap:set_socket_error_handler(on_socket_error)
+	ap:set_socket_disconnected_handler(on_socket_disconnected)
+	ap:set_room_info_handler(on_room_info)
+	ap:set_slot_connected_handler(on_slot_connected)
+	ap:set_slot_refused_handler(on_slot_refused)
+	ap:set_items_received_handler(on_items_received)
+	ap:set_location_info_handler(on_location_info)
+	ap:set_location_checked_handler(on_location_checked)
+	ap:set_print_json_handler(on_print_json)
+	ap:set_bounced_handler(on_bounced)
 end
 
 
@@ -731,7 +555,7 @@ function OnWorldPostUpdate()
 	ConnIcon:update()
 
 	if is_player_spawned then
-		CheckNetworkMessages()
+		ap:poll()
 		CheckGlobalsAndFlags()
 	end
 end
@@ -752,14 +576,11 @@ function OnPlayerDied(player)
 	if slot_options == nil or not IsDeathLinkEnabled() or game_is_paused or not UpdateDeathTime() then return end
 	local death_msg = GetCauseOfDeath() or "skill issue"
 	local slotname = ModSettingGet("archipelago.slot_name")
-	SendCmd("Bounce", {
-		tags = { "DeathLink" },
-		data = {
-			time = last_death_time,
-			cause = slotname .. " died to " .. death_msg,
-			source = slotname
-		}
-	})
+	ap:Bounce({
+		time = last_death_time,
+		cause = slotname .. " died to " .. death_msg,
+		source = slotname
+	}, nil, nil, {"DeathLink"})
 end
 
 -- Called at the earliest possible time
@@ -768,7 +589,7 @@ function OnModInit()
 	GameRemoveFlagRun("AP_LocationInfo_received")
 	create_dir("archipelago_cache")
 	ConnIcon:create()
-	InitSocket(true)
+	connect()
 end
 
 function OnPlayerSpawned()

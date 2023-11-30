@@ -1,5 +1,8 @@
 {
   "Lua.diagnostics.globals": [
     "bit"
+  ],
+  "Lua.diagnostics.disable": [
+    "need-check-nil"
   ]
 }

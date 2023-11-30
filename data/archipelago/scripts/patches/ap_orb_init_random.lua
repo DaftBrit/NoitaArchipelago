@@ -15,6 +15,8 @@ local function APOrbInitRandom()
 
 	for _, comp_id in pairs(orbcomp) do
 		orb_id = ComponentGetValueInt(comp_id, "orb_id")
+		--this variable just stores the original orb_id elsewhere
+		addNewInternalVariable(entity_id, "OriginalID", "value_int", orb_id)
 		EntityRemoveComponent(entity_id, comp_id)
 	end
 
@@ -33,9 +35,6 @@ local function APOrbInitRandom()
 	local flags = location.item_flags
 	local orb_image = "ap_logo_orb"
 	local check_type_icon = "filler_icon"
-
-	--this variable just stores the original orb_id elsewhere
-	addNewInternalVariable(entity_id, "OriginalID", "value_int", orb_id)
 
 	if flags == nil then
 		print("this orb is not a location check")

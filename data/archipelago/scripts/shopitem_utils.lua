@@ -39,6 +39,7 @@ end -- generate_item_price
 
 -- Spawn in an item or perk entity for the shop
 function ShopItems.create_our_item_entity(item, x, y)
+	print("shop item create entity start")
 	if item.perk ~= nil then
 		local perk_id = perk_spawn(x, y, item.perk, true)
 		EntityAddTag(perk_id, "ap_item")
@@ -50,6 +51,17 @@ function ShopItems.create_our_item_entity(item, x, y)
 		if item.gold_amount ~= 0 then
 			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
 			EntityRemoveComponent(entity_id, life_comp)
+		end
+		if item.orb ~= 0 then
+			local orb_count = GameGetOrbCountThisRun()
+			print("orb count is " .. orb_count)
+			if GameHasFlagRun("ap_pure_goal") then
+				print("ap pure goal is true")
+			end
+			if GameHasFlagRun("ap_peaceful_goal") and orb_count >= 33 or GameHasFlagRun("ap_pure_goal") and orb_count >= 11 then
+				local orbcomp = EntityGetFirstComponent(entity_id, "OrbComponent")
+				EntityRemoveComponent(entity_id, orbcomp)
+			end
 		end
 		return entity_id
 	else -- error?
