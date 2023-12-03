@@ -390,12 +390,14 @@ end
 function RECV_MSG.Bounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
 		if not IsDeathLinkEnabled() or not UpdateDeathTime() then return end
-		local game_msg = GameTextGet("$ap_died", msg["data"]["source"])
-		GamePrintImportant(game_msg, msg["data"]["cause"])
 
 		local cause = msg["data"]["cause"]
+		local source = msg["data"]["source"]
+
 		if cause == nil or cause == "" then
-			cause = game_msg
+			GamePrintImportant(source .. " died and took you with them")
+		else
+			GamePrintImportant(cause)
 		end
 
 		local player = get_player()
