@@ -10,12 +10,9 @@ function item_pickup( entity_item, entity_who_picked, item_name )
 
 	-- if you reach your goal amount and there are orbs on the ground still, remove their orb components so you don't go over your goal amount
 	if (GameHasFlagRun("ap_peaceful_goal") and orb_count >= 33) or (GameHasFlagRun("ap_pure_goal") and orb_count >= 11) then
-		local existing_orbs = EntityGetWithTag("ap_orb")
-		for _, orb in pairs(existing_orbs) do
-			local orb_comp = EntityGetFirstComponent(orb, "OrbComponent")
-			if orb_comp then
-				EntityRemoveComponent(orb, orb_comp)
-			end
+		local orb_comp = EntityGetFirstComponent(entity_item, "OrbComponent")
+		if orb_comp then
+			EntityRemoveComponent(entity_item, orb_comp)
 		end
 	end
 
