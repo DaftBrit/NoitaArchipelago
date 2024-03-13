@@ -320,7 +320,7 @@ function RECV_MSG.Connected()
 
 	for _, location in ipairs(ap.missing_locations) do
 		missing_locations_set[location] = true
-		print("location is " .. location)
+		-- print("location is " .. location)
 		if peds_list[location] == true then
 			peds_checklist[location] = true
 		end
