@@ -41,6 +41,7 @@ local last_death_time = 0
 local current_player_slot = -1
 local game_is_paused = false
 local is_player_spawned = false
+local death_link_status = false
 
 local ap = nil
 
@@ -51,10 +52,11 @@ local ap = nil
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
 	local conn_tags = { "Lua-APClientPP" }
-	if enabled ~= 0 and enabled ~= nil then
+	if enabled then
 		table.insert(conn_tags, "DeathLink")
+		death_link_status = true
 	end
-	ap:ConnectUpdate(nil, conn_tags);
+	ap:ConnectUpdate(nil, conn_tags)
 end
 
 
@@ -329,8 +331,8 @@ function RECV_MSG.Connected()
 	Globals.PedestalLocationsSet:set_table(peds_checklist)
 
 	SetupLocationScouts()
-	-- Enable deathlink if the setting on the server said so
-	SetDeathLinkEnabled(slot_options.death_link)
+	-- Enable deathlink if the setting on the server and the mod setting said to
+	SetDeathLinkEnabled(IsDeathLinkEnabled())
 end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
@@ -569,6 +571,14 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	-- Workaround: When the player creates a new game, OnPlayerDied gets called (triggers DeathLink).
 	-- However we know they have to pause the game (menu) to start a new game.
 	game_is_paused = is_paused and not is_inventory_pause
+	if IsDeathLinkEnabled() and death_link_status == false then
+		SetDeathLinkEnabled(true)
+		death_link_status = true
+	end
+	if not IsDeathLinkEnabled() and death_link_status == true then
+		SetDeathLinkEnabled(false)
+		death_link_status = false
+	end
 end
 
 
