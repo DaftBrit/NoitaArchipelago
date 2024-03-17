@@ -51,14 +51,11 @@ local ap = nil
 
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
-	print("SetDeathLinkEnabled started")
 	local conn_tags = { "Lua-APClientPP" }
 	if enabled then
-		print("death link enabled, setting death link")
 		table.insert(conn_tags, "DeathLink")
 		death_link_status = true
 	end
-	print("updating tags")
 	ap:ConnectUpdate(nil, conn_tags)
 end
 
@@ -73,9 +70,6 @@ end
 
 
 local function IsDeathLinkEnabled()
-	if ModSettingGet("archipelago.death_link") then
-		print("death link mod setting is enabled")
-	end
 	return slot_options.death_link == 1 and ModSettingGet("archipelago.death_link")
 end
 
