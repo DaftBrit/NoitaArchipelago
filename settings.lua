@@ -72,7 +72,7 @@ local translations = {
 		en="Allow Death Link"
 	},
 	["$ap_death_link_settings_desc"] = {
-		en="When enabled, the death link setting in your Archipelago YAML will be used.\nWhen disabled, this will override your YAML and disable death link in future runs."
+		en="When enabled, the death link setting in your Archipelago YAML will be used.\nWhen disabled, this will override your YAML and disable death link."
 	}
 }
 
