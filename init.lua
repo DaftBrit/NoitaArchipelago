@@ -41,6 +41,7 @@ local last_death_time = 0
 local current_player_slot = -1
 local game_is_paused = false
 local is_player_spawned = false
+local death_link_status = false
 
 local ap = nil
 
@@ -53,6 +54,7 @@ local function SetDeathLinkEnabled(enabled)
 	local conn_tags = { "Lua-APClientPP" }
 	if enabled ~= 0 and enabled ~= nil then
 		table.insert(conn_tags, "DeathLink")
+		death_link_status = true
 	end
 	ap:ConnectUpdate(nil, conn_tags);
 end
@@ -64,11 +66,6 @@ local function UpdateDeathTime()
 	if curr_death_time - last_death_time <= 1 then return false end
 	last_death_time = curr_death_time
 	return true
-end
-
-
-local function IsDeathLinkEnabled()
-	return slot_options.death_link == 1 and ModSettingGet("archipelago.death_link")
 end
 
 
@@ -389,7 +386,7 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
 function RECV_MSG.Bounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
-		if not IsDeathLinkEnabled() or not UpdateDeathTime() then return end
+		if not ModSettingGet("archipelago.death_link") or not UpdateDeathTime() then return end
 
 		local cause = msg["data"]["cause"]
 		local source = msg["data"]["source"]
@@ -569,13 +566,21 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	-- Workaround: When the player creates a new game, OnPlayerDied gets called (triggers DeathLink).
 	-- However we know they have to pause the game (menu) to start a new game.
 	game_is_paused = is_paused and not is_inventory_pause
+	if ModSettingGet("archipelago.death_link") and death_link_status == false then
+		SetDeathLinkEnabled(1)
+		death_link_status = true
+	end
+	if not ModSettingGet("archipelago.death_link") and death_link_status == true then
+		SetDeathLinkEnabled(0)
+		death_link_status = false
+	end
 end
 
 
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-	if slot_options == nil or not IsDeathLinkEnabled() or game_is_paused or not UpdateDeathTime() then return end
+	if slot_options == nil or not ModSettingGet("archipelago.death_link") or game_is_paused or not UpdateDeathTime() then return end
 	local death_msg = GetCauseOfDeath() or "skill issue"
 	local slotname = ModSettingGet("archipelago.slot_name")
 	ap:Bounce({

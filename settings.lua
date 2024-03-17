@@ -69,10 +69,10 @@ local translations = {
 		en="Changes the appearance of orbs spawned by the randomizer.\nDoes not affect orbs spawned by the game itself."
 	},
 	["$ap_death_link_settings_name"] = {
-		en="Allow Death Link"
+		en="Death Link"
 	},
 	["$ap_death_link_settings_desc"] = {
-		en="When enabled, the death link setting in your Archipelago YAML will be used.\nWhen disabled, this will override your YAML and disable death link in future runs."
+		en="When you die, other players with death link die as well, and vice versa."
 	}
 }
 
