@@ -1,0 +1,12 @@
+<Entity>
+  <Base file="data/archipelago/entities/items/base_ap_shopitem.xml" />
+
+  <!-- https://noita.wiki.gg/wiki/Documentation:_SpriteComponent -->
+  <SpriteComponent 
+    _tags="enabled_in_world,item"
+    offset_x="10"
+    offset_y="10"
+    image_file="data/archipelago/entities/items/icon-progression.png"
+  />
+
+</Entity>

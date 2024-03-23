@@ -258,12 +258,20 @@ function create_ap_entity_from_flags(location, x, y)
 		print("error is at " .. x .. ", " .. y)
 		EntityLoadAtPlayer("data/archipelago/entities/items/pickup/ap_error_book_flags.xml")
 		item_description = "problem with item in create_ap_entity_from_flags"
+	elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
+		if bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
+			item_filename = "ap_progression_useful_shopitem.xml"
+			item_description = "$ap_shopdescription_progression_useful"
+		elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
+			item_filename = "ap_progression_trap_shopitem.xml"
+			item_description = "$ap_shopdescription_progression_trap"
+		else
+			item_filename = "ap_progression_shopitem.xml"
+			item_description = "$ap_shopdescription_progression"
+		end
 	elseif bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
 		item_filename = "ap_useful_shopitem.xml"
 		item_description = "$ap_shopdescription_useful"
-	elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
-		item_filename = "ap_progression_shopitem.xml"
-		item_description = "$ap_shopdescription_progression"
 	elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
 		item_filename = "ap_trap_item.xml"
 		item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
