@@ -24,8 +24,8 @@ ModLuaFileAppend("data/entities/animals/boss_wizard/death.lua", "data/archipelag
 ModLuaFileAppend("data/entities/animals/boss_ghost/death.lua", "data/archipelago/scripts/bosses/ap_skull_death.lua")
 ModLuaFileAppend("data/entities/animals/boss_pit/boss_pit_death.lua", "data/archipelago/scripts/bosses/ap_squidward_death.lua")
 ModLuaFileAppend("data/entities/animals/boss_gate/gate_monster_death.lua", "data/archipelago/scripts/bosses/ap_triangle_death.lua")
-ModLuaFileAppend("data/entities/animals/boss_spirit/islandspirit.lua", "data/archipelago/scripts/bosses/ap_tapion_death.lua")
-ModLuaFileAppend("data/entities/animals/boss_sky/boss_sky.lua", "data/archipelago/scripts/bosses/ap_kivi_death.lua")
+ModLuaFileAppend("data/entities/animals/boss_spirit/islandspirit.lua", "data/archipelago/scripts/bosses/ap_tapion_death_swap.lua")
+ModLuaFileAppend("data/entities/animals/boss_sky/boss_sky.lua", "data/archipelago/scripts/bosses/ap_kivi_death_swap.lua")
 ModLuaFileAppend("data/entities/animals/boss_meat/death.lua", "data/archipelago/scripts/bosses/ap_meatball_death.lua")
 
 ModLuaFileAppend("data/scripts/items/orb_init.lua", "data/archipelago/scripts/patches/ap_orb_init_random.lua")
