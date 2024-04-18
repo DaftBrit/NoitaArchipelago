@@ -358,6 +358,7 @@ function give_debug_items()
 	give_perk("REMOVE_FOG_OF_WAR")
 	for _ = 1, 10 do
 		give_perk("GENOME_MORE_LOVE")
+		give_perk("RESPAWN")
 	end
 	set_money(100000000)
 	set_health(80, 80)
