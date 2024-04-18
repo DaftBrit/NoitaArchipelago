@@ -197,4 +197,7 @@ LocationFlags = {
 	[110655] = "ap_mestari_is_dead",
 	[110656] = "ap_alchemist_is_dead",
 	[110657] = "ap_mecha_is_dead",
+	[110669] = "ap_tapion_is_dead",
+	[110670] = "ap_kivi_is_dead",
+	[110671] = "ap_meatball_is_dead",
 }
