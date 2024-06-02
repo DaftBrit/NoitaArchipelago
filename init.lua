@@ -376,9 +376,9 @@ function RECV_MSG.PrintJSON(msg, extra)
 		local is_source_player = source_player_id == current_player_slot
 
 		if (is_destination_player or is_source_player) and destination_player_id ~= source_player_id then
-			local sender_game = "Noita"
-			if is_destination_player then
-				sender_game = ap:get_player_game(source_player_id)
+			local sender_game = "Noita"  -- the game the item is for
+			if is_source_player then
+				sender_game = ap:get_player_game(destination_player_id)
 			end
 			local item_name = ap:get_item_name(item_id, sender_game)
 			GamePrintImportant(item_name, msg_str)
