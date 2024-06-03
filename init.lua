@@ -113,7 +113,8 @@ end
 ----------------------------------------------------------------------------------------------------
 -- Creates a name based on the player_id, item_id, and flags to be presented as the name of an AP item
 local function GetItemName(player_id, item_id, flags)
-	local item_name = ap:get_item_name(item_id)
+	local player_game = ap:get_player_game(player_id)
+	local item_name = ap:get_item_name(item_id, player_game)
 	if item_name == nil then
 		error("item_name is nil")
 		item_name = "problem with LocationScouts"
@@ -375,7 +376,8 @@ function RECV_MSG.PrintJSON(msg, extra)
 		local is_source_player = source_player_id == current_player_slot
 
 		if (is_destination_player or is_source_player) and destination_player_id ~= source_player_id then
-			local item_name = ap:get_item_name(item_id)
+			local destination_game = ap:get_player_game(destination_player_id)
+			local item_name = ap:get_item_name(item_id, destination_game)
 			GamePrintImportant(item_name, msg_str)
 			return
 		end
