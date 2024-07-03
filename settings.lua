@@ -72,7 +72,7 @@ local translations = {
 		en="Allow Death Link"
 	},
 	["$ap_death_link_settings_desc"] = {
-		en="When set to On, the death link setting in your Archipelago YAML will be used.\nWhen set to Off, this will override your YAML and disable death link.\nWhen set to Traps, it will act as On if death link was enabled in your YAML,\nexcept it will trigger a random trap effect when a death link is received."
+		en="When set to On, the death link setting in your Archipelago YAML will be used.\nWhen set to Off, this will override your YAML and disable death link.\nWhen set to Traps, it will act as On if death link was enabled in your YAML,\nexcept it will trigger a random trap effect when a death link is received.\nBoth On and Traps will still send death links when you die."
 	}
 }
 
