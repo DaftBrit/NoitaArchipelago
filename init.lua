@@ -430,7 +430,6 @@ function RECV_MSG.Bounced(msg)
 				EntityKill(player)
 			end
 		else
-			print("trap starting")
 			BadTimes()
 		end
 
