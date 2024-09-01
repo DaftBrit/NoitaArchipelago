@@ -71,9 +71,19 @@ end
 
 local function IsDeathLinkEnabled()
 	if slot_options == nil then
-		return false
+		return 0
 	end
-	return slot_options.death_link == 1 and ModSettingGet("archipelago.death_link")
+	local death_link_setting = ModSettingGet("archipelago.death_link")
+	if slot_options.death_link == 0 then
+		return 0
+	elseif death_link_setting == "on" then
+		return 1
+	elseif death_link_setting == "traps" then
+		return 2
+	else
+		Log.Error("Error in IsDeathLinkEnabled")
+		return 0
+	end
 end
 
 
@@ -396,24 +406,33 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
 function RECV_MSG.Bounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
-		if not IsDeathLinkEnabled() or not UpdateDeathTime() then return end
+		local death_link_option = IsDeathLinkEnabled()
+		if death_link_option == 0 or not UpdateDeathTime() then return end
 
 		local cause = msg["data"]["cause"]
 		local source = msg["data"]["source"]
 
 		if cause == nil or cause == "" then
-			GamePrintImportant(source .. " died and took you with them")
+			if death_link_option == 1 then
+				GamePrintImportant(source .. " died and took you with them")
+			else
+				GamePrintImportant(source .. " died and is trying to take you with them")
+			end
 		else
 			GamePrintImportant(cause)
 		end
 
-		local player = get_player()
-		if not DecreaseExtraLife(player) then
-			local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
-			if gsc_id ~= nil then
-				ComponentSetValue2(gsc_id, "extra_death_msg", cause)
+		if death_link_option == 1 then
+			local player = get_player()
+			if not DecreaseExtraLife(player) then
+				local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
+				if gsc_id ~= nil then
+					ComponentSetValue2(gsc_id, "extra_death_msg", cause)
+				end
+				EntityKill(player)
 			end
-			EntityKill(player)
+		else
+			BadTimes()
 		end
 
 	else
@@ -576,11 +595,11 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	-- Workaround: When the player creates a new game, OnPlayerDied gets called (triggers DeathLink).
 	-- However we know they have to pause the game (menu) to start a new game.
 	game_is_paused = is_paused and not is_inventory_pause
-	if IsDeathLinkEnabled() and death_link_status == false then
+	if IsDeathLinkEnabled() > 0 and death_link_status == false then
 		SetDeathLinkEnabled(true)
 		death_link_status = true
 	end
-	if not IsDeathLinkEnabled() and death_link_status == true then
+	if IsDeathLinkEnabled() == 0 and death_link_status == true then
 		SetDeathLinkEnabled(false)
 		death_link_status = false
 	end
@@ -590,7 +609,7 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-	if slot_options == nil or not IsDeathLinkEnabled() or game_is_paused or not UpdateDeathTime() then return end
+	if slot_options == nil or IsDeathLinkEnabled() == 0 or game_is_paused or not UpdateDeathTime() then return end
 	local death_msg = GetCauseOfDeath() or "skill issue"
 	local slotname = ModSettingGet("archipelago.slot_name")
 	ap:Bounce({
