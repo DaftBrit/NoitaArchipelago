@@ -51,6 +51,7 @@ local ap = nil
 
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
+	-- todo: check the current tags, put together the new tags, only ConnectUpdate if they have changed
 	local conn_tags = { "Lua-APClientPP" }
 	if enabled then
 		table.insert(conn_tags, "DeathLink")
