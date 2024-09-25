@@ -36,6 +36,7 @@ local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
 local slot_options = nil
+local connect_tags = {"Lua-APClientPP"}
 
 local last_death_time = 0
 local current_player_slot = -1
@@ -51,12 +52,21 @@ local ap = nil
 
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
-	local conn_tags = { "Lua-APClientPP" }
 	if enabled then
-		table.insert(conn_tags, "DeathLink")
-		death_link_status = true
+		if death_link_status == true then
+			-- it's already enabled, so no need to continue here
+			return
+		end
+		table.insert(connect_tags, "DeathLink")
 	end
-	ap:ConnectUpdate(nil, conn_tags)
+	if not enabled then
+		if death_link_status == false then
+			return
+		end
+		connect_tags = {"Lua-APClientPP"}
+		death_link_status = false
+	end
+	ap:ConnectUpdate(nil, connect_tags)
 end
 
 
@@ -74,13 +84,14 @@ local function IsDeathLinkEnabled()
 		return 0
 	end
 	local death_link_setting = ModSettingGet("archipelago.death_link")
-	if slot_options.death_link == 0 then
+	if slot_options.death_link == 0 or death_link_setting == "off" then
 		return 0
 	elseif death_link_setting == "on" then
 		return 1
 	elseif death_link_setting == "traps" then
 		return 2
 	else
+		Log.Info(death_link_setting)
 		Log.Error("Error in IsDeathLinkEnabled")
 		return 0
 	end
@@ -346,7 +357,7 @@ function RECV_MSG.Connected()
 
 	SetupLocationScouts()
 	-- Enable deathlink if the setting on the server and the mod setting said to
-	SetDeathLinkEnabled(IsDeathLinkEnabled())
+	SetDeathLinkEnabled(IsDeathLinkEnabled() > 0)
 end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
