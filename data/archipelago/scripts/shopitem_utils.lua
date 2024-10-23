@@ -76,20 +76,69 @@ end
 function ShopItems.create_ap_entity_from_flags(location, x, y)
 	local flags = location.item_flags
 
-	local item_filename = "ap_junk_shopitem.xml"
+	local enable_prog_icon = false
+	local enable_useful_icon = false
+	local enable_filler_icon = true
+
+	local item_filename = "ap_standard_shopitem.xml"
 	local item_description = "$ap_shopdescription_junk"
 	if bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
-		item_filename = "ap_useful_shopitem.xml"
 		item_description = "$ap_shopdescription_useful"
-	elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
-		item_filename = "ap_progression_shopitem.xml"
+		enable_useful_icon = true
+		enable_filler_icon = false
+	end
+	if bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
+		enable_prog_icon = true
+		enable_filler_icon = false
 		item_description = "$ap_shopdescription_progression"
-	elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
+		if enable_useful_icon then
+			item_description = "$ap_shopdescription_proguseful"
+		end
+	end
+
+	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
 		item_filename = "ap_trap_item.xml"
 		item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
+		if enable_filler_icon then
+			local random_number = Random(1, 3)
+			if random_number == 1 then
+				enable_filler_icon = false
+				enable_prog_icon = true
+			elseif random_number == 2 then
+				enable_filler_icon = false
+				enable_useful_icon = true
+			end
+		end
 	end
 
 	local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
+	if enable_prog_icon == true then
+		EntityAddComponent2(item_entity, "SpriteComponent", {
+			image_file = "data/archipelago/entities/items/icons/progression_icon.png",
+			offset_x = 0,
+			offset_y = 0,
+			z_index = 0.7,
+			update_transform_rotation = false
+		})
+	end
+	if enable_useful_icon == true then
+		EntityAddComponent2(item_entity, "SpriteComponent", {
+			image_file = "data/archipelago/entities/items/icons/useful_icon.png",
+			offset_x = 9,
+			offset_y = 9,
+			z_index = 0.7,
+			update_transform_rotation = false
+		})
+	end
+	if enable_filler_icon == true then
+		EntityAddComponent2(item_entity, "SpriteComponent", {
+			image_file = "data/archipelago/entities/items/icons/filler_icon.png",
+			offset_x = 0,
+			offset_y = 0,
+			z_index = 0.7,
+			update_transform_rotation = false
+		})
+	end
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
 			 EntityAddComponent(item_entity, "LuaComponent", {
 					 _tags="archipelago",

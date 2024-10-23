@@ -6,7 +6,8 @@
     _tags="enabled_in_world,item"
     offset_x="10"
     offset_y="10"
-    image_file="data/archipelago/entities/items/trap-$[1-4].png"
+    image_file="data/archipelago/entities/items/icons/ap_logo_bigger_trap$[1-4].png"
+    update_transform_rotation="0"
   />
 
 </Entity>

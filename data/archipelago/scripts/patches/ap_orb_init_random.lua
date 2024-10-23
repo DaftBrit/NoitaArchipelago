@@ -34,17 +34,32 @@ local function APOrbInitRandom()
 	local location = Globals.LocationScouts:get_key(location_id)
 	local flags = location.item_flags
 	local orb_image = "ap_logo_orb"
-	local check_type_icon = "filler_icon"
+	local enable_prog_icon = false
+	local enable_useful_icon = false
+	local enable_filler_icon = true
 
-	if flags == nil then
-		print("this orb is not a location check")
-	elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
-		check_type_icon = "empty_icon"
+	if bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
+		enable_useful_icon = true
+		enable_filler_icon = false
+	end
+	if bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
+		enable_prog_icon = true
+		enable_filler_icon = false
+	end
+
+	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
 		orb_image = "ap_logo_orb_trap_" .. tostring(Random(1,3))
-	elseif bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
-		check_type_icon = "empty_icon"
-	elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
-		check_type_icon = "progression_icon"
+		-- if it is not prog+trap or useful+trap, give it a random icon
+		if enable_filler_icon then
+			local random_number = Random(1, 3)
+			if random_number == 1 then
+				enable_filler_icon = false
+				enable_prog_icon = true
+			elseif random_number == 2 then
+				enable_filler_icon = false
+				enable_useful_icon = true
+			end
+		end
 	end
 
 	if flags ~= nil then
@@ -57,14 +72,32 @@ local function APOrbInitRandom()
 			offset_x = 7,
 			offset_y = 20,
 			z_index = 0.8,
+			update_transform_rotation = false
 		})
-
-		EntityAddComponent2(entity_id, "SpriteComponent", {
-			image_file = "data/archipelago/entities/items/icons/" .. check_type_icon .. ".png",
-			offset_x = 0,
-			offset_y = 10,
-			z_index = 0.7,
-		})
+		if enable_prog_icon == true then
+			EntityAddComponent2(entity_id, "SpriteComponent", {
+				image_file = "data/archipelago/entities/items/icons/progression_icon.png",
+				offset_x = 0,
+				offset_y = 10,
+				z_index = 0.7,
+			})
+		end
+		if enable_useful_icon == true then
+			EntityAddComponent2(entity_id, "SpriteComponent", {
+				image_file = "data/archipelago/entities/items/icons/useful_icon.png",
+				offset_x = 5,
+				offset_y = 5,
+				z_index = 0.7,
+			})
+		end
+		if enable_filler_icon == true then
+			EntityAddComponent2(entity_id, "SpriteComponent", {
+				image_file = "data/archipelago/entities/items/icons/filler_icon.png",
+				offset_x = 0,
+				offset_y = 10,
+				z_index = 0.7,
+			})
+		end
 	end
 end
 

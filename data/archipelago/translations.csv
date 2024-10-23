@@ -6,6 +6,7 @@
 "ap_shopdescription_junk","This looks useless.",,,,,,,,,,,,,
 "ap_shopdescription_useful","This might help but it doesn’t look like it’s needed.",,,,,,,,,,,,,
 "ap_shopdescription_progression","This item appears to be important.",,,,,,,,,,,,,
+"ap_shopdescription_proguseful","This item appears to be very important.",,,,,,,,,,,,,
 "ap_shopdescription_trap1","You want this.",,,,,,,,,,,,,
 "ap_shopdescription_trap2","Grab this immediately.",,,,,,,,,,,,,
 "ap_shopdescription_trap3","Pick this up.",,,,,,,,,,,,,
