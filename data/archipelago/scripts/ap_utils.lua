@@ -265,6 +265,9 @@ function create_ap_entity_from_flags(location, x, y)
 		enable_prog_icon = true
 		enable_filler_icon = false
 		item_description = "$ap_shopdescription_progression"
+		if enable_useful_icon then
+			item_description = "$ap_shopdescription_proguseful"
+		end
 	end
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
