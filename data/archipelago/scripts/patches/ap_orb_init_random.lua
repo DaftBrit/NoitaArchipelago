@@ -85,8 +85,8 @@ local function APOrbInitRandom()
 		if enable_useful_icon == true then
 			EntityAddComponent2(entity_id, "SpriteComponent", {
 				image_file = "data/archipelago/entities/items/icons/useful_icon.png",
-				offset_x = 5,
-				offset_y = 5,
+				offset_x = 7,
+				offset_y = 19,
 				z_index = 0.7,
 			})
 		end
