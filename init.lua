@@ -141,7 +141,8 @@ local function GetItemName(player_id, item_id, flags)
 		item_name = "problem with LocationScouts"
 	end
 
-	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
+	-- if it is trap + some other classification, we don't want to override its name
+	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and bit.band(flags, AP.ITEM_FLAG_PROGRESSION) == 0 and bit.band(flags, AP.ITEM_FLAG_USEFUL) == 0 then
 		item_name = GameTextGetTranslatedOrNot("$ap_trapname" .. Random(1, 10))
 	end
 
