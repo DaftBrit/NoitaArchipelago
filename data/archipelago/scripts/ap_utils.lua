@@ -288,7 +288,7 @@ function create_ap_entity_from_flags(location, x, y)
 	local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
 	if enable_prog_icon == true then
 		EntityAddComponent2(item_entity, "SpriteComponent", {
-			image_file = "data/archipelago/entities/items/icons/progression_icon.png",
+			image_file = "data/archipelago/entities/items/icons/progression_icon_bigger.png",
 			offset_x = 0,
 			offset_y = 0,
 			z_index = 0.7,
