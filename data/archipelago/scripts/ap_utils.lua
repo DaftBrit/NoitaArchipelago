@@ -272,7 +272,16 @@ function create_ap_entity_from_flags(location, x, y)
 
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
 		item_filename = "ap_trap_item.xml"
-		item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
+		item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 9))
+		if enable_useful_icon then
+			item_description = "$ap_shopdescription_usefultrap"
+		end
+		if enable_prog_icon then
+			item_description = "$ap_shopdescription_progtrap"
+			if enable_useful_icon then
+				item_description = "$ap_shopdescription_progusefultrap"
+			end
+		end
 		if enable_filler_icon then
 			local random_number = Random(1, 3)
 			if random_number == 1 then
