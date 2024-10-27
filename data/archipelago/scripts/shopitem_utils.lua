@@ -66,43 +66,15 @@ function ShopItems.create_our_item_entity(item, x, y)
 		return entity_id
 	else -- error?
 		-- TODO
-		EntityLoad("data/archipelago/entities/items/ap_error_book.xml", x, y)
+		EntityLoad("data/archipelago/entities/items/pickup/ap_error_book.xml", x, y)
 		Log.Error("Failed to load our own shopitem!")
 	end
 end
 
 
--- Basically chooses the item graphic depending on the generated item's flags
-function ShopItems.create_ap_entity_from_flags(location, x, y)
-	local flags = location.item_flags
-
-	local item_filename = "ap_junk_shopitem.xml"
-	local item_description = "$ap_shopdescription_junk"
-	if bit.band(flags, AP.ITEM_FLAG_USEFUL) ~= 0 then
-		item_filename = "ap_useful_shopitem.xml"
-		item_description = "$ap_shopdescription_useful"
-	elseif bit.band(flags, AP.ITEM_FLAG_PROGRESSION) ~= 0 then
-		item_filename = "ap_progression_shopitem.xml"
-		item_description = "$ap_shopdescription_progression"
-	elseif bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 then
-		item_filename = "ap_trap_item.xml"
-		item_description = "$ap_shopdescription_trap" .. tostring(Random(1, 8))
-	end
-
-	local item_entity = EntityLoad("data/archipelago/entities/items/" .. item_filename, x, y)
-	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
-			 EntityAddComponent(item_entity, "LuaComponent", {
-					 _tags="archipelago",
-					 script_item_picked_up="data/archipelago/scripts/items/ap_trap.lua",
-					 })
-	end
-	return item_entity, item_description
-end
-
-
 -- Spawns in an AP item (our own entity to represent items that don't exist in this game)
 function ShopItems.create_foreign_item_entity(location, x, y)
-	local entity_id, description = ShopItems.create_ap_entity_from_flags(location, x, y)
+	local entity_id, description = create_ap_entity_from_flags(location, x, y)
 	local name = location.item_name
 
 	-- Change item name
