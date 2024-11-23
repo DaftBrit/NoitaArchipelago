@@ -168,6 +168,11 @@ local function ShouldDeliverItem(item)
 	local location_id = item["location"]
 	if item["player"] == current_player_slot then
 		if GameHasFlagRun("ap" .. location_id) then
+			-- item links is extremely weird, this is the easy way to make it work correctly
+			local location = Globals.LocationScouts:get_key(location_id)
+			if not location.is_our_item then
+				return true
+			end
 			if location_id >= AP.FIRST_SHOP_LOCATION_ID and location_id <= AP.LAST_SHOP_LOCATION_ID or
 					location_id >= AP.FIRST_SHOP_LOCATION_ID + AP.WEST_OFFSET and location_id <= AP.LAST_SHOP_LOCATION_ID + AP.WEST_OFFSET or
 					location_id >= AP.FIRST_SHOP_LOCATION_ID + AP.EAST_OFFSET and location_id <= AP.LAST_SHOP_LOCATION_ID + AP.EAST_OFFSET then
