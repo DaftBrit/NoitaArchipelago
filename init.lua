@@ -535,7 +535,7 @@ local function connect()
 		Log.Info("on_room_info")
 		Globals.Seed:set(ap:get_seed())
 		-- client version 0.4.1
-		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, {"Lua-APClientPP"}, { 0, 4, 1 })
+		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, {"Lua-APClientPP"}, { 0, 6, 2 })
 	end
 
 	local function on_slot_connected(slot_data)
