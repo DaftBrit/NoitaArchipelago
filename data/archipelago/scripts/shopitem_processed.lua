@@ -35,6 +35,15 @@ local function get_cost_x_offset(price)
 	return textwidth * 0.5 - 0.5
 end -- get_cost_x_offset
 
+local function get_cost_y_offset(entity_id)
+	local offset = 20
+
+	if EntityHasTag(entity_id, "card_action") then
+		offset = 25
+	end
+
+	return offset
+end -- get_cost_y_offset
 
 -- Called when the entity gets created
 function init(entity_id)
@@ -50,12 +59,12 @@ function init(entity_id)
 	end
 
 	-- https://noita.wiki.gg/wiki/Documentation:_SpriteComponent
-	EntityAddComponent2(entity_id, "SpriteComponent", { 
+	EntityAddComponent2(entity_id, "SpriteComponent", {
 		_tags="shop_cost,enabled_in_world",
 		image_file="data/fonts/font_pixel_white.xml",
 		is_text_sprite=true,
 		offset_x=get_cost_x_offset(data.price),
-		offset_y=20,
+		offset_y=get_cost_y_offset(entity_id),
 		update_transform=true,
 		update_transform_rotation=false,
 		text=tostring(data.price),
@@ -67,7 +76,7 @@ function init(entity_id)
 		is_stealable = true
 	end
 	-- https://noita.wiki.gg/wiki/Documentation:_ItemCostComponent
-	EntityAddComponent2(entity_id, "ItemCostComponent", { 
+	EntityAddComponent2(entity_id, "ItemCostComponent", {
 		_tags="shop_cost,enabled_in_world",
 		cost=data.price,
 		stealable=is_stealable

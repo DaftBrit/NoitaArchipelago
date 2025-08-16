@@ -74,6 +74,11 @@ function ShopItems.create_our_item_entity(item, x, y)
 			end
 		end
 		return entity_id
+	elseif item.spells ~= nil then
+		local item_to_spawn = item.spells[Random(1, #item.spells)]
+		local entity_id = CreateItemActionEntity(item_to_spawn, x, y)
+		EntityAddTag(entity_id, "ap_item")
+		return entity_id
 	else -- error?
 		-- TODO
 		EntityLoad("data/archipelago/entities/items/pickup/ap_error_book.xml", x, y)
