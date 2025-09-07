@@ -39,3 +39,5 @@ ModLuaFileAppend("data/scripts/biomes/coalmine.lua", "data/archipelago/scripts/p
 ModLuaFileAppend("data/scripts/biomes/tower.lua", "data/archipelago/scripts/patches/ap_extend_tower_enemies.lua")
 
 ModLuaFileAppend("data/scripts/buildings/forge_item_convert.lua", "data/archipelago/scripts/patches/extend_forge_item_convert.lua")
+
+dofile_once("data/archipelago/scripts/patches/ap_extend_pixel_scenes.lua")
