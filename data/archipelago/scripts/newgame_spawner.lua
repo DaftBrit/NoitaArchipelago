@@ -6,22 +6,22 @@ local AP = dofile("data/archipelago/scripts/constants.lua")
 local worldOffsetX = -250
 local worldOffsetY = -2500
 local itemZones =  {
-	[110006] = { x = 70, y = 306, w = 110 }, -- Wands 1-6
-	[110007] = { x = 300, y = 306, w = 100 },
-	[110008] = { x = 67, y = 245, w = 110 },
-	[110009] = { x = 305, y = 245, w = 120 },
-	[110010] = { x = 130, y = 168, w = 100 },
-	[110011] = { x = 295, y = 168, w = 90 },
+	[AP.FIRST_WAND_ITEM_ID] = { x = 70, y = 306, w = 110 }, -- Wands 1-6
+	[AP.FIRST_WAND_ITEM_ID + 1] = { x = 300, y = 306, w = 100 },
+	[AP.FIRST_WAND_ITEM_ID + 2] = { x = 67, y = 245, w = 110 },
+	[AP.FIRST_WAND_ITEM_ID + 3] = { x = 305, y = 245, w = 120 },
+	[AP.FIRST_WAND_ITEM_ID + 4] = { x = 130, y = 168, w = 100 },
+	[AP.FIRST_WAND_ITEM_ID + 5] = { x = 295, y = 168, w = 90 },
 
-	[110012] = { x = 143, y = 360, w = 1}, -- Kentele
+	[AP.LAST_WAND_ITEM_ID] = { x = 143, y = 360, w = 1}, -- Kentele
 
-	[110028] = { x = 175, y = 387, w = 24 }, -- Heals
-	[110029] = { x = 199, y = 387, w = 24 },
+	[AP.KAMMI_ITEM_ID] = { x = 175, y = 387, w = 24 }, -- Heals
+	[AP.GOURD_ITEM_ID] = { x = 199, y = 387, w = 24 },
 
-	[110025] = { x = 253, y = 387, w = 45 }, -- Powders
+	[AP.POWDER_STASH_ITEM_ID] = { x = 253, y = 387, w = 45 }, -- Powders
 
-	[110030] = { x = 320, y = 387, w = 23 }, -- Misc
-	[110031] = { x = 343, y = 387, w = 23 },
+	[AP.BEAMSTONE_ITEM_ID] = { x = 320, y = 387, w = 23 }, -- Misc
+	[AP.BROKEN_WAND_ITEM_ID] = { x = 343, y = 387, w = 23 },
 }
 
 function APEggStartSpawn(item_counts)
