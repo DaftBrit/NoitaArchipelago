@@ -11,7 +11,7 @@ function death( damage_type_bit_field, damage_message, entity_thats_responsible,
 		EntityAddComponent2( perk_id, "VariableStorageComponent",
 		{
 			name = "perk_dont_remove_others",
-			value_bool = "1",
+			value_bool = true,
 		} )
 	end
 end

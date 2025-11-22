@@ -51,18 +51,18 @@ function init(entity_id)
 	EntityAddComponent2(entity_id, "SpriteComponent", { 
 		_tags="shop_cost,enabled_in_world",
 		image_file="data/fonts/font_pixel_white.xml",
-		is_text_sprite="1", 
-		offset_x=tostring(get_cost_x_offset(data.price)),
-		offset_y="20",
-		update_transform="1",
-		update_transform_rotation="0",
+		is_text_sprite=true, 
+		offset_x=get_cost_x_offset(data.price),
+		offset_y=20,
+		update_transform=true,
+		update_transform_rotation=false,
 		text=tostring(data.price),
-		z_index="-1",
+		z_index=-1,
 	})
 
-	local is_stealable = 0
+	local is_stealable = false
 	if BiomeMapGetName(x, y) == "$biome_holymountain" then
-		is_stealable = 1
+		is_stealable = true
 	end
 	-- https://noita.wiki.gg/wiki/Documentation:_ItemCostComponent
 	EntityAddComponent2(entity_id, "ItemCostComponent", { 

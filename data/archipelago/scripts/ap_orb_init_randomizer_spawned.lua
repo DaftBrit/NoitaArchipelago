@@ -12,10 +12,8 @@ if orb_id == nil then
 	orb_id = 53
 end
 
-if orbcomp ~= nil then
-	for _, comp_id in pairs(orbcomp) do
-		ComponentSetValue2( comp_id, "orb_id", orb_id + 33)
-	end
+for _, comp_id in pairs(orbcomp or {}) do
+	ComponentSetValue2( comp_id, "orb_id", orb_id + 33)
 end
 
 orb_id = orb_id + 1
