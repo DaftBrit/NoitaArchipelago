@@ -11,6 +11,11 @@ dofile_once("data/scripts/items/chest_random.lua")
 
 function on_open(entity_item)
 	local biome_comp_id = EntityGetFirstComponent(entity_item, "VariableStorageComponent")
+	if biome_comp_id == nil then
+		Log.Error("ap_chest_random missing VariableStorageComponent")
+		return
+	end
+
 	local biome_name = ComponentGetValue2(biome_comp_id, "value_string")
 	local x, y = EntityGetTransform(entity_item)
 	local item_spawned = false

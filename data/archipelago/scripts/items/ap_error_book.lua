@@ -17,13 +17,13 @@ if GameHasFlagRun("AP_LocationInfo_received") then
 	local x, y = EntityGetTransform(GetUpdatedEntityID())
 	ShopItems.generate_ap_shop_item_entity(data.location_id, x, y)
 
-	EntityAddComponent(entity_id, "VariableStorageComponent", {
+	EntityAddComponent2(entity_id, "VariableStorageComponent", {
 		_tags="archipelago,enabled_in_world",
 		name="ap_shop_data",
 		value_string=data_str
 	})
 
-	EntityAddComponent(entity_id, "LuaComponent", {
+	EntityAddComponent2(entity_id, "LuaComponent", {
 		_tags="archipelago",
 		script_source_file="data/archipelago/scripts/shopitem_processed.lua",
 		execute_on_added="1",

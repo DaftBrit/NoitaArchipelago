@@ -23,7 +23,7 @@ function ShopItems.generate_item_price(biomeid, cheap_item)
 	if biomeid == 0 then return 0 end
 
 	-- second term is the default value, to be taken if no value is received, for compatibility
-	local price_multiplier = tonumber(GlobalsGetValue("ap_shop_price", 100))/100
+	local price_multiplier = tonumber(GlobalsGetValue("ap_shop_price", "100"))/100
 
 	biomeid = (0.5 * biomeid) + ( 0.5 * biomeid * biomeid )
 	local price = (50 + biomeid * 210) + (Random(-15, 15) * 10)
@@ -42,7 +42,9 @@ function ShopItems.create_our_item_entity(item, x, y)
 	print("shop item create entity start")
 	if item.perk ~= nil then
 		local perk_id = perk_spawn(x, y, item.perk, true)
-		EntityAddTag(perk_id, "ap_item")
+		if perk_id ~= nil then
+			EntityAddTag(perk_id, "ap_item")
+		end
 		return perk_id
 	elseif item.items ~= nil and #item.items > 0 then
 		-- our item is something else (random choice)
@@ -50,7 +52,9 @@ function ShopItems.create_our_item_entity(item, x, y)
 		EntityAddTag(entity_id, "ap_item")
 		if item.gold_amount ~= 0 then
 			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
-			EntityRemoveComponent(entity_id, life_comp)
+			if life_comp ~= nil then
+				EntityRemoveComponent(entity_id, life_comp)
+			end
 		end
 		if item.orb ~= 0 then
 			local orb_count = GameGetOrbCountThisRun()
@@ -60,7 +64,9 @@ function ShopItems.create_our_item_entity(item, x, y)
 			end
 			if GameHasFlagRun("ap_peaceful_goal") and orb_count >= 33 or GameHasFlagRun("ap_pure_goal") and orb_count >= 11 then
 				local orbcomp = EntityGetFirstComponent(entity_id, "OrbComponent")
-				EntityRemoveComponent(entity_id, orbcomp)
+				if orbcomp ~= nil then
+					EntityRemoveComponent(entity_id, orbcomp)
+				end
 			end
 		end
 		return entity_id
@@ -116,7 +122,7 @@ function ShopItems.generate_ap_shop_item(location_id, biomeid, x, y, cheap_item)
 
 	-- We add a custom component to store the id that we are unlocking when the item is purchased,
 	-- as well as some other things
-	EntityAddComponent(entity_id, "VariableStorageComponent", {
+	EntityAddComponent2(entity_id, "VariableStorageComponent", {
 		_tags="archipelago,enabled_in_world",
 		name="ap_shop_data",
 		value_string=encodeXML(JSON:encode({
@@ -127,7 +133,7 @@ function ShopItems.generate_ap_shop_item(location_id, biomeid, x, y, cheap_item)
 		}))
 	})
 
-	EntityAddComponent(entity_id, "LuaComponent", {
+	EntityAddComponent2(entity_id, "LuaComponent", {
 		_tags="archipelago",
 		script_source_file="data/archipelago/scripts/shopitem_processed.lua",
 		execute_on_added="1",

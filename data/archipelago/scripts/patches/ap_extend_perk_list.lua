@@ -85,15 +85,15 @@ local function ap_extend_perk_list()
 		local platformingcomponents = EntityGetComponent( entity_who_picked, "CharacterPlatformingComponent" )
 		if platformingcomponents ~= nil then
 			for _, component in ipairs(platformingcomponents) do
-				local run_speed = tonumber( ComponentGetMetaCustom( component, "run_velocity" ) ) * 1.25
-				local vel_x = math.abs( tonumber( ComponentGetMetaCustom( component, "velocity_max_x" ) ) ) * 1.25
+				local run_speed = tonumber(ComponentGetValue2(component, "run_velocity")) * 1.25
+				local vel_x = math.abs(tonumber(ComponentGetValue2(component, "velocity_max_x"))) * 1.25
 
 				local vel_x_min = 0 - vel_x
 				local vel_x_max = vel_x
 
-				ComponentSetMetaCustom( component, "run_velocity", run_speed )
-				ComponentSetMetaCustom( component, "velocity_min_x", vel_x_min )
-				ComponentSetMetaCustom( component, "velocity_max_x", vel_x_max )
+				ComponentSetValue2( component, "run_velocity", run_speed )
+				ComponentSetValue2( component, "velocity_min_x", vel_x_min )
+				ComponentSetValue2( component, "velocity_max_x", vel_x_max )
 			end
 		end
 
@@ -109,9 +109,9 @@ local function ap_extend_perk_list()
 		local platformingcomponents = EntityGetComponent( entity_who_picked, "CharacterPlatformingComponent" )
 		if platformingcomponents ~= nil then
 			for _, component in ipairs(platformingcomponents) do
-				ComponentSetMetaCustom( component, "run_velocity", 154 )
-				ComponentSetMetaCustom( component, "velocity_min_x", -57 )
-				ComponentSetMetaCustom( component, "velocity_max_x", 57 )
+				ComponentSetValue2( component, "run_velocity", 154 )
+				ComponentSetValue2( component, "velocity_min_x", -57 )
+				ComponentSetValue2( component, "velocity_max_x", 57 )
 			end
 		end
 	end,

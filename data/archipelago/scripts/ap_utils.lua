@@ -55,7 +55,7 @@ function spawn_potion(potion, x, y)
 	end
 	EntityConvertToMaterial(potion_entity, "ap_gorilla_glass")
 
-	EntityAddComponent(potion_entity, "LuaComponent", {
+	EntityAddComponent2(potion_entity, "LuaComponent", {
 		script_source_file="data/archipelago/scripts/items/potion_saver_remover.lua",
 		execute_every_n_frame="90",
 		execute_times="0",
@@ -162,7 +162,7 @@ end
 -- health and money functions from the cheatgui mod
 function get_health()
 	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
-	return ComponentGetValue(dm, "hp"), ComponentGetValue(dm, "max_hp")
+	return ComponentGetValue2(dm, "hp"), ComponentGetValue2(dm, "max_hp")
 end
 
 
@@ -170,8 +170,8 @@ end
 function set_health(cur_hp, max_hp)
 	local damagemodels = EntityGetComponent(get_player(), "DamageModelComponent")
 	for _, damagemodel in ipairs(damagemodels or {}) do
-		ComponentSetValue(damagemodel, "max_hp", max_hp)
-		ComponentSetValue(damagemodel, "hp", cur_hp)
+		ComponentSetValue2(damagemodel, "max_hp", max_hp)
+		ComponentSetValue2(damagemodel, "hp", cur_hp)
 	end
 end
 
@@ -326,7 +326,7 @@ function create_ap_entity_from_flags(location, x, y)
 		})
 	end
 	if bit.band(flags, AP.ITEM_FLAG_TRAP) ~= 0 and location.is_our_item then
-			 EntityAddComponent(item_entity, "LuaComponent", {
+			 EntityAddComponent2(item_entity, "LuaComponent", {
 					 _tags="archipelago",
 					 script_item_picked_up="data/archipelago/scripts/items/ap_trap.lua",
 					 })

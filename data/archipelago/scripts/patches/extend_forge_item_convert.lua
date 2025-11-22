@@ -10,7 +10,7 @@ local function ap_extend_forge_item_convert()
 			local item_name
 
 			for _, itemc in ipairs(item_comps) do
-				item_name = ComponentGetValue( itemc, "item_name" )
+				item_name = ComponentGetValue2( itemc, "item_name" )
 				if( item_name == "$ap_error_book_title" ) then new_desc = "$ap_error_book_desc_forged" end
 				if( item_name == "$ap_error_book_flags_title" ) then new_desc = "$ap_error_book_flags_desc_forged" end
 			end
@@ -19,18 +19,18 @@ local function ap_extend_forge_item_convert()
 				local forged_book = EntityLoad("data/entities/items/books/base_forged.xml", x, y - 5)
 				item_comps = EntityGetComponent( forged_book, "ItemComponent" ) or {}
 				for _, itemc in ipairs(item_comps) do
-					ComponentSetValue( itemc, "item_name", item_name )
-					ComponentSetValue( itemc, "ui_description", new_desc )
+					ComponentSetValue2( itemc, "item_name", item_name )
+					ComponentSetValue2( itemc, "ui_description", new_desc )
 				end
 
 				local uiinfo_comp = EntityGetComponent( forged_book, "UIInfoComponent" ) or {}
 				for _, uiinfoc in ipairs(uiinfo_comp) do
-					ComponentSetValue( uiinfoc, "name", item_name )
+					ComponentSetValue2( uiinfoc, "name", item_name )
 				end
 
 				local ability_comp = EntityGetComponent( forged_book, "AbilityComponent" ) or {}
 				for _, abic in ipairs(ability_comp) do
-					ComponentSetValue( abic, "ui_name", item_name )
+					ComponentSetValue2( abic, "ui_name", item_name )
 				end
 
 				EntityLoad("data/entities/projectiles/explosion.xml", x, y - 10)
@@ -45,13 +45,15 @@ local function ap_extend_forge_item_convert()
 			local item_comps = EntityGetComponent( id, "ItemComponent" ) or {}
 			local item_name
 			for _, itemc in ipairs(item_comps) do
-				item_name = ComponentGetValue( itemc, "item_name" )
+				item_name = ComponentGetValue2( itemc, "item_name" )
 				if ( item_name == "$ap_chest_random" ) then
 					EntityKill(id)
 					EntityLoad("data/entities/props/physics_skateboard.xml", x, y)
 					local hamis = EntityLoad("data/entities/animals/longleg.xml", x, y-10)
 					local ai_comp = EntityGetFirstComponent(hamis, "AnimalAIComponent")
-					ComponentSetValue2(ai_comp, "mAggression", 0)
+					if ai_comp ~= nil then
+						ComponentSetValue2(ai_comp, "mAggression", 0)
+					end
 					EntityRemoveTag(hamis, "enemy")
 				end
 			end
