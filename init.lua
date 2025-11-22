@@ -439,8 +439,11 @@ function RECV_MSG.Bounced(msg)
 			GamePrintImportant(cause)
 		end
 
+		local player = get_player()
+		-- Don't try anything if the player doesn't exist (gj you dodged it)
+		if player == nil then return end
+
 		if death_link_option == 1 then
-			local player = get_player()
 			if not DecreaseExtraLife(player) then
 				local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
 				if gsc_id ~= nil then

@@ -128,6 +128,9 @@ end
 -- Modified from @Priskip in Noita Discord (https://github.com/Priskip)
 -- Removes an Extra Life perk and returns true if one exists
 function DecreaseExtraLife(entity_id)
+	-- guard
+	if entity_id == nil then return false end
+
 	local children = EntityGetAllChildren(entity_id)
 	for _, child in ipairs(children) do
 		local effect_component = EntityGetFirstComponentIncludingDisabled(child, "GameEffectComponent")
