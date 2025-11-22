@@ -136,9 +136,9 @@ function ShopItems.generate_ap_shop_item(location_id, biomeid, x, y, cheap_item)
 	EntityAddComponent2(entity_id, "LuaComponent", {
 		_tags="archipelago",
 		script_source_file="data/archipelago/scripts/shopitem_processed.lua",
-		execute_on_added="1",
-		execute_every_n_frame="-1",
-		call_init_function="1",
+		execute_on_added=1,
+		execute_every_n_frame=-1,
+		call_init_function=true,
 		script_item_picked_up="data/archipelago/scripts/shopitem_processed.lua",
 	})
 end -- generate_ap_shop_item

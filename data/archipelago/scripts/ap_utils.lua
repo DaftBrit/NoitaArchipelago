@@ -34,10 +34,12 @@ end
 
 --Function to spawn a perk at the player and then have the player automatically pick it up
 function give_perk(perk_name)
-	for i, p in ipairs(get_players()) do
+	for _, p in ipairs(get_players()) do
 		local x, y = EntityGetTransform(p)
 		local perk = perk_spawn(x, y, perk_name)
-		perk_pickup(perk, p, EntityGetName(perk), false, false)
+		if perk then
+			perk_pickup(perk, p, EntityGetName(perk), false, false)
+		end
 	end
 end
 
@@ -57,8 +59,8 @@ function spawn_potion(potion, x, y)
 
 	EntityAddComponent2(potion_entity, "LuaComponent", {
 		script_source_file="data/archipelago/scripts/items/potion_saver_remover.lua",
-		execute_every_n_frame="90",
-		execute_times="0",
+		execute_every_n_frame=90,
+		execute_times=0,
 		script_enabled_changed="data/archipelago/scripts/items/potion_saver_remover.lua"
 	})
 
@@ -102,9 +104,9 @@ end
 
 function GetCauseOfDeath()
 	local raw_death_msg = StatsGetValue("killed_by")
-	local origin, cause = string.match(raw_death_msg, "(.*) | (.*)")
+	local origin, cause = string.match(raw_death_msg or " | ", "(.*) | (.*)")
 
-	if origin then
+	if not_empty(origin) then
 		origin = GameTextGetTranslatedOrNot(origin)
 	end
 
@@ -132,18 +134,18 @@ function DecreaseExtraLife(entity_id)
 	if entity_id == nil then return false end
 
 	local children = EntityGetAllChildren(entity_id)
-	for _, child in ipairs(children) do
+	for _, child in ipairs(children or {}) do
 		local effect_component = EntityGetFirstComponentIncludingDisabled(child, "GameEffectComponent")
-		local effect_value = ComponentGetValue2(effect_component, "effect")
+		local effect_value = effect_component and ComponentGetValue2(effect_component, "effect")
 
-		if effect_value == "RESPAWN" and ComponentGetValue2(effect_component, "mCounter") == 0 then
+		if effect_value == "RESPAWN" and effect_component and ComponentGetValue2(effect_component, "mCounter") == 0 then
 			--Remove extra life child
 			EntityKill(child)
 
 			--Remove UI component
-			for _2, child2 in ipairs(children) do
+			for _, child2 in ipairs(children or {}) do
 				local child_ui_icon_component = EntityGetFirstComponentIncludingDisabled(child2, "UIIconComponent")
-				local name_value = ComponentGetValue2(child_ui_icon_component, "name")
+				local name_value = child_ui_icon_component and ComponentGetValue2(child_ui_icon_component, "name")
 
 				if name_value == "$perk_respawn" then
 					EntityKill(child2)
@@ -190,7 +192,9 @@ end
 
 local function set_money(amt)
 	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
-	ComponentSetValue2(wallet, "money", amt)
+	if wallet then
+		ComponentSetValue2(wallet, "money", amt)
+	end
 end
 
 
@@ -198,11 +202,9 @@ function add_money(amt)
 	local player_id = get_player()
 	local x, y = EntityGetTransform(player_id)
 	local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
-	local current_money = ComponentGetValue2(wallet, "money")
-	ComponentSetValue2(wallet, "money", current_money + amt)
-	local sound = "data/entities/particles/gold_pickup_large.xml"
-	if amt > 500 then
-		sound = "data/entities/particles/gold_pickup_huge.xml"
+	if wallet then
+		local current_money = ComponentGetValue2(wallet, "money")
+		ComponentSetValue2(wallet, "money", current_money + amt)
 	end
 	shoot_projectile(player_id, "data/entities/particles/gold_pickup_huge.xml", x, y, 0, 0)
 end
