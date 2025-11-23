@@ -14,7 +14,7 @@ local function APOrbInitRandom()
 	local orb_id = -1
 
 	for _, comp_id in pairs(orbcomp) do
-		orb_id = ComponentGetValueInt(comp_id, "orb_id")
+		orb_id = ComponentGetValue2(comp_id, "orb_id")
 		--this variable just stores the original orb_id elsewhere
 		addNewInternalVariable(entity_id, "OriginalID", "value_int", orb_id)
 		EntityRemoveComponent(entity_id, comp_id)

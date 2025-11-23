@@ -17,7 +17,7 @@ end
 
 
 function ResetOrbID()
-	GlobalsSetValue("ap_orb_id", 20)
+	GlobalsSetValue("ap_orb_id", "20")
 end
 
 
@@ -46,14 +46,14 @@ function SpawnItem(item_id, traps)
 		return
 	end
 	-- setting the random seed using arbitrary offsets that get modified on each spawn
-	local rand_x = GlobalsGetValue("ap_random_hax")
+	local rand_x = tonumber(GlobalsGetValue("ap_random_hax"))
 	local rand_y = rand_x * 2
 	SeedRandom(rand_x, rand_y)
 
 	if item_id == AP.TRAP_ID then
 		if not traps then return end
 		BadTimes()
-		GlobalsSetValue("ap_random_hax", rand_x + 2)
+		GlobalsSetValue("ap_random_hax", tostring(rand_x + 2))
 		Log.Info("Badtimes")
 	elseif item.perk ~= nil then
 		give_perk(item.perk)
@@ -62,7 +62,7 @@ function SpawnItem(item_id, traps)
 		add_money(item.gold_amount)
 	elseif item.potion ~= nil then
 		spawn_potion(item.items[1])
-		GlobalsSetValue("ap_random_hax", rand_x + 2)
+		GlobalsSetValue("ap_random_hax", tostring(rand_x + 2))
 	elseif item.orb ~= nil then
 		local orb_count = GameGetOrbCountThisRun()
 		if GameHasFlagRun("ap_peaceful_goal") and orb_count >= 33 or GameHasFlagRun("ap_pure_goal") and orb_count >= 11 then
@@ -73,24 +73,25 @@ function SpawnItem(item_id, traps)
 	elseif #item.items > 0 then
 		local item_to_spawn = item.items[Random(1, #item.items)]
 		EntityLoadAtPlayer(item_to_spawn, random_offset())
-		GlobalsSetValue("ap_random_hax", rand_x + 2)
+		GlobalsSetValue("ap_random_hax", tostring(rand_x + 2))
 		Log.Info("Item spawned" .. item_to_spawn)
 	else
 		Log.Error("[AP] Item " .. tostring(item_id) .. " not properly configured")
 	end
 end
 
+
 function NGSpawnItems(item_counts)
-	if ng_spawn_check ~= true then
-		ng_spawn_check = true
+	if _G.ng_spawn_check ~= true then
+		_G.ng_spawn_check = true
 		print("spawning items in mountain using NGSpawnItems")
 	end
-	
+
 	-- setting the random seed using arbitrary offsets that get modified on each spawn
 	local rand_x = GlobalsGetValue("ap_random_hax")
 	local rand_y = rand_x * 2
 	SeedRandom(rand_x, rand_y)
-	
+
 	-- check how many hearts and orbs are on the list, increase your health, then remove them from the list
 	-- note that health increases are in increments of 25
 	if item_counts[AP.HEART_ITEM_ID] ~= nil or item_counts[AP.ORB_ITEM_ID] ~= nil then

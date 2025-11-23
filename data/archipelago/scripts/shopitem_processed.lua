@@ -11,6 +11,7 @@ end
 
 local function get_transferred_values(entity_id)
 	local component = get_variable_storage_component(entity_id, "ap_shop_data")
+	assert(component and component ~= 0, "Failed in shopitem_processed - unable to retrieve ap_shop_data")
 	local data_str = ComponentGetValue2(component, "value_string")
 	return JSON:decode(decodeXML(data_str))
 end
@@ -48,31 +49,31 @@ function init(entity_id)
 	end
 
 	-- https://noita.wiki.gg/wiki/Documentation:_SpriteComponent
-	EntityAddComponent(entity_id, "SpriteComponent", { 
+	EntityAddComponent2(entity_id, "SpriteComponent", { 
 		_tags="shop_cost,enabled_in_world",
 		image_file="data/fonts/font_pixel_white.xml",
-		is_text_sprite="1", 
-		offset_x=tostring(get_cost_x_offset(data.price)),
-		offset_y="20",
-		update_transform="1",
-		update_transform_rotation="0",
+		is_text_sprite=true,
+		offset_x=get_cost_x_offset(data.price),
+		offset_y=20,
+		update_transform=true,
+		update_transform_rotation=false,
 		text=tostring(data.price),
-		z_index="-1",
+		z_index=-1,
 	})
 
-	local is_stealable = 0
+	local is_stealable = false
 	if BiomeMapGetName(x, y) == "$biome_holymountain" then
-		is_stealable = 1
+		is_stealable = true
 	end
 	-- https://noita.wiki.gg/wiki/Documentation:_ItemCostComponent
-	EntityAddComponent(entity_id, "ItemCostComponent", { 
+	EntityAddComponent2(entity_id, "ItemCostComponent", { 
 		_tags="shop_cost,enabled_in_world",
 		cost=data.price,
 		stealable=is_stealable
 	})
 
 	-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent
-	EntityAddComponent(entity_id, "LuaComponent", {
+	EntityAddComponent2(entity_id, "LuaComponent", {
 		script_item_picked_up="data/scripts/items/shop_effect.lua"
 	})
 
@@ -87,7 +88,9 @@ end
 function item_pickup(entity_item, entity_who_picked, name)
 	local data = get_transferred_values(entity_item)
 	local component_id = get_variable_storage_component(entity_item, "ap_shop_data")
-	EntityRemoveComponent(entity_item, component_id)
+	if component_id ~= nil then
+		EntityRemoveComponent(entity_item, component_id)
+	end
 	GameAddFlagRun("ap" .. data.location_id)
 	Globals.LocationUnlockQueue:append(data.location_id)
 end

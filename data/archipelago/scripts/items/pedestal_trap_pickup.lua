@@ -9,7 +9,7 @@ function item_pickup( entity_item, entity_who_picked, name )
 
 	local entity_tags = EntityGetTags( entity_id )
 
-	if ( string.find( entity_tags, "trap_wand" ) ~= nil ) then
+	if ( entity_tags ~= nil and entity_tags:find("trap_wand") ~= nil ) then
 		trigger_wand_pickup_trap( pos_x, pos_y )
 	end
 end
