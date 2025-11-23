@@ -1,21 +1,7 @@
 -- Script run when shop item is picked up
 dofile_once("data/scripts/lib/utilities.lua")
-dofile_once("data/archipelago/scripts/ap_utils.lua")
-local JSON = dofile("data/archipelago/lib/json.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
-
-
-local function decodeXML(str)
-	return str:gsub("&quot;", "\"")
-end
-
-
-local function get_transferred_values(entity_id)
-	local component = get_variable_storage_component(entity_id, "ap_shop_data")
-	assert(component and component ~= 0, "Failed in shopitem_processed - unable to retrieve ap_shop_data")
-	local data_str = ComponentGetValue2(component, "value_string")
-	return JSON:decode(decodeXML(data_str))
-end
+local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 
 -- Calculates the X offset for the text of the price, used to center the text over the item
@@ -39,7 +25,7 @@ end -- get_cost_x_offset
 -- Called when the entity gets created
 function init(entity_id)
 	if EntityGetFirstComponent(entity_id, "ItemCostComponent", "shop_cost") ~= nil then return end
-	local data = get_transferred_values(entity_id)
+	local data = ShopItems.get_ap_item_from_entity(entity_id)
 	if data.price <= 0 then return end
 
 	local x, y = EntityGetTransform(entity_id)
@@ -50,7 +36,7 @@ function init(entity_id)
 	end
 
 	-- https://noita.wiki.gg/wiki/Documentation:_SpriteComponent
-	EntityAddComponent2(entity_id, "SpriteComponent", { 
+	EntityAddComponent2(entity_id, "SpriteComponent", {
 		_tags="shop_cost,enabled_in_world",
 		image_file="data/fonts/font_pixel_white.xml",
 		is_text_sprite=true,
@@ -67,7 +53,7 @@ function init(entity_id)
 		is_stealable = true
 	end
 	-- https://noita.wiki.gg/wiki/Documentation:_ItemCostComponent
-	EntityAddComponent2(entity_id, "ItemCostComponent", { 
+	EntityAddComponent2(entity_id, "ItemCostComponent", {
 		_tags="shop_cost,enabled_in_world",
 		cost=data.price,
 		stealable=is_stealable
@@ -91,7 +77,7 @@ function item_pickup(entity_item, entity_who_picked, name)
 	-- Guard against Fair Mod bullshit and hope there isn't a layered cake of more bullshit
 	if not IsPlayer(entity_who_picked) then return end
 
-	local data = get_transferred_values(entity_item)
+	local data = ShopItems.get_ap_item_from_entity(entity_item)
 
 	-- Queue location for unlock
 	GameAddFlagRun("ap" .. data.location_id)

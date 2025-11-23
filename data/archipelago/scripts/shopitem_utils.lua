@@ -15,6 +15,28 @@ local function encodeXML(str)
 	return str:gsub("\"", "&quot;")
 end
 
+local function decodeXML(str)
+	return str:gsub("&quot;", "\"")
+end
+
+local function rangeTable(first, amt)
+	local result = {}
+	for i = first, first + amt - 1 do
+		table.insert(result, i)
+	end
+	return result
+end
+
+-- Parallel world offsets
+local function getPWLocationOffset(pw_num)
+	if not pw_num then pw_num = 0 end
+	if pw_num < 0 then
+		return AP.WEST_OFFSET
+	elseif pw_num > 0 then
+		return AP.EAST_OFFSET
+	end
+	return 0
+end
 
 -- Uses vanilla wand price calculation, copied from the actual shop code.
 -- cheap_item is true if it's an on-sale item
@@ -94,7 +116,7 @@ function ShopItems.create_foreign_item_entity(location, x, y)
 end
 
 
--- Generates an items and creates the entity used to make the shop item
+-- Generates an item and creates the entity used to make the shop item
 function ShopItems.generate_ap_shop_item_entity(location_id, x, y)
 	local location = Globals.LocationScouts:get_key(location_id)
 	if location == nil then
@@ -125,6 +147,10 @@ function ShopItems.generate_ap_shop_item(location_id, biomeid, x, y, cheap_item)
 	local price = ShopItems.generate_item_price(biomeid, cheap_item)
 	local entity_id, is_foreign_item = ShopItems.generate_ap_shop_item_entity(location_id, x, y)
 
+	if entity_id == nil or entity_id == 0 then
+		error("Failed to create shop item at location: " .. tostring(location_id))
+	end
+
 	-- We add a custom component to store the id that we are unlocking when the item is purchased,
 	-- as well as some other things
 	EntityAddComponent2(entity_id, "VariableStorageComponent", {
@@ -145,7 +171,40 @@ function ShopItems.generate_ap_shop_item(location_id, biomeid, x, y, cheap_item)
 		execute_every_n_frame=-1,
 		call_init_function=true,
 		script_item_picked_up="data/archipelago/scripts/shopitem_processed.lua",
+		script_collision_trigger_hit="data/archipelago/scripts/shopitem_scouted.lua",
+	})
+
+	EntityAddComponent2(entity_id, "CollisionTriggerComponent", {
+		required_tag="player_unit",
+		remove_component_when_triggered=true,
+		destroy_this_entity_when_triggered=false,
 	})
 end -- generate_ap_shop_item
+
+function ShopItems.get_related_shop_locations(location_id)
+	location_id = tonumber(location_id)
+	-- Holy Mountain shops
+	for parallel_world = -1, 1 do
+		for shop_id = 1, 7 do
+			local base_id = AP.FIRST_SHOP_LOCATION_ID + (shop_id - 1) * 6 + getPWLocationOffset(parallel_world)
+			if base_id <= location_id and location_id < base_id + 5 then
+				return rangeTable(base_id, 5)
+			end
+		end
+	end
+
+	if AP.FIRST_SECRET_SHOP_LOCATION_ID <= location_id and location_id <= AP.LAST_SECRET_SHOP_LOCATION_ID then
+		return rangeTable(AP.FIRST_SECRET_SHOP_LOCATION_ID, 4)
+	end
+
+	return {}
+end
+
+function ShopItems.get_ap_item_from_entity(entity_id)
+	local component = get_variable_storage_component(entity_id, "ap_shop_data")
+	assert(component and component ~= 0, "unable to retrieve ap_shop_data")
+	local data_str = ComponentGetValue2(component, "value_string")
+	return JSON:decode(decodeXML(data_str)), data_str
+end
 
 return ShopItems
