@@ -1,6 +1,7 @@
-dofile( "data/scripts/game_helpers.lua" )
+dofile_once( "data/scripts/game_helpers.lua" )
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/lib/mod_settings.lua")
+local Log = dofile( "data/archipelago/scripts/logger.lua" )
 
 local entity_id = GetUpdatedEntityID()
 
@@ -10,6 +11,10 @@ local orb_id = tonumber(GlobalsGetValue("ap_orb_id"))
 
 if orb_id == nil then
 	orb_id = 53
+end
+
+if not orbcomp or #orbcomp == 0 then
+	Log.Error("orb component not found in ap_orb_init_randomizer_spawned")
 end
 
 for _, comp_id in pairs(orbcomp or {}) do

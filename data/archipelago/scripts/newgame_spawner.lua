@@ -69,6 +69,7 @@ function APEggStartSpawn(item_counts)
 	EntityLoad("data/archipelago/entities/buildings/ap_start_portal.xml", worldOffsetX + 110, worldOffsetY + 354)
 	local returnPortal = EntityLoad("data/archipelago/entities/buildings/ap_start_portal.xml", 335, -200)
 	local returnComponent = EntityGetFirstComponent(returnPortal, "TeleportComponent")
-	ComponentSetValue2(returnComponent, "target", 0, -2320)
-
+	if returnComponent ~= nil then
+		ComponentSetValue2(returnComponent, "target", 0, -2320)
+	end
 end

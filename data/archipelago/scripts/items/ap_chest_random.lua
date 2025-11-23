@@ -9,7 +9,7 @@ dofile_once("data/archipelago/scripts/item_utils.lua")
 dofile_once("data/scripts/items/chest_random.lua")
 
 
-function on_open(entity_item)
+local function on_open(entity_item)
 	local biome_comp_id = EntityGetFirstComponent(entity_item, "VariableStorageComponent")
 	if biome_comp_id == nil then
 		Log.Error("ap_chest_random missing VariableStorageComponent")

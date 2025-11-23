@@ -40,4 +40,5 @@ ModLuaFileAppend("data/scripts/biomes/tower.lua", "data/archipelago/scripts/patc
 
 ModLuaFileAppend("data/scripts/buildings/forge_item_convert.lua", "data/archipelago/scripts/patches/extend_forge_item_convert.lua")
 
+-- ADDITIONAL SCRIPTS
 dofile_once("data/archipelago/scripts/patches/ap_extend_pixel_scenes.lua")

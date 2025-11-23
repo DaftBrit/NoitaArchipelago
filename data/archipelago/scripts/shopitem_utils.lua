@@ -74,6 +74,7 @@ function ShopItems.create_our_item_entity(item, x, y)
 		-- TODO
 		EntityLoad("data/archipelago/entities/items/pickup/ap_error_book.xml", x, y)
 		Log.Error("Failed to load our own shopitem!")
+		return nil
 	end
 end
 

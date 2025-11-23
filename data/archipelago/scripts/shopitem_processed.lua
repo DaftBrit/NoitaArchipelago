@@ -11,6 +11,7 @@ end
 
 local function get_transferred_values(entity_id)
 	local component = get_variable_storage_component(entity_id, "ap_shop_data")
+	assert(component and component ~= 0, "Failed in shopitem_processed - unable to retrieve ap_shop_data")
 	local data_str = ComponentGetValue2(component, "value_string")
 	return JSON:decode(decodeXML(data_str))
 end
@@ -51,7 +52,7 @@ function init(entity_id)
 	EntityAddComponent2(entity_id, "SpriteComponent", { 
 		_tags="shop_cost,enabled_in_world",
 		image_file="data/fonts/font_pixel_white.xml",
-		is_text_sprite=true, 
+		is_text_sprite=true,
 		offset_x=get_cost_x_offset(data.price),
 		offset_y=20,
 		update_transform=true,
