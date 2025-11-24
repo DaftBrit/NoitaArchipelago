@@ -3,8 +3,8 @@ dofile_once("data/archipelago/scripts/ap_utils.lua")
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
 
-local worldOffsetX = -250
-local worldOffsetY = -2500
+local worldOffsetX = -16384
+local worldOffsetY = 13824
 local itemZones =  {
 	[AP.FIRST_WAND_ITEM_ID] = { x = 70, y = 306, w = 110 }, -- Wands 1-6
 	[AP.FIRST_WAND_ITEM_ID + 1] = { x = 300, y = 306, w = 100 },
@@ -76,12 +76,10 @@ function APEggStartSpawn(item_counts)
 
 	end
 
-	EntityLoad("data/archipelago/entities/buildings/ap_fog_holepuncher.xml", worldOffsetX + 256, worldOffsetY + 256)
+	EntityLoad("data/archipelago/entities/buildings/ap_fog_holepuncher.xml", worldOffsetX + 245, worldOffsetY + 256)
 
-	local lightSource = EntityLoad("data/entities/props/physics_skateboard.xml", worldOffsetX + 235, worldOffsetY + 240)
-	EntityAddTag(lightSource, "prop")
-	EntityAddComponent2(lightSource, "LightComponent", {radius = 900, r = 100, g = 100, b = 255, blinking_freq = 1 })
+	EntityLoad("data/entities/props/physics_skateboard.xml", worldOffsetX + 235, worldOffsetY + 240)
 
 	CreateRedPortal(worldOffsetX + 110, worldOffsetY + 354, 275, -140, "$ap_portal_from_egg")
-	CreateRedPortal(275, -175, 0, -2320, "$ap_portal_to_egg")
+	CreateRedPortal(275, -175, worldOffsetX + 256, worldOffsetY + 220, "$ap_portal_to_egg")
 end
