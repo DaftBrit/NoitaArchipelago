@@ -24,6 +24,20 @@ local itemZones =  {
 	[AP.BROKEN_WAND_ITEM_ID] = { x = 343, y = 387, w = 23 },
 }
 
+local function CreateRedPortal(x, y, target_x, target_y, name)
+	local portal = EntityLoad("data/archipelago/entities/buildings/ap_start_portal.xml", x, y)
+
+	local teleComponent = EntityGetFirstComponent(portal, "TeleportComponent")
+	if teleComponent ~= nil then
+		ComponentSetValue2(teleComponent, "target", target_x, target_y)
+	end
+
+	local uiComponent = EntityGetFirstComponent(portal, "UIInfoComponent")
+	if uiComponent ~= nil then
+		ComponentSetValue2(uiComponent, "name", name)
+	end
+end
+
 function APEggStartSpawn(item_counts)
 
 	for item, quantity in pairs(item_counts) do
@@ -62,14 +76,12 @@ function APEggStartSpawn(item_counts)
 
 	end
 
+	EntityLoad("data/archipelago/entities/buildings/ap_fog_holepuncher.xml", worldOffsetX + 256, worldOffsetY + 256)
+
 	local lightSource = EntityLoad("data/entities/props/physics_skateboard.xml", worldOffsetX + 235, worldOffsetY + 240)
 	EntityAddTag(lightSource, "prop")
 	EntityAddComponent2(lightSource, "LightComponent", {radius = 900, r = 100, g = 100, b = 255, blinking_freq = 1 })
 
-	EntityLoad("data/archipelago/entities/buildings/ap_start_portal.xml", worldOffsetX + 110, worldOffsetY + 354)
-	local returnPortal = EntityLoad("data/archipelago/entities/buildings/ap_start_portal.xml", 335, -200)
-	local returnComponent = EntityGetFirstComponent(returnPortal, "TeleportComponent")
-	if returnComponent ~= nil then
-		ComponentSetValue2(returnComponent, "target", 0, -2320)
-	end
+	CreateRedPortal(worldOffsetX + 110, worldOffsetY + 354, 275, -140, "$ap_portal_from_egg")
+	CreateRedPortal(275, -175, 0, -2320, "$ap_portal_to_egg")
 end
