@@ -617,7 +617,7 @@ local function UpdatePlayerPoptrackerPosition()
 		old_x = x
 		old_y = y
 
-		local key = "Noita_position_" .. ap:get_slot()
+		local key = "Noita_position_" .. current_player_slot
 		local pos = { x = x, y = y }
 		ap:Set(key, pos, false, { {operation = "replace", value = pos} })
 	end
