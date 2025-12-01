@@ -78,7 +78,13 @@ local translations = {
 		en="Game Settings"
 	},
 	["$ap_menu_game_settings_desc"] = {
-		en="Game-specific settings for the Archipelago mod "
+		en="Game-specific settings for the Archipelago mod."
+	},
+	["$ap_log_limit_settings_name"] = {
+		en="Log Limit"
+	},
+	["$ap_log_limit_settings_desc"] = {
+		en="Maximum number of log lines to store and render in the log window."
 	},
 }
 
@@ -106,8 +112,8 @@ GuiTextInput = function(gui, id, x, y, text, width, max_length, allowed_characte
 end
 
 local mod_id = "archipelago" -- This should match the name of your mod's folder.
-mod_settings_version = 1 -- This is a magic global that can be used to migrate settings to new mod versions. call mod_settings_get_version() before mod_settings_update() to get the old value. 
-local mod_settings = 
+mod_settings_version = 1 -- This is a magic global that can be used to migrate settings to new mod versions. call mod_settings_get_version() before mod_settings_update() to get the old value.
+local mod_settings =
 {
 	{
 		image_filename = "mods/archipelago/data/archipelago/logo.png",
@@ -184,6 +190,16 @@ local mod_settings =
 					{"porb", "Porb"}
 				},
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
+			},
+			{
+				id = "log_limit",
+				ui_name = translate("$ap_log_limit_settings_name"),
+				ui_description = translate("$ap_log_limit_settings_desc"),
+				value_default = 1000,
+				value_min = 100,
+				value_max = 5000,
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
+
 			},
 			{
 				id = "debug_items",

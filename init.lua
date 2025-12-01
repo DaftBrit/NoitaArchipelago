@@ -32,6 +32,7 @@ local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 local Cache = dofile("data/archipelago/scripts/caches.lua")
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
+local LogWindow = dofile("data/archipelago/ui/log_window.lua")
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
@@ -409,8 +410,10 @@ function RECV_MSG.PrintJSON(msg, extra)
 		end
 	end
 
-	GamePrint(msg_str)
 	Log.Info(msg_str)
+	Log.Info(JSON:encode(msg))
+	GamePrint(msg_str)
+	LogWindow:addLogMessage(msg)
 end
 
 
@@ -605,8 +608,17 @@ local function connect()
 	ap:set_location_checked_handler(on_location_checked)
 	ap:set_print_json_handler(on_print_json)
 	ap:set_bounced_handler(on_bounced)
+
+	LogWindow:create(ap)
 end
 
+local function UpdateUI()
+	ConnIcon:update()
+	if ConnIcon:pressed() then
+		LogWindow:toggle()
+	end
+	LogWindow:update()
+end
 
 ----------------------------------------------------------------------------------------------------
 -- NOITA CALLBACKS
@@ -641,7 +653,7 @@ end
 -- Called every update frame in Noita
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
-	ConnIcon:update()
+	UpdateUI()
 
 	if is_player_spawned then
 		ap:poll()
@@ -665,11 +677,13 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 		SetDeathLinkEnabled(false)
 		death_link_status = false
 	end
+
+	LogWindow:close()
 end
 
 -- Called while the game is paused
 function OnPausePreUpdate()
-	ConnIcon:update()
+	UpdateUI()
 
 	-- Stay connected while the game is paused
 	if is_player_spawned then
