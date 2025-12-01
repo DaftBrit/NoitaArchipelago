@@ -1,4 +1,4 @@
 Using the following build:
 
-  lua51-clang32-dynamic
-  v0.26.6-10
+  lua51-51-vs2022-win32-dynamic
+  v0.4.9+2
