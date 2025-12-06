@@ -2,6 +2,8 @@
 -- redeliverable means it will be delivered in async
 -- newgame means it will be delivered on new game
 return {
+	[20000] = { redeliverable = true, newgame = true }, -- progressive portal
+
 	[110000] = {},	-- Trap
 
 	[110001] = { items = { "data/entities/items/pickup/heart.xml" }, redeliverable = true, newgame = true },

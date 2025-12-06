@@ -6,6 +6,7 @@ return {
 	Seed = Global("ARCHIPELAGO_SEED"),
 	FirstLoadDone = Global("ARCHIPELAGO_FIRST_LOAD_DONE"),
 	PlayerSlot = Global("ARCHIPELAGO_PLAYER_SLOT"),
+	HMPortalsUnlocked = Global("ARCHIPELAGO_PORTALS_UNLOCKED"),
 
 	LocationScouts = GlobalComplex("AP_LOCATIONSCOUTS_DATA"),
 	MissingLocationsSet = GlobalComplex("AP_MISSING_LOCATIONS"),
