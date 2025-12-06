@@ -210,42 +210,45 @@ function add_money(amt)
 end
 
 
--- from the wiki
+-- altered from the wiki
 function addNewInternalVariable(entity_id, variable_name, variable_type, initial_value)
 	if(variable_type == "value_int") then
-		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+		return EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			_tags="enabled_in_world,enabled_in_hand,enabled_in_inventory",
 			name=variable_name,
 			value_int=initial_value
 		})
 	elseif(variable_type == "value_string") then
-		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+		return EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			_tags="enabled_in_world,enabled_in_hand,enabled_in_inventory",
 			name=variable_name,
 			value_string=initial_value
 		})
 	elseif(variable_type == "value_float") then
-		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+		return EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			_tags="enabled_in_world,enabled_in_hand,enabled_in_inventory",
 			name=variable_name,
 			value_float=initial_value
 		})
 	elseif(variable_type == "value_bool") then
-		EntityAddComponent2(entity_id, "VariableStorageComponent", {
+		return EntityAddComponent2(entity_id, "VariableStorageComponent", {
+			_tags="enabled_in_world,enabled_in_hand,enabled_in_inventory",
 			name=variable_name,
 			value_bool=initial_value
 		})
 	end
+	return nil
 end
 
 
 -- from the wiki
 function getInternalVariableValue(entity_id, variable_name, variable_type)
 	local value = nil
-	local components = EntityGetComponent( entity_id, "VariableStorageComponent" )
-	if ( components ~= nil ) then
-		for _, comp_id in pairs(components) do
-			local var_name = ComponentGetValue2( comp_id, "name" )
-			if(var_name == variable_name) then
-				value = ComponentGetValue2(comp_id, variable_type)
-			end
+	local components = EntityGetComponent(entity_id, "VariableStorageComponent")
+	for _, comp_id in ipairs(components or {}) do
+		local var_name = ComponentGetValue2(comp_id, "name")
+		if var_name == variable_name then
+			value = ComponentGetValue2(comp_id, variable_type)
 		end
 	end
 	return value
