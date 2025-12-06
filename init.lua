@@ -597,6 +597,32 @@ end
 -- NOITA CALLBACKS
 ----------------------------------------------------------------------------------------------------
 
+local slow_position_update_timer = 0
+local old_x = 0
+local old_y = 0
+local function UpdatePlayerPoptrackerPosition()
+	local player = get_player()
+	if not player or player == 0 then return end
+
+	slow_position_update_timer = slow_position_update_timer + 1
+	if slow_position_update_timer < 60 * 10 then return end	-- 10 seconds
+
+	-- Use x/y chunk to reduce traffic
+	local x, y = EntityGetTransform(player)
+	x = math.floor(x / 512)
+	y = math.floor(y / 512)
+
+	if x ~= old_x or y ~= old_y then
+		slow_position_update_timer = 0	-- only reset the timer if we're sending a packet
+		old_x = x
+		old_y = y
+
+		local key = "Noita_position_" .. current_player_slot
+		local pos = { x = x, y = y }
+		ap:Set(key, pos, false, { {operation = "replace", value = pos} })
+	end
+end
+
 -- Called every update frame in Noita
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
@@ -605,6 +631,7 @@ function OnWorldPostUpdate()
 	if is_player_spawned then
 		ap:poll()
 		CheckGlobalsAndFlags()
+		UpdatePlayerPoptrackerPosition()
 	end
 end
 
@@ -631,7 +658,7 @@ end
 function OnPlayerDied(player)
 	if slot_options == nil or IsDeathLinkEnabled() == 0 or game_is_paused or not UpdateDeathTime() then return end
 	local death_msg = GetCauseOfDeath() or "skill issue"
-	local slotname = ModSettingGet("archipelago.slot_name")
+	local slotname = ap:get_slot()
 	ap:Bounce({
 		time = last_death_time,
 		cause = slotname .. " died to " .. death_msg,
