@@ -61,7 +61,7 @@ local function APPedestalReplacer()
 						sprite_file="data/archipelago/entities/items/icon-useful.png",
 						lifetime=6,
 						velocity_slowdown=5,
-						velocity_always_away_from_center=1,
+						velocity_always_away_from_center=true,
 						count_min=1,
 						count_max=1,
 						emission_interval_min_frames=60,
