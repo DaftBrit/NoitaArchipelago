@@ -83,7 +83,9 @@ local function translate(msg)
 end
 
 -- Global override to create clear field buttons (pretty much just a hack)
-OldGuiTextInput = GuiTextInput
+if OldGuiTextInput == nil then -- required for noita_dev.exe to work
+	OldGuiTextInput = GuiTextInput
+end
 GuiTextInput = function(gui, id, x, y, text, width, max_length, allowed_characters)
 	GuiOptionsAdd(gui, GUI_OPTION.Layout_InsertOutsideRight)
 	GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 0.5)
