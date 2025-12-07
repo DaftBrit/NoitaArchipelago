@@ -76,10 +76,6 @@ function APEggStartSpawn(item_counts)
 
 	end
 
-	EntityLoad("data/archipelago/entities/buildings/ap_fog_holepuncher.xml", worldOffsetX + 245, worldOffsetY + 256)
-
-	EntityLoad("data/entities/props/physics_skateboard.xml", worldOffsetX + 235, worldOffsetY + 240)
-
 	CreateRedPortal(worldOffsetX + 110, worldOffsetY + 354, 275, -140, "$ap_portal_from_egg")
 	CreateRedPortal(275, -175, worldOffsetX + 256, worldOffsetY + 220, "$ap_portal_to_egg")
 end
