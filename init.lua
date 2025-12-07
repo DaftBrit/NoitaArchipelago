@@ -107,12 +107,6 @@ local function CheckVictoryConditionFor(flag, msg)
 		Log.Info(msg)
 		ap:StatusUpdate(30)	-- ClientStatus.CLIENT_GOAL
 		GameRemoveFlagRun(flag)
-		if ModSettingGet("archipelago.auto_release") then
-			ap:Say("!release")
-		end
-		if ModSettingGet("archipelago.auto_collect") then
-			ap:Say("!collect")
-		end
 	end
 end
 
@@ -500,6 +494,24 @@ local function CheckLocationFlags()
 	end
 end
 
+local function CheckCommandFlags()
+	if slot_options ~= nil then
+		if GameHasFlagRun("ap_collect_items_used") then
+			Log.Info("AP: Collecting items...")
+			ap:say("!collect")
+		end
+
+		if GameHasFlagRun("ap_release_items_used") then
+			Log.Info("AP: Releasing items...")
+			ap:say("!release")
+		end
+	end
+
+	-- Always remove the flags to avoid edge cases where we weren't connected and a flag gets checked in the future
+	GameRemoveFlagRun("ap_collect_items_used")
+	GameRemoveFlagRun("ap_release_items_used")
+end
+
 -- Checks data toggled by external lua scripts that init.lua doesn't have access to
 local function CheckGlobalsAndFlags()
 	if slot_options ~= nil then
@@ -507,6 +519,9 @@ local function CheckGlobalsAndFlags()
 		CheckComponentItemsUnlocked()
 		CheckLocationFlags()
 	end
+
+	-- has logic to check slot_options
+	CheckCommandFlags()
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -577,7 +592,7 @@ local function connect()
 		RECV_MSG.Bounced(bounce)
 	end
 
-	ap = APLIB(uuid, GAME_NAME, host .. ":" .. port);
+	ap = APLIB(uuid, GAME_NAME, host .. ":" .. port)
 
 	ap:set_socket_connected_handler(on_socket_connected)
 	ap:set_socket_error_handler(on_socket_error)
@@ -652,6 +667,17 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	end
 end
 
+-- Called while the game is paused
+function OnPausePreUpdate()
+	ConnIcon:update()
+
+	-- Stay connected while the game is paused
+	if is_player_spawned then
+		ap:poll()
+	end
+
+	CheckCommandFlags()
+end
 
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied

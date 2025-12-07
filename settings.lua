@@ -44,18 +44,6 @@ local translations = {
 	["$ap_menu_server_settings_password_desc"] = {
 		en="Password"
 	},
-	["$ap_menu_server_settings_auto_release_name"] = {
-		en="Auto-Release"
-	},
-	["$ap_menu_server_settings_auto_release_desc"] = {
-		en="Automatically releases your remaining checks from your game when you complete your goal."
-	},
-	["$ap_menu_server_settings_auto_collect_name"] = {
-		en="Auto-Collect"
-	},
-	["$ap_menu_server_settings_auto_collect_desc"] = {
-		en="Automatically collects your remaining items from other games when you complete your goal."
-	},
 	["$ap_menu_server_settings_debug_items_name"] = {
 		en="Debug Items"
 	},
@@ -73,7 +61,25 @@ local translations = {
 	},
 	["$ap_death_link_settings_desc"] = {
 		en="When set to On, the death link setting in your Archipelago YAML will be used.\nWhen set to Off, this will override your YAML and disable death link.\nWhen set to Traps, it will act as On if death link was enabled in your YAML,\nexcept it will trigger a random trap effect when a death link is received.\nBoth On and Traps will still send death links when you die."
-	}
+	},
+	["$ap_collect_items"] = {
+		en="> Collect Items"
+	},
+	["$ap_collect_items_tooltip"] = {
+		en="Grants you all the remaining items for your world by collecting them from all games."
+	},
+	["$ap_release_items"] = {
+		en="> Release Items"
+	},
+	["$ap_release_items_tooltip"] = {
+		en="Releases all items contained in your world to other worlds."
+	},
+	["$ap_menu_game_settings_name"] = {
+		en="Game Settings"
+	},
+	["$ap_menu_game_settings_desc"] = {
+		en="Game-specific settings for the Archipelago mod "
+	},
 }
 
 local function translate(msg)
@@ -108,7 +114,7 @@ local mod_settings =
 		ui_fn = mod_setting_image,
 	},
 	{
-		category_id = "group_of_settings",
+		category_id = "ap_server_settings",
 		ui_name = translate("$ap_menu_server_settings_name"),
 		ui_description = translate("$ap_menu_server_settings_desc"),
 		settings = {
@@ -148,20 +154,6 @@ local mod_settings =
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
-				id = "auto_release",
-				ui_name = translate("$ap_menu_server_settings_auto_release_name"),
-				ui_description = translate("$ap_menu_server_settings_auto_release_desc"),
-				value_default = false,
-				scope = MOD_SETTING_SCOPE_RUNTIME,
-			},
-			{
-				id = "auto_collect",
-				ui_name = translate("$ap_menu_server_settings_auto_collect_name"),
-				ui_description = translate("$ap_menu_server_settings_auto_collect_desc"),
-				value_default = false,
-				scope = MOD_SETTING_SCOPE_RUNTIME,
-			},
-			{
 				id = "death_link",
 				ui_name = translate("$ap_death_link_settings_name"),
 				ui_description = translate("$ap_death_link_settings_desc"),
@@ -173,6 +165,13 @@ local mod_settings =
 				},
 				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},
+		},
+	},
+	{
+		category_id = "ap_game_settings",
+		ui_name = translate("$ap_menu_game_settings_name"),
+		ui_description = translate("$ap_menu_game_settings_desc"),
+		settings = {
 			{
 				id = "orb_art",
 				ui_name = translate("$ap_orb_art_settings_name"),
@@ -216,10 +215,32 @@ end
 -- At the moment it is fine to simply return 0 or 1 in a custom implementation, but we don't guarantee that will be the case in the future.
 -- This function is called every frame when in the settings menu.
 function ModSettingsGuiCount()
-	return mod_settings_gui_count( mod_id, mod_settings )
+	return mod_settings_gui_count( mod_id, mod_settings ) + 2 -- Add our 2 buttons
+end
+
+local function APOptionButton(gui, name, disabled)
+	GuiIdPushString(gui, name)
+
+	if disabled then
+		GuiOptionsAddForNextWidget(gui, GUI_OPTION.Disabled)
+	end
+
+	local result = GuiButton(gui, 1, 0, 0, translate(name))
+	GuiTooltip(gui, translate(name .. "_tooltip"), "")
+
+	GuiIdPop(gui)
+	return result and not disabled
 end
 
 -- This function is called to display the settings UI for this mod. Your mod's settings wont be visible in the mod settings menu if this function isn't defined correctly.
 function ModSettingsGui( gui, in_main_menu )
 	mod_settings_gui( mod_id, mod_settings, gui, in_main_menu )
+
+	if APOptionButton(gui, "$ap_collect_items", in_main_menu) then
+		GameAddFlagRun("ap_collect_items_used")
+	end
+
+	if APOptionButton(gui, "$ap_release_items", in_main_menu) then
+		GameAddFlagRun("ap_release_items_used")
+	end
 end
