@@ -1,8 +1,7 @@
 <PixelScenes>
 	<mBufferedPixelScenes>
 
-		<PixelScene clean_area_before="0" DEBUG_RELOAD_ME="0" background_filename="data/archipelago/biome_impl/ap_egg_background.png" colors_filename="" material_filename="data/archipelago/biome_impl/ap_egg.png" pos_x="-250" pos_y="-2500" skip_biome_checks="1" >
-		</PixelScene>
+		<PixelScene clean_area_before="0" DEBUG_RELOAD_ME="0" background_filename="data/archipelago/biome_impl/ap_egg_background.png" colors_filename="" material_filename="data/archipelago/biome_impl/ap_egg.png" pos_x="-16384" pos_y="13824" skip_biome_checks="1" />
 
 	</mBufferedPixelScenes>
 </PixelScenes>
