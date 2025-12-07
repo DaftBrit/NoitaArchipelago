@@ -1,5 +1,6 @@
 -- Script run when shop item is picked up
 dofile_once("data/scripts/lib/utilities.lua")
+dofile_once("data/archipelago/scripts/ap_utils.lua")
 local JSON = dofile("data/archipelago/lib/json.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 
@@ -74,6 +75,7 @@ function init(entity_id)
 
 	-- https://noita.wiki.gg/wiki/Documentation:_LuaComponent
 	EntityAddComponent2(entity_id, "LuaComponent", {
+		_tags="shop_cost",
 		script_item_picked_up="data/scripts/items/shop_effect.lua"
 	})
 
@@ -86,11 +88,20 @@ end
 
 -- Called when the entity is picked up
 function item_pickup(entity_item, entity_who_picked, name)
+	-- Guard against Fair Mod bullshit and hope there isn't a layered cake of more bullshit
+	if not IsPlayer(entity_who_picked) then return end
+
 	local data = get_transferred_values(entity_item)
-	local component_id = get_variable_storage_component(entity_item, "ap_shop_data")
-	if component_id ~= nil then
-		EntityRemoveComponent(entity_item, component_id)
-	end
+
+	-- Queue location for unlock
 	GameAddFlagRun("ap" .. data.location_id)
 	Globals.LocationUnlockQueue:append(data.location_id)
+
+	-- Remove archipelago components
+	local components = EntityGetAllComponents(entity_item)
+	for _, comp in ipairs(components) do
+		if ComponentHasTag(comp, "archipelago") then
+			EntityRemoveComponent(entity_item, comp)
+		end
+	end
 end

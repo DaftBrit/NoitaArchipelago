@@ -58,6 +58,7 @@ local function APPedestalReplacer()
 					ap_pedestal_id = create_our_item_entity(item, x, y)
 					-- this gives the pedestal items that ap logo particle effect so you can tell it's your item
 					local particle_comp = EntityAddComponent2(ap_pedestal_id, "SpriteParticleEmitterComponent", {
+						_tags="archipelago,enabled_in_world",
 						sprite_file="data/archipelago/entities/items/icon-useful.png",
 						lifetime=6,
 						velocity_slowdown=5,
@@ -76,9 +77,14 @@ local function APPedestalReplacer()
 				else
 					ap_pedestal_id = create_foreign_item_entity(location, x, y)
 				end
-				addNewInternalVariable(ap_pedestal_id, "ap_location_id", "value_int", i)
+
+				local location_var = addNewInternalVariable(ap_pedestal_id, "ap_location_id", "value_int", i)
+				if location_var ~= nil then
+					ComponentAddTag(location_var, "archipelago")
+				end
+
 				EntityAddComponent2(ap_pedestal_id, "LuaComponent", {
-					_tags="archipelago",
+					_tags="archipelago,enabled_in_world",
 					script_item_picked_up="data/archipelago/scripts/items/ap_pedestal_processed.lua",
 				})
 				if replaced_pedestal == "trapwand" then

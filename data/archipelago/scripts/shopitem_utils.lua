@@ -37,7 +37,11 @@ function ShopItems.generate_item_price(biomeid, cheap_item)
 end -- generate_item_price
 
 
--- Spawn in an item or perk entity for the shop
+--- Spawn in an item or perk entity for the shop
+---@param item table
+---@param x integer
+---@param y integer
+---@return entity_id|nil
 function ShopItems.create_our_item_entity(item, x, y)
 	print("shop item create entity start")
 	if item.perk ~= nil then
@@ -135,7 +139,7 @@ function ShopItems.generate_ap_shop_item(location_id, biomeid, x, y, cheap_item)
 	})
 
 	EntityAddComponent2(entity_id, "LuaComponent", {
-		_tags="archipelago",
+		_tags="archipelago,enabled_in_world",
 		script_source_file="data/archipelago/scripts/shopitem_processed.lua",
 		execute_on_added=true,
 		execute_every_n_frame=-1,
