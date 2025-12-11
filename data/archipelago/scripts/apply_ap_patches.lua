@@ -1,3 +1,4 @@
+local Img = dofile("data/archipelago/lib/image_util.lua") ---@type ImageUtil
 
 -- TRANSLATIONS
 local TRANSLATIONS_FILE = "data/translations/common.csv"
@@ -39,6 +40,9 @@ ModLuaFileAppend("data/scripts/biomes/coalmine.lua", "data/archipelago/scripts/p
 ModLuaFileAppend("data/scripts/biomes/tower.lua", "data/archipelago/scripts/patches/ap_extend_tower_enemies.lua")
 
 ModLuaFileAppend("data/scripts/buildings/forge_item_convert.lua", "data/archipelago/scripts/patches/extend_forge_item_convert.lua")
+
+-- IMAGE MODIFICATIONS
+Img.OverwriteBiomeImplPartial("data/biome_impl/temple/altar_left", "data/archipelago/biome_impl/ap_altar_left")
 
 -- ADDITIONAL SCRIPTS
 dofile_once("data/archipelago/scripts/patches/ap_extend_pixel_scenes.lua")
