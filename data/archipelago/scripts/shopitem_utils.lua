@@ -47,7 +47,6 @@ function ShopItems.create_our_item_entity(item, x, y)
 	if item.perk ~= nil then
 		local perk_id = perk_spawn(x, y, item.perk, true)
 		if perk_id ~= nil then
-			EntityRemoveTag(perk_id, "perk")
 			EntityAddTag(perk_id, "ap_item")
 		end
 		return perk_id
