@@ -22,6 +22,18 @@ function get_player()
 	return EntityGetWithTag("player_unit")[1]
 end
 
+-- Should always succeed
+function get_spawn_position()
+	local x, y = 0, 0
+	local player_entity = EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
+	if player_entity ~= nil then
+		x, y = EntityGetTransform(player_entity)
+	else
+		x, y = GameGetCameraPos()
+	end
+	return x, y
+end
+
 
 function random_offset(x, y)
 	if x == nil then x = 0 end
@@ -47,7 +59,7 @@ end
 function spawn_potion(potion, x, y)
 	-- if a position is not called, spawn it at the player
 	if x == nil or y == nil then
-		x, y = EntityGetTransform(get_player())
+		x, y = get_spawn_position()
 	end
 
 	local potion_entity = EntityLoad(potion, random_offset(x, y))
@@ -69,7 +81,7 @@ end
 
 
 function add_items_to_inventory(items)
-	local player = get_players()[1]
+	local player = get_player()
 	for _, path in ipairs(items) do
 		local item = EntityLoad(path)
 		if item then
@@ -383,11 +395,25 @@ function remove_collected_item(location_id)
 end
 
 
+function shoot_projectile_ownerless(entity_file, x, y, vel_x, vel_y)
+	local entity_id = EntityLoad( entity_file, x, y )
+	local null_owner = 0
+
+	---@cast null_owner -integer, +entity_id
+	GameShootProjectile(null_owner, x, y, x+vel_x, y+vel_y, entity_id)
+
+	local velocity_comp = EntityGetFirstComponent(entity_id, "VelocityComponent")
+	if velocity_comp ~= nil then
+		ComponentSetValue2(velocity_comp, "mVelocity", vel_x, vel_y)
+	end
+	return entity_id
+end
+
+
 function countdown_fun()
-	local player_id = get_player()
-	local x, y = EntityGetTransform(player_id)
+	local x, y = get_spawn_position()
 	for i = 0, 1 do
-		local projectile_id = shoot_projectile(player_id, "data/entities/projectiles/deck/bullet.xml", x - 5 + 10 * i, y, -400 + 800 * i, -400)
+		local projectile_id = shoot_projectile_ownerless("data/entities/projectiles/deck/bullet.xml", x - 5 + 10 * i, y, -400 + 800 * i, -400)
 		EntityAddComponent2(projectile_id, "ParticleEmitterComponent", {
 			emitted_material_name="material_rainbow",
 			emit_real_particles=true,
