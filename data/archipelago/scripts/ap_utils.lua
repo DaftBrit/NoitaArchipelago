@@ -354,7 +354,12 @@ end
 
 function create_our_item_entity(item, x, y)
 		if item.perk ~= nil then
-			return perk_spawn(x, y, item.perk, true)
+			local perk_id = perk_spawn(x, y, item.perk, true)
+			if perk_id ~= nil then
+				EntityRemoveTag(perk_id, "perk")
+				EntityAddTag(perk_id, "ap_item")
+			end
+			return perk_id
 		elseif item.items ~= nil and #item.items > 0 then
 			-- our item is something else (random choice)
 			local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
