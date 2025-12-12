@@ -11,6 +11,7 @@ ModMagicNumbersFileAdd("data/archipelago/magic_numbers.xml")
 
 --LIBS
 local APLIB = require("mods.archipelago.bin.lua-apclientpp")
+local gifting = dofile("data/archipelago/lib/gifting_api/init.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua")
 
 local JSON = dofile("data/archipelago/lib/json.lua")
@@ -32,6 +33,8 @@ local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua")
 local Cache = dofile("data/archipelago/scripts/caches.lua")
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
+local GiftWindow = dofile("data/archipelago/ui/gift_sendbox.lua")
+local GiftMailbox = dofile("data/archipelago/ui/gift_mailbox.lua")
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
@@ -560,6 +563,7 @@ local function connect()
 		Log.Info("on_slot_connected: " .. JSON:encode(slot_data))
 		slot_options = slot_data
 		RECV_MSG.Connected()
+		gifting:open_giftbox(true, {}) -- TODO define desired traits
 	end
 
 	local function on_slot_refused(reasons)
@@ -592,7 +596,18 @@ local function connect()
 		RECV_MSG.Bounced(bounce)
 	end
 
+	local function on_gift_notification()
+		Log.Info("on_gift_notification")
+	end
+
+	local function on_gift_received(gift)
+		Log.Info("on_gift_received: " .. JSON:encode(gift))
+	end
+
 	ap = APLIB(uuid, GAME_NAME, host .. ":" .. port)
+	gifting:init(ap)
+	gifting:set_gift_notification_handler(on_gift_notification)
+	gifting:set_gift_handler(on_gift_received)
 
 	ap:set_socket_connected_handler(on_socket_connected)
 	ap:set_socket_error_handler(on_socket_error)
@@ -642,6 +657,8 @@ end
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
 	ConnIcon:update()
+	GiftWindow:update()
+	GiftMailbox:update()
 
 	if is_player_spawned then
 		ap:poll()
@@ -701,7 +718,13 @@ function OnModInit()
 	connect()
 end
 
-function OnPlayerSpawned()
+function OnPlayerSpawned(player_entity)
 	is_player_spawned = true
 	GlobalsSetValue("ap_random_hax", "23")
+
+	GiftWindow:create(ap, gifting)
+	GiftMailbox:create(ap, gifting)
+
+	local x, y = EntityGetTransform(player_entity)
+	EntityLoad( "data/archipelago/entities/buildings/ap_gift_interface.xml", x, y)
 end

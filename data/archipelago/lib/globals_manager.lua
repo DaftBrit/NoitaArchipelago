@@ -30,4 +30,12 @@ function GlobalImpl:is_set()
 	return self:get() ~= ""
 end
 
+function GlobalImpl:toggle()
+	if self:is_set() then
+    self:reset()
+  else
+    self:set(1)
+  end
+end
+
 return GlobalImpl

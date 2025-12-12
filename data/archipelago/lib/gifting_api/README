@@ -1,0 +1,23 @@
+To use this API, you will need https://github.com/black-sliver/lua-apclientpp/
+Once the dll is imported, import this module's init.lua and run module:init, passing the ap module as its argument before calling any of the function of ap
+
+Implemented functions :
+
+* open_giftbox(any_gift, traits)
+* close_giftbox()
+- open and closes your giftbox with your preferences. open_giftbox also setup the listening to know when you receive new gifts
+
+
+* set_gift_notification_handler(function())
+- the given function triggers when a gift is received. It is just a notification, no argument is given to the function. nil is also a valid argument to remove your previous handler.
+
+* set_gift_handler(function(gift))
+- the given function is triggered when the API retrieves a gift from your giftbox. If the function is not set or returns false and the gift is not a refund, the gift if sent back to the sender.
+
+
+* start_gift_recovery(int)
+- asks the API to gather the given number of gifts from your giftbox. If the number is negative, the API will recover all the gifts. Note that this method returns nothings, gifts can only be seen with the gift handler. The use of this method to recover all gifts is advised when possible.
+- returns false if the giftbox was closed
+
+* send_gift(gift)
+- tries to add the given gift to the receiver, putting it back into your own giftbox if the receiver was not found, didn't have an opened gift_box or didn't allow the gift. The gift must at least contain Item.Name, Traits, and ReceiverName
