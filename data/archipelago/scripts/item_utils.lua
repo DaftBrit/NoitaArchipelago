@@ -3,6 +3,7 @@ dofile_once("data/archipelago/scripts/newgame_spawner.lua")
 
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua")
 
 -- Traps
@@ -55,6 +56,9 @@ function SpawnItem(item_id, traps)
 		BadTimes()
 		GlobalsSetValue("ap_random_hax", tostring(rand_x + 2))
 		Log.Info("Badtimes")
+	elseif item_id == AP.PROGRESSIVE_PORTAL_ITEM_ID then
+		Globals.HMPortalsUnlocked:set(Globals.HMPortalsUnlocked:get_num(0) + 1)
+		Log.Info("Progressive portal received")
 	elseif item.perk ~= nil then
 		give_perk(item.perk)
 		Log.Info("Perk spawned")

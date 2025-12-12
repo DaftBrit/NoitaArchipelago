@@ -50,4 +50,27 @@ return {
 	ITEM_FLAG_PROGRESSION = 1,
 	ITEM_FLAG_USEFUL = 2,
 	ITEM_FLAG_TRAP = 4,
+
+
+	-- Major update stuff
+
+	-- this is required 7 times or not at all per new slot option
+	PROGRESSIVE_PORTAL_ITEM_ID = 20000,
+
+	-- not sure how to do these yet
+	PROGRESSIVE_LEFT_PARALLEL_WORLD = 20001,
+	PROGRESSIVE_RIGHT_PARALLEL_WORLD = 20002,
+
+	-- Killsanity
+	-- TODO (185 enemies)
+
+	-- Spellsanity
+	SPELL_FIRST_ITEM_ID = 30000,
+	SPELL_LAST_ITEM_ID = 30421,
+
+	APOTHEOSIS_SPELL_FIRST_ITEM_ID = 31000,
+
+	-- Perksanity
+	UNLOCK_PERK_FIRST_ITEM_ID = 40000,
+	UNLOCK_PERK_LAST_ITEM_ID = 40105,
 }

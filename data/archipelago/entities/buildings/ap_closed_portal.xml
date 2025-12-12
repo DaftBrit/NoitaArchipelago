@@ -1,0 +1,80 @@
+<Entity>
+	<UIInfoComponent
+		_tags="locked_by_archipelago"
+		name="$ap_closed_portal"
+	/>
+
+	<LightComponent
+		_tags="locked_by_archipelago"
+		_enabled="1"
+		radius="128"
+		fade_out_time="1.5"
+		r="50"
+		g="80"
+		b="200"
+		offset_y="-16"
+	/>
+
+	<ParticleEmitterComponent
+		_tags="locked_by_archipelago"
+		emitted_material_name="spark_purple"
+		gravity.y="0.0"
+		lifetime_min="2"
+		lifetime_max="3"
+		x_vel_min="0"
+		x_vel_max="0"
+		y_vel_min="0"
+		y_vel_max="0"
+		count_min="8"
+		count_max="10"
+		render_on_grid="1"
+		fade_based_on_lifetime="0"
+		area_circle_radius.min="3"
+		area_circle_radius.max="6"
+		cosmetic_force_create="1"
+		collide_with_grid="0"
+		airflow_force="0.02"
+		airflow_time="0.4"
+		airflow_scale="0.02"
+		emission_interval_min_frames="4"
+		emission_interval_max_frames="5"
+		emit_cosmetic_particles="1"
+		velocity_always_away_from_center="4"
+		render_back="1"
+		is_emitting="1"
+	/>
+
+	<AudioLoopComponent
+		_tags="locked_by_archipelago"
+		file="data/audio/Desktop/misc.bank"
+		event_name="misc/teleport_loop"
+		calculate_material_lowpass="0"
+		auto_play="0"
+		auto_play_if_enabled="1"
+		play_on_component_enable="1"
+	/>
+
+	<SpriteComponent
+		_tags="locked_by_archipelago"
+		image_file="data/fonts/font_pixel_white.xml"
+		is_text_sprite="1"
+		alpha="0"
+		offset_x="0"
+		offset_y="0"
+		update_transform="1"
+		update_transform_rotation="0"
+		text="..."
+		z_index="-1"
+		has_special_scale="1"
+		special_scale_x="0.5"
+		special_scale_y="0.5"
+	 />
+
+	<LuaComponent
+		script_source_file="data/archipelago/entities/buildings/ap_closed_portal_text_update.lua"
+		execute_every_n_frame="3"
+		call_init_function="1"
+		execute_on_added="1"
+	/>
+
+</Entity>

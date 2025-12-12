@@ -42,3 +42,4 @@ ModLuaFileAppend("data/scripts/buildings/forge_item_convert.lua", "data/archipel
 
 -- ADDITIONAL SCRIPTS
 dofile_once("data/archipelago/scripts/patches/ap_extend_pixel_scenes.lua")
+dofile_once("data/archipelago/scripts/patches/ap_extend_portals.lua")

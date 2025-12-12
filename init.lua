@@ -341,6 +341,8 @@ function RECV_MSG.Connected()
 	GamePrint("$ap_connected_to_server")
 	ConnIcon:setConnected()
 
+	GameAddFlagRun("ap_connected_once")
+
 	-- need these elsewhere
 	if slot_options.victory_condition == 1 then
 		GameAddFlagRun("ap_pure_goal")
@@ -353,6 +355,9 @@ function RECV_MSG.Connected()
 	end
 	if slot_options.path_option == 4 then
 		GameAddFlagRun("ap_parallel_worlds")
+	end
+	if slot_options.lock_portals ~= nil then
+		GameAddFlagRun("ap_portals_locked")
 	end
 
 	current_player_slot = ap:get_player_number()
@@ -403,11 +408,15 @@ function RECV_MSG.ReceivedItems(items)
 			local item_id = item["item"]
 			-- when connected for the first time, you get receiveditems along with connected
 			-- but also, you want to give the player gold and stuff that got sent before spawning
-			if is_first_time_connected and not item_table[item_id].newgame and item_table[item_id].redeliverable then
+			if not item_table[item_id] then
+				Log.Error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
+			elseif is_first_time_connected and not item_table[item_id].newgame and item_table[item_id].redeliverable then
 				SpawnReceivedItem(item)
 			elseif not is_first_time_connected or GameHasFlagRun("ap_spawn_kill_saver") then
 				SpawnReceivedItem(item)
 			end
+
+
 		end
 	end
 
