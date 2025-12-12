@@ -25,7 +25,8 @@ local function ap_extend_temple_altar()
 	end
 
 
-	-- Gets the location id for the shop based on the y coordinate and number of AP items already placed (assuming max 5)
+	-- Gets the location id for the shop based on the y coordinate and number of AP items already placed (assuming max 5).
+	-- The last (6th) location is the spell refresh.
 	local function get_shop_location_id(x, y)
 		return AP.FIRST_SHOP_LOCATION_ID + (get_shop_num(y)-1) * 6 + num_ap_items
 	end

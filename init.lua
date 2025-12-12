@@ -27,6 +27,7 @@ dofile_once("data/archipelago/scripts/item_utils.lua")
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
+local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 -- Modules
 local Globals = dofile("data/archipelago/scripts/globals.lua")
@@ -156,6 +157,37 @@ local function CheckComponentItemsUnlocked()
 		ap:LocationChecks(locations)
 	end
 	Globals.LocationUnlockQueue:reset()
+end
+
+local function AlreadyHinted(location_id)
+	return Globals.ShopScouted:has_key(location_id)
+end
+
+-- TODO handle case where you send but lose connection and can't hint again
+-- Maybe just remove the cache and always send on a per-game basis
+local function CheckShopScouted()
+	local hint_queue = Globals.ShopScoutedQueue:get_table()
+	if #hint_queue > 0 then
+		for _, hint in ipairs(hint_queue) do
+			if AlreadyHinted(hint) then goto continue end
+
+			local shop_locations = ShopItems.get_related_shop_locations(hint)
+
+			local hints_sent = Globals.ShopScouted:get_table()
+			for _, location in ipairs(shop_locations) do
+				hints_sent[tostring(location)] = true
+			end
+
+			Log.Info("Sending request to reveal hints: \n" .. JSON:encode(shop_locations))
+
+			-- create_as_hint = 2  reveals the hint and prevents re-notifications
+			ap:LocationScouts(shop_locations, 2)
+			Globals.ShopScouted:set_table(hints_sent)
+
+			::continue::
+		end
+	end
+	Globals.ShopScoutedQueue:reset()
 end
 
 
@@ -461,6 +493,12 @@ end
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#LocationInfo
 -- This is the reply to the LocationScouts request
 function RECV_MSG.LocationInfo(items)
+	if not Cache.LocationInfo:is_empty() and #items <= 10 then
+		-- Don't replace our big item cache with shop hints (which breaks everything).
+		-- Just assume the second call with small item count was a hint and mark it as such.
+		return
+	end
+
 	Cache.LocationInfo:reset() -- this is a workaround, if this isn't here it throws an error at Cache.LocationInfo:write()
 	local cache = Cache.LocationInfo:reference()
 	-- Set global shop item names to share with the shop lua context
@@ -516,11 +554,18 @@ local function CheckCommandFlags()
 end
 
 -- Checks data toggled by external lua scripts that init.lua doesn't have access to
+local slow_check_timer = 0
 local function CheckGlobalsAndFlags()
 	if slot_options ~= nil then
 		CheckVictoryConditionFlag()
 		CheckComponentItemsUnlocked()
 		CheckLocationFlags()
+
+		slow_check_timer = slow_check_timer + 1
+		if slow_check_timer > 60 then
+			slow_check_timer = 0
+			CheckShopScouted()
+		end
 	end
 
 	-- has logic to check slot_options

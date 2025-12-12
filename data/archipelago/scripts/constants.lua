@@ -3,6 +3,7 @@ return {
 	TRAP_ID = 110000,
 
 	-- Location IDs
+	-- 5 items per shop followed by the spell refresh, 6 per Holy Mountain
 	FIRST_SHOP_LOCATION_ID = 110000,
 	LAST_SHOP_LOCATION_ID = 110045,
 
