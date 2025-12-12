@@ -9,6 +9,8 @@ return {
 	FirstLoadDone = Global("ARCHIPELAGO_FIRST_LOAD_DONE"),
 	PlayerSlot = Global("ARCHIPELAGO_PLAYER_SLOT"),
 	HMPortalsUnlocked = Global("ARCHIPELAGO_PORTALS_UNLOCKED"),
+	GiftSendboxOpen = Global("ARCHIPELAGO_GIFT_SENDBOX_OPEN"),
+	GiftMailboxOpen = Global("ARCHIPELAGO_GIFT_MAILBOX_OPEN"),
 
 	LocationScouts = GlobalComplex("AP_LOCATIONSCOUTS_DATA"),
 	MissingLocationsSet = GlobalComplex("AP_MISSING_LOCATIONS"),
