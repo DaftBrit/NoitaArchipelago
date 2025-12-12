@@ -1,7 +1,5 @@
 local ConnIcon = {}
 
-local ID_BTN = 44470
-
 local STATE = {
 	DISCONNECTED = 0,
 	CONNECTING = 1,
@@ -36,24 +34,39 @@ function ConnIcon:create()
 	self:setConnecting()
 end
 
-function ConnIcon:update()
-	if self.gui == nil then return end
-
-	GuiStartFrame(self.gui)
-
+function ConnIcon:updateDimensions()
 	local screen_width, screen_height = GuiGetScreenDimensions(self.gui)
+
+	self.screen_width = screen_width
+	self.screen_height = screen_height
 
 	if not self.img_width or not self.img_height then
 		self.img_width, self.img_height = GuiGetImageDimensions(self.gui, self:img())
 	end
+end
 
-	local x = screen_width - self.img_width - 8
-	local y = screen_height - self.img_height - 8
-	GuiImageButton(self.gui, ID_BTN, x, y, "", self:img())
+function ConnIcon:drawMainButton()
+	GuiIdPushString(self.gui, "MAIN BTN")
+
+	local x = self.screen_width - self.img_width - 8
+	local y = self.screen_height - self.img_height - 8
+	local result = GuiImageButton(self.gui, 0, x, y, "", self:img())
 
 	-- Applies a tooltip to the button we just created
 	local message = self.msg_override or self:msg()
 	GuiTooltip(self.gui, message, "")
+
+	GuiIdPop(self.gui)
+	return result
+end
+
+function ConnIcon:update()
+	if self.gui == nil then return end
+	self:updateDimensions()
+
+	GuiStartFrame(self.gui)
+
+	self.button_pressed = self:drawMainButton()
 end
 
 function ConnIcon:setState(state, message)
@@ -71,6 +84,10 @@ end
 
 function ConnIcon:setConnecting()
 	self:setState(STATE.CONNECTING)
+end
+
+function ConnIcon:pressed()
+	return self.button_pressed
 end
 
 return ConnIcon
