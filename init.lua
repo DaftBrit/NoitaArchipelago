@@ -794,5 +794,6 @@ function OnPlayerSpawned(player_entity)
 	GiftMailbox:create(ap, gifting)
 
 	local x, y = EntityGetTransform(player_entity)
-	EntityLoad( "data/archipelago/entities/buildings/ap_gift_interface.xml", x, y)
+	EntityLoad( "data/archipelago/entities/buildings/ap_gift_interface.xml", x + 16, y + 80)
+	EntityLoad( "data/archipelago/entities/buildings/ap_mailbox_interface.xml", x - 32, y + 80)
 end

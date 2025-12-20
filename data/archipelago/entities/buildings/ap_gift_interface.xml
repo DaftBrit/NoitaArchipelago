@@ -12,6 +12,8 @@
 
 	<SpriteComponent
 		image_file="data/archipelago/ui/games/ap.png"
+		offset_y="16"
+		offset_x="8"
 	/>
 
   <!--ParticleEmitterComponent
