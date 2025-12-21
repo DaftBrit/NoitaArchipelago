@@ -31,7 +31,7 @@ return {
         end
         assert(type(traits) == "table")
 
-        self.ap:Get({"GiftBoxes;" .. self.ap:get_team_number()}, {
+        self.ap:Get({ "GiftBoxes;" .. self.ap:get_team_number() }, {
             id = self.id,
             action = "open_giftbox",
             any_gift = any_gift,
@@ -43,7 +43,7 @@ return {
         if not self.is_open then
             return
         end
-        self.ap:Get({"GiftBoxes;" .. self.ap:get_team_number()}, {
+        self.ap:Get({ "GiftBoxes;" .. self.ap:get_team_number() }, {
             id = self.id,
             action = "close_giftbox"
         })
@@ -69,13 +69,13 @@ return {
         end
         local giftbox_name = "GiftBox;" .. self.ap:get_team_number() .. ";" .. self.ap:get_player_number()
         if gift_number < 0 then
-            self.ap:Set(giftbox_name, {}, true, {{"replace", {}}}, {
+            self.ap:Set(giftbox_name, {}, true, { { "replace", {} } }, {
                 giftbox_gathering = self.ap:get_player_number()
             })
         else
             local operations = {}
             for i = 1, gift_number, 1 do
-                operations[i] = {"pop", 0}
+                operations[i] = { "pop", 0 }
             end
             self.ap:Set(giftbox_name, {}, true, operations, {
                 giftbox_gathering = self.ap:get_player_number()
@@ -89,15 +89,15 @@ return {
         gift.receiver_team = nil
         gift.receiver_number = nil
 
-        self.ap:Set(giftbox_name, {}, false, {{"update", {
+        self.ap:Set(giftbox_name, {}, false, { { "update", {
             [gift.ID] = gift
-        }}})
+        } } })
     end,
 
     start_checking_gift = function(self, gift)
         local motherbox = "GiftBoxes;" .. gift.receiver_team
 
-        self.ap:Get({motherbox}, {
+        self.ap:Get({ motherbox }, {
             id = self.id,
             action = "check_gift",
             gift = gift
@@ -233,7 +233,7 @@ return {
 
         local player_number = self.ap:get_player_number()
 
-        self.ap:Set("GiftBoxes;" .. self.ap:get_team_number(), {}, true, {{"update", {
+        self.ap:Set("GiftBoxes;" .. self.ap:get_team_number(), {}, true, { { "update", {
             [player_number] = {
                 IsOpen = true,
                 AcceptsAnyGift = giftbox_settings.any_gift,
@@ -242,10 +242,10 @@ return {
                 MaximumGiftDataVersion = self.protocol_version
             },
             dummy = true -- This is only to be recognized as an object, not a list
-        }}, {"pop", "dummy"}})
+        } }, { "pop", "dummy" } })
 
         local giftbox_name = "GiftBox;" .. self.ap:get_team_number() .. ";" .. player_number
-        self.ap:Get({giftbox_name}, {
+        self.ap:Get({ giftbox_name }, {
             id = self.id,
             action = "initialize_giftbox"
         })
@@ -262,7 +262,7 @@ return {
                     giftbox_gathering = self.ap:get_player_number()
                 })
             end
-            self.ap:SetNotify({giftbox_name})
+            self.ap:SetNotify({ giftbox_name })
             self.is_open = true
         end
     end,
@@ -274,7 +274,7 @@ return {
             return
         end
 
-        self.ap:Set("GiftBoxes;" .. self.ap:get_team_number(), {}, true, {{"update", {
+        self.ap:Set("GiftBoxes;" .. self.ap:get_team_number(), {}, true, { { "update", {
             [self.ap:get_player_number()] = {
                 IsOpen = false,
                 AcceptsAnyGift = false,
@@ -283,7 +283,7 @@ return {
                 MaximumGiftDataVersion = self.protocol_version
             },
             dummy = true -- This is only to be recognized as an object, not a list
-        }}, {"pop", "dummy"}})
+        } }, { "pop", "dummy" } })
     end,
 
     -- ap function overrides

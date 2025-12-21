@@ -20,21 +20,6 @@ local color_map = {
 	["grey"] = { 0.75, 0.75, 0.75, 1 },
 }
 
--- Hacks to override some stuff in ui_lib
-local OldGuiImageNinePiece = GuiImageNinePiece
-local ninePieceAlphaOverride = nil
-function GuiImageNinePiece(gui, id, x, y, width, height, alpha, sprite_filename, sprite_highlight_filename)
-	if ninePieceAlphaOverride then
-		alpha = ninePieceAlphaOverride
-		ninePieceAlphaOverride = nil
-	end
-	OldGuiImageNinePiece(gui, id, x, y, width, height, alpha, sprite_filename, sprite_highlight_filename)
-end
-
-function GuiSetNextNinePieceAlpha(alpha)
-	ninePieceAlphaOverride = alpha
-end
-
 ---Initializes the log window.
 function LogWindow:create(ap)
 	self:New()
@@ -61,8 +46,8 @@ end
 function LogWindow:updateDimensionsAndCalc()
 	self:UpdateDimensions()
 
-	self.box_x = self.dim.x / 10
-	self.box_y = self.dim.y / 10
+	self.box_x = math.floor(self.dim.x / 10)
+	self.box_y = math.floor(self.dim.y / 10)
 	self.box_width = self.dim.x - self.box_x * 2
 	self.box_height = self.dim.y - self.box_y * 2
 end
@@ -316,7 +301,7 @@ end
 ]]
 
 function LogWindow:drawWindow()
-	GuiSetNextNinePieceAlpha(0.5)
+	self:SetNext9PieceAlpha(0.5)
 	self:Draw9Piece(self.box_x - 8, self.box_y - 11 - 4, -4000, self.box_width + 16, self.box_height + 11 + 12)
 	if self:IsHovered() then
 		-- Prevent shooting wand and whatever when interacting
@@ -326,7 +311,7 @@ function LogWindow:drawWindow()
 		self:close()
 	end
 
-	GuiSetNextNinePieceAlpha(0.8)
+	self:SetNext9PieceAlpha(0.8)
 	-- Not sure where this extra +40 is coming from but it's needed or the last part of the logs will be hidden
 	self:ScrollBoxFixed(self.box_x, self.box_y, -5000, self.box_width, self.box_height, self.total_log_height + 40, "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawMessageList)
 	self.tailing_log = self.scroll.y >= self.tailing_y - 1
