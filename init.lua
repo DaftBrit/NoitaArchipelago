@@ -788,12 +788,16 @@ end
 
 function OnPlayerSpawned(player_entity)
 	is_player_spawned = true
-	GlobalsSetValue("ap_random_hax", "23")
 
 	GiftWindow:create(ap, gifting)
 	GiftMailbox:create(ap, gifting)
 
-	local x, y = EntityGetTransform(player_entity)
-	EntityLoad( "data/archipelago/entities/buildings/ap_gift_interface.xml", x + 16, y + 80)
-	EntityLoad( "data/archipelago/entities/buildings/ap_mailbox_interface.xml", x - 32, y + 80)
+	if not GameHasFlagRun("ap_spawned_player_once") then
+		GameAddFlagRun("ap_spawned_player_once")
+		GlobalsSetValue("ap_random_hax", "23")
+
+		local x, y = EntityGetTransform(player_entity)
+		EntityLoad( "data/archipelago/entities/buildings/ap_gift_interface.xml", x + 16, y + 80)
+		EntityLoad( "data/archipelago/entities/buildings/ap_mailbox_interface.xml", x - 32, y + 80)
+	end
 end
