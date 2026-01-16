@@ -37,7 +37,7 @@ if spritecomp ~= nil then
 		sprite_image = "ap_orb_woah"
 	elseif orb_art_setting == "porb" then
 		sprite_image = "porb"
-		elseif orb_art_setting == "glorb" then
+	elseif orb_art_setting == "glorb" then
 		sprite_image = "ap_glorb"
 	end
 
