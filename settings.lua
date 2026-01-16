@@ -187,7 +187,8 @@ local mod_settings =
 					{"vanilla", "Vanilla"},
 					{"ap_logo", "AP Logo"},
 					{"spinny_logo", "Spinny Logo"},
-					{"porb", "Porb"}
+					{"porb", "Porb"},
+					{"glorb", "Glorb"}
 				},
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
