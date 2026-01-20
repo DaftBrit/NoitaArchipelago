@@ -92,6 +92,24 @@ local translations = {
 	["$ap_menu_commands_desc"] = {
 		en="Commands that can be used for the current Archipelago session."
 	},
+	["$ap_perms_tooltip_-1"] = {
+		en="Permissions for this option are currently unknown."
+	},
+	["$ap_perms_tooltip_0"] = {
+		en="Disabled by the room settings."
+	},
+	["$ap_perms_tooltip_1"] = {
+		en="Can be used at any time."
+	},
+	["$ap_perms_tooltip_2"] = {
+		en="Only usable after goal completion."
+	},
+	["$ap_perms_tooltip_6"] = {
+		en="Automatically used after goal completion (no manual usage)."
+	},
+	["$ap_perms_tooltip_7"] = {
+		en="Automatically used after goal completion, or used manually at any time."
+	},
 }
 
 local function translate(msg)
@@ -117,30 +135,47 @@ GuiTextInput = function(gui, id, x, y, text, width, max_length, allowed_characte
 	return value
 end
 
-local function APOptionButton(gui, name, disabled)
+local function APOptionButton(gui, name, disabled, perm)
 	GuiIdPushString(gui, name)
 
 	if disabled then
 		GuiOptionsAddForNextWidget(gui, GUI_OPTION.Disabled)
 	end
 
+	if perm == 0 then
+		GuiColorSetForNextWidget(gui, 1, 0, 0, 1)
+	elseif perm == 6 or perm == 7 then
+		GuiColorSetForNextWidget(gui, 0, 1, 0, 1)
+	end
+
 	local result = GuiButton(gui, 1, 0, 0, translate(name))
-	GuiTooltip(gui, translate(name .. "_tooltip"), "")
+	local tooltip_str = translate(name .. "_tooltip")
+
+	local perm_tooltip_str = "$ap_perms_tooltip_" .. tostring(perm)
+	if translations[perm_tooltip_str] ~= nil then
+		tooltip_str = tooltip_str .. "\n" .. translate(perm_tooltip_str)
+	end
+	GuiTooltip(gui, tooltip_str, "")
 
 	GuiIdPop(gui)
 	return result and not disabled
 end
 
-local function APCollectItemsButton(mod_id, gui, in_main_menu, im_id, setting)
-	if APOptionButton(gui, "$ap_collect_items", in_main_menu) then
-		GameAddFlagRun("ap_collect_items_used")
+local function APItemPermButton(name_prefix, gui, in_main_menu)
+	local perm = tonumber(GlobalsGetValue(name_prefix .. "_permission", "-1"))
+
+	local disabled = in_main_menu or perm == 0 or perm == 6
+	if APOptionButton(gui, "$" .. name_prefix .. "_items", disabled, perm) then
+		GameAddFlagRun(name_prefix .. "_items_used")
 	end
 end
 
+local function APCollectItemsButton(mod_id, gui, in_main_menu, im_id, setting)
+	APItemPermButton("ap_collect", gui, in_main_menu)
+end
+
 local function APReleaseItemsButton(mod_id, gui, in_main_menu, im_id, setting)
-	if APOptionButton(gui, "$ap_release_items", in_main_menu) then
-		GameAddFlagRun("ap_release_items_used")
-	end
+	APItemPermButton("ap_release", gui, in_main_menu)
 end
 
 local mod_id = "archipelago" -- This should match the name of your mod's folder.

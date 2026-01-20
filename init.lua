@@ -611,6 +611,11 @@ local function connect()
 		Log.Info("on_room_info")
 		Globals.Seed:set(ap:get_seed())
 		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, {"Lua-APClientPP"}, { 0, 6, 2 })
+
+		GlobalsSetValue("ap_collect_permission", tostring(ap:get_permission("collect") or APLIB.Permission.GOAL))
+		GlobalsSetValue("ap_release_permission", tostring(ap:get_permission("release") or APLIB.Permission.GOAL))
+		Log.Warn("Collect perm: " .. tostring(ap:get_permission("collect")))
+		Log.Warn("Release perm: " .. tostring(ap:get_permission("release")))
 	end
 
 	local function on_slot_connected(slot_data)
@@ -649,7 +654,9 @@ local function connect()
 		RECV_MSG.Bounced(bounce)
 	end
 
-	ap = APLIB(uuid, GAME_NAME, tostring(host) .. ":" .. tostring(port))
+	local hostname = tostring(host) .. ":" .. tostring(port)
+	Log.Warn("Connecting on " .. hostname)
+	ap = APLIB(uuid, GAME_NAME, hostname)
 
 	ap:set_socket_connected_handler(on_socket_connected)
 	ap:set_socket_error_handler(on_socket_error)
