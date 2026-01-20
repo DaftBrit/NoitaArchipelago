@@ -93,22 +93,34 @@ local translations = {
 		en="Commands that can be used for the current Archipelago session."
 	},
 	["$ap_perms_tooltip_-1"] = {
-		en="Permissions for this option are currently unknown."
+		en="Room setting: Permissions for this option are currently unknown."
 	},
 	["$ap_perms_tooltip_0"] = {
-		en="Disabled by the room settings."
+		en="Room setting: Disabled."
 	},
 	["$ap_perms_tooltip_1"] = {
-		en="Can be used at any time."
+		en="Room setting: Can be used at any time."
 	},
 	["$ap_perms_tooltip_2"] = {
-		en="Only usable after goal completion."
+		en="Room setting: Only usable after goal completion."
 	},
 	["$ap_perms_tooltip_6"] = {
-		en="Automatically used after goal completion (no manual usage)."
+		en="Room setting: Automatically used after goal completion (no manual usage)."
 	},
 	["$ap_perms_tooltip_7"] = {
-		en="Automatically used after goal completion, or used manually at any time."
+		en="Room setting: Automatically used after goal completion, or used manually at any time."
+	},
+	["$ap_messages_settings_name"] = {
+		en = "Text Messages"
+	},
+	["$ap_messages_settings_desc"] = {
+		en = "Determine which text messages are shown.\n  All = Show all messages\n  Self = Show only messages pertaining to yourself\n  None = Never receive messages"
+	},
+	["$ap_join_messages_settings_name"] = {
+		en = "Join/Leave Messages"
+	},
+	["$ap_join_messages_settings_desc"] = {
+		en = "Determine whether to show join/leave messages (hidden if Text Messages is set to None)"
 	},
 }
 
@@ -235,6 +247,29 @@ local mod_settings =
 					{"off", "Off"},
 					{"on", "On"},
 					{"traps", "Traps"}
+				},
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				id = "messages",
+				ui_name = translate("$ap_messages_settings_name"),
+				ui_description = translate("$ap_messages_settings_desc"),
+				value_default = "self",
+				values = {
+					{"all", "All"},
+					{"self", "Self"},
+					{"none", "None"}
+				},
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				id = "join_leave_messages",
+				ui_name = translate("$ap_join_messages_settings_name"),
+				ui_description = translate("$ap_join_messages_settings_desc"),
+				value_default = "on",
+				values = {
+					{"on", "On"},
+					{"off", "Off"},
 				},
 				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},

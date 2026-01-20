@@ -39,19 +39,34 @@ local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
 local slot_options = nil --- @type table?
-local connect_tags = {"Lua-APClientPP"}
+local connect_tags = {
+	["Lua-APClientPP"] = 1
+}
 
 local last_death_time = 0
 local current_player_slot = -1
 local game_is_paused = false
 local is_player_spawned = false
 local death_link_status = false
+local messages_setting = "all"
 
 local ap = nil --- @type APClient
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
 ----------------------------------------------------------------------------------------------------
+
+local function GetConnectionTags()
+	local tags_arr = {}
+	for tag, _ in pairs(connect_tags) do
+		table.insert(tags_arr, tag)
+	end
+	return tags_arr
+end
+
+local function UpdateConnectionTags()
+	ap:ConnectUpdate(nil, GetConnectionTags())
+end
 
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
@@ -60,16 +75,15 @@ local function SetDeathLinkEnabled(enabled)
 			-- it's already enabled, so no need to continue here
 			return
 		end
-		table.insert(connect_tags, "DeathLink")
-	end
-	if not enabled then
+		connect_tags["DeathLink"] = 1
+	else
 		if death_link_status == false then
 			return
 		end
-		connect_tags = {"Lua-APClientPP"}
+		connect_tags["DeathLink"] = nil
 		death_link_status = false
 	end
-	ap:ConnectUpdate(nil, connect_tags)
+	UpdateConnectionTags()
 end
 
 
@@ -399,6 +413,41 @@ function RECV_MSG.Connected()
 	SetDeathLinkEnabled(IsDeathLinkEnabled() > 0)
 end
 
+---@param location integer
+local function PrintLocationCheckedIfNoText(location)
+	if messages_setting ~= "none" then return end
+
+	local msg = {
+		{ text = "Checked " },
+		{ type = "location_id", text = tostring(location), player = tostring(current_player_slot) },
+	}
+	local extra = {}
+
+	RECV_MSG.PrintJSON(msg, extra)
+end
+
+---@param item NetworkItem
+local function PrintItemReceiveMessageIfNoText(item)
+	if messages_setting ~= "none" then return end
+
+	local msg = {
+		{ text = "Received " },
+		{ type = "item_id", text = tostring(item.item), player = tostring(current_player_slot), flags = tostring(item.flags) },
+		{ text = " from "},
+		{ type = "player_id", text = tostring(item.player) },
+		{ text = " (" },
+		{ type = "location_id", text = tostring(item.location), player = tostring(item.player) },
+		{ text = ")" },
+	}
+	local extra = {
+		type = "ItemSend",
+		receiving = current_player_slot,
+		item = item,
+	}
+
+	RECV_MSG.PrintJSON(msg, extra)
+end
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(items)
 	local is_first_time_connected = Cache.ItemDelivery:is_empty()
@@ -416,8 +465,10 @@ function RECV_MSG.ReceivedItems(items)
 			elseif not is_first_time_connected or GameHasFlagRun("ap_spawn_kill_saver") then
 				SpawnReceivedItem(item)
 			end
+		end
 
-
+		if not is_first_time_connected and GameHasFlagRun("ap_spawn_kill_saver") then
+			PrintItemReceiveMessageIfNoText(item)
 		end
 	end
 
@@ -427,11 +478,40 @@ function RECV_MSG.ReceivedItems(items)
 end
 
 
+local function ParseMessage(msg)
+	local result = {}
+	for _, token in ipairs(msg) do
+		if token.type ~= nil then
+			if token.type == "player_id" then
+				local player_id = tonumber(token.text)
+				local name = ap:get_player_alias(player_id)
+				table.insert(result, name)
+			elseif token.type == "item_id" then
+				local item_id = tonumber(token.text)
+				local game = ap:get_player_game(tonumber(token.player))
+				local name = ap:get_item_name(item_id, game)
+				table.insert(result, name)
+			elseif token.type == "location_id" then
+				local location_id = tonumber(token.text)
+				local game = ap:get_player_game(tonumber(token.player))
+				local name = ap:get_location_name(location_id, game)
+				table.insert(result, name)
+			elseif token.text ~= nil then
+				table.insert(result, token.text)
+			end
+		elseif token.text ~= nil then
+			table.insert(result, token.text)
+		end
+	end
+	return table.concat(result, "")
+end
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
 function RECV_MSG.PrintJSON(msg, extra)
-	local msg_str = ap:render_json(msg, APLIB.RenderFormat.TEXT)
+	local msg_str = ParseMessage(msg)
 
-	if extra["type"] == "ItemSend" then
+	local msg_type = extra["type"]
+	if msg_type == "ItemSend" then
 		local destination_player_id = extra["receiving"]
 		local source_player_id = extra["item"]["player"]
 		local item_id = extra["item"]["item"]
@@ -445,10 +525,25 @@ function RECV_MSG.PrintJSON(msg, extra)
 			GamePrintImportant(item_name, msg_str)
 			return
 		end
-	elseif extra["type"] == "Countdown" then
+
+		if messages_setting ~= "all" and not is_destination_player and not is_source_player then
+			return
+		end
+	elseif msg_type == "Countdown" then
 		local countdown_number = extra["countdown"]
 		if countdown_number == 0 then
 			countdown_fun()
+		end
+	elseif msg_type == "Join" or msg_type == "Part" then
+		if ModSettingGet("archipelago.join_leave_messages") == "off" then
+			return
+		end
+	elseif msg_type == "Hint" then
+		local is_destination_player = extra["receiving"] == current_player_slot
+		local is_source_player = extra["item"]["player"] == current_player_slot
+
+		if messages_setting ~= "all" and not is_destination_player and not is_source_player then
+			return
 		end
 	end
 
@@ -610,7 +705,11 @@ local function connect()
 	local function on_room_info()
 		Log.Info("on_room_info")
 		Globals.Seed:set(ap:get_seed())
-		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, {"Lua-APClientPP"}, { 0, 6, 2 })
+
+		if messages_setting == "none" then
+			connect_tags["NoText"] = 1
+		end
+		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, GetConnectionTags(), { 0, 6, 2 })
 
 		GlobalsSetValue("ap_collect_permission", tostring(ap:get_permission("collect") or APLIB.Permission.GOAL))
 		GlobalsSetValue("ap_release_permission", tostring(ap:get_permission("release") or APLIB.Permission.GOAL))
@@ -642,6 +741,9 @@ local function connect()
 		Log.Info("on_location_checked: " .. JSON:encode(locations))
 		for _, location_id in pairs(locations) do
 			remove_collected_item(location_id)
+			if GameHasFlagRun("ap_spawn_kill_saver") then
+				PrintLocationCheckedIfNoText(location_id)
+			end
 		end
 	end
 
@@ -750,6 +852,18 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 		death_link_status = false
 	end
 
+	-- Disable/enable text messages if settings change
+	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
+	if messages_setting == "none" and not connect_tags["NoText"] then
+		Log.Info("Disabling text")
+		connect_tags["NoText"] = 1
+		UpdateConnectionTags()
+	elseif messages_setting ~= "none" and connect_tags["NoText"] then
+		Log.Info("Enabling text")
+		connect_tags["NoText"] = nil
+		UpdateConnectionTags()
+	end
+
 	LogWindow:close()
 end
 
@@ -783,6 +897,7 @@ end
 function OnModInit()
 	GameRemoveFlagRun("AP_LocationInfo_received")
 	create_dir("archipelago_cache")
+	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
 	ConnIcon:create()
 	connect()
 	PrintActiveModInfo()
