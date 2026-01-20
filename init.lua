@@ -34,6 +34,7 @@ local Globals = dofile("data/archipelago/scripts/globals.lua")
 local Cache = dofile("data/archipelago/scripts/caches.lua")
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
 local LogWindow = dofile("data/archipelago/ui/log_window.lua")
+local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
@@ -704,6 +705,19 @@ local function UpdatePlayerPoptrackerPosition()
 	end
 end
 
+--- Prints extra information to help debug with other mods
+local function PrintActiveModInfo()
+	Log.Warn("Noita Mod API Ver " .. tostring(ModGetAPIVersion()))
+
+	local modlist = Modlist.GetDetailList()
+	local modlist_str = "Active mods:\n    - " .. table.concat(modlist, "\n    - ")
+	Log.Warn(modlist_str)
+
+	if StreamingGetIsConnected() then
+		Log.Warn("Streaming enabled")
+	end
+end
+
 -- Called every update frame in Noita
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
@@ -767,6 +781,7 @@ function OnModInit()
 	create_dir("archipelago_cache")
 	ConnIcon:create()
 	connect()
+	PrintActiveModInfo()
 end
 
 function OnPlayerSpawned()
