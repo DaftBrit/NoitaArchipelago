@@ -506,9 +506,26 @@ local function ParseMessage(msg)
 	return table.concat(result, "")
 end
 
+local recent_messages = {}
+local function ShouldPrintMessage(msg_str)
+	local current_time = GameGetRealWorldTimeSinceStarted()
+	local last_time = recent_messages[msg_str] or -1
+	if current_time - last_time < 1 then
+		return false
+	end
+
+	recent_messages[msg_str] = current_time
+	return true
+end
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
 function RECV_MSG.PrintJSON(msg, extra)
 	local msg_str = ParseMessage(msg)
+
+	if not ShouldPrintMessage(msg_str) then
+		Log.Info(msg_str)
+		return
+	end
 
 	local msg_type = extra["type"]
 	if msg_type == "ItemSend" then
@@ -548,7 +565,6 @@ function RECV_MSG.PrintJSON(msg, extra)
 	end
 
 	Log.Info(msg_str)
-	Log.Info(JSON:encode(msg))
 	GamePrint(msg_str)
 	LogWindow:addLogMessage(msg)
 end
