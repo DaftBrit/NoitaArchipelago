@@ -86,6 +86,12 @@ local translations = {
 	["$ap_log_limit_settings_desc"] = {
 		en="Maximum number of log lines to store and render in the log window."
 	},
+	["$ap_menu_commands_name"] = {
+		en="Commands"
+	},
+	["$ap_menu_commands_desc"] = {
+		en="Commands that can be used for the current Archipelago session."
+	},
 }
 
 local function translate(msg)
@@ -109,6 +115,32 @@ GuiTextInput = function(gui, id, x, y, text, width, max_length, allowed_characte
 		return ""
 	end
 	return value
+end
+
+local function APOptionButton(gui, name, disabled)
+	GuiIdPushString(gui, name)
+
+	if disabled then
+		GuiOptionsAddForNextWidget(gui, GUI_OPTION.Disabled)
+	end
+
+	local result = GuiButton(gui, 1, 0, 0, translate(name))
+	GuiTooltip(gui, translate(name .. "_tooltip"), "")
+
+	GuiIdPop(gui)
+	return result and not disabled
+end
+
+local function APCollectItemsButton(mod_id, gui, in_main_menu, im_id, setting)
+	if APOptionButton(gui, "$ap_collect_items", in_main_menu) then
+		GameAddFlagRun("ap_collect_items_used")
+	end
+end
+
+local function APReleaseItemsButton(mod_id, gui, in_main_menu, im_id, setting)
+	if APOptionButton(gui, "$ap_release_items", in_main_menu) then
+		GameAddFlagRun("ap_release_items_used")
+	end
 end
 
 local mod_id = "archipelago" -- This should match the name of your mod's folder.
@@ -212,6 +244,19 @@ local mod_settings =
 			},
 		},
 	},
+	{
+		category_id = "ap_commands",
+		ui_name = translate("$ap_menu_commands_name"),
+		ui_description = translate("$ap_menu_commands_desc"),
+		settings = {
+			{
+				ui_fn = APCollectItemsButton,
+			},
+			{
+				ui_fn = APReleaseItemsButton,
+			},
+		},
+	},
 }
 
 -- This function is called to ensure the correct setting values are visible to the game via ModSettingGet(). your mod's settings don't work if you don't have a function like this defined in settings.lua.
@@ -235,29 +280,7 @@ function ModSettingsGuiCount()
 	return mod_settings_gui_count( mod_id, mod_settings ) + 2 -- Add our 2 buttons
 end
 
-local function APOptionButton(gui, name, disabled)
-	GuiIdPushString(gui, name)
-
-	if disabled then
-		GuiOptionsAddForNextWidget(gui, GUI_OPTION.Disabled)
-	end
-
-	local result = GuiButton(gui, 1, 0, 0, translate(name))
-	GuiTooltip(gui, translate(name .. "_tooltip"), "")
-
-	GuiIdPop(gui)
-	return result and not disabled
-end
-
 -- This function is called to display the settings UI for this mod. Your mod's settings wont be visible in the mod settings menu if this function isn't defined correctly.
 function ModSettingsGui( gui, in_main_menu )
 	mod_settings_gui( mod_id, mod_settings, gui, in_main_menu )
-
-	if APOptionButton(gui, "$ap_collect_items", in_main_menu) then
-		GameAddFlagRun("ap_collect_items_used")
-	end
-
-	if APOptionButton(gui, "$ap_release_items", in_main_menu) then
-		GameAddFlagRun("ap_release_items_used")
-	end
 end
