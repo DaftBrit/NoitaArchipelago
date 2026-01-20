@@ -1,5 +1,6 @@
 local APLIB = require("mods.archipelago.bin.lua-apclientpp")
 local LogWindow = dofile("data/archipelago/lib/ui_lib.lua") --- @class UI_class
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 
 local color_map = {
 	-- Archipelago supported ANSI colours
@@ -44,8 +45,12 @@ function LogWindow:create(ap)
 	self.just_closed = false
 	self.jump_to_end = false
 	self.shift_up_amt = 0 -- for when oldest items get deleted and we don't want to lose what we're looking at
-	self.message_log = {}
+
+	self.message_log = Globals.LogHistory:get_table() or {}
 	self.total_log_height = 0
+	for _, msg in ipairs(self.message_log) do
+		self.total_log_height = self.total_log_height + msg.height
+	end
 	self.tailing_log = true
 	self.tailing_y = 0
 	self.ap = ap
@@ -357,6 +362,9 @@ function LogWindow:addLogMessage(msg)
 			self.total_log_height = self.total_log_height - removed_msg.height
 			self.shift_up_amt = self.shift_up_amt + removed_msg.height
 		end
+
+		-- Attach the log history to the save file
+		Globals.LogHistory:set_table(self.message_log)
 
 		-- Follow log if it's currently open
 		if self.visible and self.tailing_log then

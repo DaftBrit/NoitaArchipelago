@@ -663,8 +663,6 @@ local function connect()
 	ap:set_location_checked_handler(on_location_checked)
 	ap:set_print_json_handler(on_print_json)
 	ap:set_bounced_handler(on_bounced)
-
-	LogWindow:create(ap)
 end
 
 local function UpdateUI()
@@ -782,6 +780,14 @@ function OnModInit()
 	ConnIcon:create()
 	connect()
 	PrintActiveModInfo()
+end
+
+local world_state_initialized = false
+function OnWorldPreUpdate()
+	if not world_state_initialized then
+		LogWindow:create(ap)
+		world_state_initialized = true
+	end
 end
 
 function OnPlayerSpawned()

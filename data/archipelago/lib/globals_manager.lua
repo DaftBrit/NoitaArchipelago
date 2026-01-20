@@ -1,5 +1,6 @@
 local Object = dofile("data/archipelago/lib/classic/classic.lua")
 
+--- @class Global : Object
 local GlobalImpl = Object:extend()
 
 function GlobalImpl:new(key_name)

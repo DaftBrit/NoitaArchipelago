@@ -7,7 +7,8 @@
 -- the terms of the MIT license. See LICENSE for details.
 --
 
-
+--- @class Object
+--- @field protected super self parent object
 local Object = {}
 Object.__index = Object
 

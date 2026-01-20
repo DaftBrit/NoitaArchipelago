@@ -1,6 +1,7 @@
 local Global = dofile("data/archipelago/lib/globals_manager.lua")
 local JSON = dofile("data/archipelago/lib/json.lua")
 
+--- @class GlobalComplex : Global
 local GlobalComplex = Global:extend()
 
 local function encodeXML(str)
