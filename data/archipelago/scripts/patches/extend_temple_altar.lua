@@ -3,7 +3,7 @@ dofile_once("data/archipelago/scripts/item_utils.lua")
 
 local function ap_extend_temple_altar()
 	local AP = dofile("data/archipelago/scripts/constants.lua")
-	local Globals = dofile("data/archipelago/scripts/globals.lua")
+	local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 	local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 	local remaining_ap_items = 0

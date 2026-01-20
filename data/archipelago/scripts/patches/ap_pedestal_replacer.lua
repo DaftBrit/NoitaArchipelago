@@ -2,7 +2,7 @@ dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 local function APPedestalReplacer()
 	local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
-	local Globals = dofile("data/archipelago/scripts/globals.lua")
+	local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 	local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 	local AP = dofile("data/archipelago/scripts/constants.lua")
 

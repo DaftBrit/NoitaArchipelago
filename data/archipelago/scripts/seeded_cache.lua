@@ -1,5 +1,5 @@
 local Cache = dofile("data/archipelago/lib/cache_manager.lua")
-local Globals = dofile("data/archipelago/scripts/globals.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 
 local SeededCache = Cache:extend()
 

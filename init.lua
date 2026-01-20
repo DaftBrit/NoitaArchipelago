@@ -10,8 +10,8 @@ ModMaterialsFileAdd("data/archipelago/materials.xml")
 ModMagicNumbersFileAdd("data/archipelago/magic_numbers.xml")
 
 --LIBS
-local APLIB = require("mods.archipelago.bin.lua-apclientpp")
-local Log = dofile("data/archipelago/scripts/logger.lua")
+local APLIB = require("mods.archipelago.bin.lua-apclientpp") ---@type APClient
+local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 
 local JSON = dofile("data/archipelago/lib/json.lua")
 function JSON:onDecodeError(message, text, location, etc)
@@ -30,7 +30,7 @@ local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 -- Modules
-local Globals = dofile("data/archipelago/scripts/globals.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Cache = dofile("data/archipelago/scripts/caches.lua")
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
 local LogWindow = dofile("data/archipelago/ui/log_window.lua")
@@ -38,7 +38,7 @@ local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
-local slot_options = nil
+local slot_options = nil --- @type table?
 local connect_tags = {"Lua-APClientPP"}
 
 local last_death_time = 0
@@ -47,7 +47,7 @@ local game_is_paused = false
 local is_player_spawned = false
 local death_link_status = false
 
-local ap = nil
+local ap = nil --- @type APClient
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
@@ -549,12 +549,12 @@ local function CheckCommandFlags()
 	if slot_options ~= nil then
 		if GameHasFlagRun("ap_collect_items_used") then
 			Log.Info("AP: Collecting items...")
-			ap:say("!collect")
+			ap:Say("!collect")
 		end
 
 		if GameHasFlagRun("ap_release_items_used") then
 			Log.Info("AP: Releasing items...")
-			ap:say("!release")
+			ap:Say("!release")
 		end
 	end
 
@@ -610,7 +610,6 @@ local function connect()
 	local function on_room_info()
 		Log.Info("on_room_info")
 		Globals.Seed:set(ap:get_seed())
-		-- client version 0.4.1
 		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, {"Lua-APClientPP"}, { 0, 6, 2 })
 	end
 
@@ -650,7 +649,7 @@ local function connect()
 		RECV_MSG.Bounced(bounce)
 	end
 
-	ap = APLIB(uuid, GAME_NAME, host .. ":" .. port)
+	ap = APLIB(uuid, GAME_NAME, tostring(host) .. ":" .. tostring(port))
 
 	ap:set_socket_connected_handler(on_socket_connected)
 	ap:set_socket_error_handler(on_socket_error)

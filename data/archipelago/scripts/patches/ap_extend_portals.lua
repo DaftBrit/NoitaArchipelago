@@ -1,6 +1,5 @@
 
----@type nxml
-local nxml = dofile_once("data/archipelago/lib/nxml.lua")
+local nxml = dofile_once("data/archipelago/lib/nxml.lua") ---@type nxml
 
 local closed_portal_xml = nxml.parse_file("data/archipelago/entities/buildings/ap_closed_portal.xml")
 

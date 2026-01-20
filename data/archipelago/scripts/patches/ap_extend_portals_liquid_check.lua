@@ -1,7 +1,7 @@
 local ap_original_material_area_checker_failed = material_area_checker_failed
 local ap_original_material_area_checker_success = material_area_checker_success
 
-local Globals = dofile_once("data/archipelago/scripts/globals.lua")
+local Globals = dofile_once("data/archipelago/scripts/globals.lua") --- @type Globals
 
 local function get_hm_portal_num(y)
 	if y < 1500 then return 1 -- Mines

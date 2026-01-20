@@ -1,5 +1,4 @@
----@type nxml
-local nxml = dofile_once("data/archipelago/lib/nxml.lua")
+local nxml = dofile_once("data/archipelago/lib/nxml.lua") ---@type nxml
 
 --- @class Modlist
 local Modlist = {}

@@ -1,4 +1,4 @@
-local Globals = dofile("data/archipelago/scripts/globals.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 function collision_trigger(colliding_entity_id)

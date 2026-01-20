@@ -1,7 +1,7 @@
 dofile_once( "data/scripts/game_helpers.lua" )
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/lib/mod_settings.lua")
-local Log = dofile( "data/archipelago/scripts/logger.lua" )
+local Log = dofile( "data/archipelago/scripts/logger.lua" ) ---@type Logger
 
 local entity_id = GetUpdatedEntityID()
 

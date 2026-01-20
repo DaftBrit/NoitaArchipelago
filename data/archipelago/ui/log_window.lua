@@ -1,6 +1,6 @@
-local APLIB = require("mods.archipelago.bin.lua-apclientpp")
-local LogWindow = dofile("data/archipelago/lib/ui_lib.lua") --- @class UI_class
-local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
+local APLIB = require("mods.archipelago.bin.lua-apclientpp") ---@type APClient
+local LogWindow = dofile("data/archipelago/lib/ui_lib.lua") ---@class UI_class
+local Globals = dofile("data/archipelago/scripts/globals.lua") ---@type Globals
 
 local color_map = {
 	-- Archipelago supported ANSI colours

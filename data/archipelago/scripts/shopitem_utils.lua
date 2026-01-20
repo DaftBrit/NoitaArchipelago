@@ -2,9 +2,9 @@ dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
 
 local AP = dofile("data/archipelago/scripts/constants.lua")
-local Globals = dofile("data/archipelago/scripts/globals.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local JSON = dofile("data/archipelago/lib/json.lua")
-local Log = dofile("data/archipelago/scripts/logger.lua")
+local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 
 

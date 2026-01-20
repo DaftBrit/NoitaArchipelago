@@ -2,9 +2,9 @@ dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/gun/gun_actions.lua")
 dofile_once("data/scripts/game_helpers.lua")
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
-local Globals = dofile("data/archipelago/scripts/globals.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local AP = dofile("data/archipelago/scripts/constants.lua")
-local Log = dofile("data/archipelago/scripts/logger.lua")
+local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 dofile_once("data/archipelago/scripts/item_utils.lua")
 dofile_once("data/scripts/items/chest_random.lua")
 
