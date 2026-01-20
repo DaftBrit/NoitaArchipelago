@@ -353,25 +353,27 @@ end
 
 
 function create_our_item_entity(item, x, y)
-		if item.perk ~= nil then
-			local perk_id = perk_spawn(x, y, item.perk, true)
-			if perk_id ~= nil then
-				EntityRemoveTag(perk_id, "perk")
-				EntityAddTag(perk_id, "ap_item")
-			end
-			return perk_id
-		elseif item.items ~= nil and #item.items > 0 then
-			-- our item is something else (random choice)
-			local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
-			EntityAddTag(entity_id, "ap_item")
-			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
-			if life_comp ~= nil then
-				EntityRemoveComponent(entity_id, life_comp)
-			end
-		return entity_id
-		else
-			Log.Error("Failed to load our own item at x = " .. x .. ", y = " .. y)
+	if item.perk ~= nil then
+		local perk_id = perk_spawn(x, y, item.perk, true)
+		if perk_id ~= nil then
+			EntityRemoveTag(perk_id, "perk")
+			EntityAddTag(perk_id, "ap_item")
 		end
+		return perk_id
+	elseif item.items ~= nil and #item.items > 0 then
+		-- our item is something else (random choice)
+		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
+		EntityAddTag(entity_id, "ap_item")
+		local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+		if life_comp ~= nil then
+			EntityRemoveComponent(entity_id, life_comp)
+		end
+		return entity_id
+	else
+		EntityLoad("data/archipelago/entities/items/pickup/ap_error_book.xml", x, y)
+		Log.Error("Failed to load our own item at x = " .. x .. ", y = " .. y)
+		return nil
+	end
 end
 
 

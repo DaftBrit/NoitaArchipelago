@@ -56,6 +56,11 @@ local function APPedestalReplacer()
 				local ap_pedestal_id
 				if location.is_our_item and item and item_id ~= AP.TRAP_ID then
 					ap_pedestal_id = create_our_item_entity(item, x, y)
+
+					if ap_pedestal_id == nil then
+						return false
+					end
+
 					-- this gives the pedestal items that ap logo particle effect so you can tell it's your item
 					local particle_comp = EntityAddComponent2(ap_pedestal_id, "SpriteParticleEmitterComponent", {
 						_tags="archipelago,enabled_in_world",

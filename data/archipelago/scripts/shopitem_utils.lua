@@ -77,11 +77,9 @@ function ShopItems.create_our_item_entity(item, x, y)
 		-- our item is something else (random choice)
 		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
 		EntityAddTag(entity_id, "ap_item")
-		if item.gold_amount ~= 0 then
-			local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
-			if life_comp ~= nil then
-				EntityRemoveComponent(entity_id, life_comp)
-			end
+		local life_comp = EntityGetFirstComponent(entity_id, "LifetimeComponent", "enabled_in_world")
+		if life_comp ~= nil then
+			EntityRemoveComponent(entity_id, life_comp)
 		end
 		if item.orb ~= 0 then
 			local orb_count = GameGetOrbCountThisRun()
