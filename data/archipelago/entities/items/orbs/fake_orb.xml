@@ -1,7 +1,5 @@
 <Entity tags="fake_orb" >
-    <SpriteComponent
-        filename="data/archipelago/entities/items/icons/empty_icon.png" >
-    </SpriteComponent>
+    <SpriteComponent filename="data/archipelago/entities/items/icons/empty_icon.png" />
     <ItemComponent
         auto_pickup="1"
         enable_orb_hacks="1"
@@ -9,9 +7,6 @@
         play_pick_sound="0"
         stats_count_as_item_pick_up="0"
         custom_pickup_string=""
-    >
-    </ItemComponent>
-    <LuaComponent
-        script_item_picked_up="data/archipelago/scripts/items/ap_item.lua" >
-    </LuaComponent>
+    />
+    <LuaComponent script_item_picked_up="data/archipelago/scripts/items/ap_item.lua" />
 </Entity>

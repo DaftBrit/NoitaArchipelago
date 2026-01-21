@@ -124,9 +124,10 @@ local translations = {
 	},
 }
 
+local lang_id = "en"
+
 local function translate(msg)
 	local translation_table = translations[msg] or {}
-	local lang_id = GameTextGet("$")
 	return translation_table[lang_id] or translation_table["en"] or msg
 end
 
@@ -339,6 +340,8 @@ local mod_settings =
 --		- when entering the game after a restart (init_scope will be MOD_SETTING_SCOPE_RESTART)
 --		- at the end of an update when mod settings have been changed via ModSettingsSetNextValue() and the game is unpaused (init_scope will be MOD_SETTINGS_SCOPE_RUNTIME)
 function ModSettingsUpdate( init_scope )
+	-- Hack which gets the lang id but warns in noita_dev
+	lang_id = GameTextGet("$")
 	local old_version = mod_settings_get_version( mod_id ) -- This can be used to migrate some settings between mod versions.
 	mod_settings_update( mod_id, mod_settings, init_scope )
 end
@@ -350,7 +353,7 @@ end
 -- At the moment it is fine to simply return 0 or 1 in a custom implementation, but we don't guarantee that will be the case in the future.
 -- This function is called every frame when in the settings menu.
 function ModSettingsGuiCount()
-	return mod_settings_gui_count( mod_id, mod_settings ) + 2 -- Add our 2 buttons
+	return mod_settings_gui_count( mod_id, mod_settings )
 end
 
 -- This function is called to display the settings UI for this mod. Your mod's settings wont be visible in the mod settings menu if this function isn't defined correctly.
