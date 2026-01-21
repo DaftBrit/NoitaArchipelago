@@ -1,11 +1,22 @@
+---@class ConnIcon
+---@field msg_override string?
+---@field state STATE
+---@field gui gui
+---@field button_pressed boolean?
 local ConnIcon = {}
 
+--- @enum STATE
 local STATE = {
 	DISCONNECTED = 0,
 	CONNECTING = 1,
 	CONNECTED = 2
 }
 
+--- @class ConnState
+--- @field img string
+--- @field msg string
+
+--- @type ConnState[]
 local CONNECTION_STATES = {
 	[STATE.DISCONNECTED] = {
 		img = "data/archipelago/ui/disconnected.png",
@@ -21,10 +32,12 @@ local CONNECTION_STATES = {
 	},
 }
 
+---@return string
 function ConnIcon:img()
 	return CONNECTION_STATES[self.state].img
 end
 
+---@return string
 function ConnIcon:msg()
 	return CONNECTION_STATES[self.state].msg
 end
@@ -69,25 +82,30 @@ function ConnIcon:update()
 	self.button_pressed = self:drawMainButton()
 end
 
+---@param state STATE
+---@param message string?
 function ConnIcon:setState(state, message)
 	self.msg_override = message
 	self.state = state
 end
 
+---@param message string?
 function ConnIcon:setDisconnected(message)
 	self:setState(STATE.DISCONNECTED, message)
 end
 
-function ConnIcon:setConnected()
-	self:setState(STATE.CONNECTED)
+---@param message string?
+function ConnIcon:setConnected(message)
+	self:setState(STATE.CONNECTED, message)
 end
 
 function ConnIcon:setConnecting()
 	self:setState(STATE.CONNECTING)
 end
 
+---@return boolean
 function ConnIcon:pressed()
-	return self.button_pressed
+	return self.button_pressed or false
 end
 
 return ConnIcon

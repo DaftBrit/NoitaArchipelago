@@ -174,7 +174,10 @@ local function APOptionButton(gui, name, disabled, perm)
 end
 
 local function APItemPermButton(name_prefix, gui, in_main_menu)
-	local perm = tonumber(GlobalsGetValue(name_prefix .. "_permission", "-1"))
+	local perm = -1
+	if not in_main_menu then
+		perm = tonumber(GlobalsGetValue(name_prefix .. "_permission", "-1")) or -1
+	end
 
 	local disabled = in_main_menu or perm == 0 or perm == 6
 	if APOptionButton(gui, "$" .. name_prefix .. "_items", disabled, perm) then
@@ -210,7 +213,7 @@ local mod_settings =
 				value_default = "archipelago.gg",
 				text_max_length = 120,
 				allowed_characters = "%-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~",
-				scope = MOD_SETTING_SCOPE_NEW_GAME,
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 			},
 			{
 				id = "server_port",
@@ -219,7 +222,7 @@ local mod_settings =
 				value_default = "",
 				text_max_length = 5,
 				allowed_characters = "0123456789",
-				scope = MOD_SETTING_SCOPE_NEW_GAME,
+				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
 			},
 			{
 				id = "slot_name",

@@ -32,8 +32,8 @@ local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 -- Modules
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Cache = dofile("data/archipelago/scripts/caches.lua")
-local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
-local LogWindow = dofile("data/archipelago/ui/log_window.lua")
+local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua") --- @type ConnIcon
+local LogWindow = dofile("data/archipelago/ui/log_window.lua") --- @type LogWindow
 local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 
 -- See Options.py on the AP-side
@@ -49,6 +49,8 @@ local game_is_paused = false
 local is_player_spawned = false
 local death_link_status = false
 local messages_setting = "all"
+local forced_disconnect = false
+local hostname = ""
 
 local ap = nil --- @type APClient
 
@@ -65,6 +67,7 @@ local function GetConnectionTags()
 end
 
 local function UpdateConnectionTags()
+	if slot_options == nil then return end
 	ap:ConnectUpdate(nil, GetConnectionTags())
 end
 
@@ -351,10 +354,27 @@ local function RestoreNewGameItems()
 end
 
 
+local function ForceDisconnect(msg)
+	forced_disconnect = true
+	slot_options = nil
+	ConnectionError(msg .. "\nPlease update the settings and restart the game.")
+end
+
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected()
+	if GameHasFlagRun("ap_connected_once") then
+		if tostring(ap:get_player_number()) ~= Globals.PlayerSlot:get() then
+			ForceDisconnect("Reconnected to wrong slot for this save file")
+			return
+		end
+	end
+	current_player_slot = ap:get_player_number()
+	Globals.PlayerSlot:set(current_player_slot)
+
 	GamePrint("$ap_connected_to_server")
-	ConnIcon:setConnected()
+	local connmsg = string.format("Connected to slot %s", ap:get_slot())
+	ConnIcon:setConnected(connmsg)
 
 	GameAddFlagRun("ap_connected_once")
 
@@ -374,9 +394,6 @@ function RECV_MSG.Connected()
 	if slot_options.lock_portals ~= nil then
 		GameAddFlagRun("ap_portals_locked")
 	end
-
-	current_player_slot = ap:get_player_number()
-	Globals.PlayerSlot:set(current_player_slot)
 
 	-- spawn kill saver makes it so you won't get traps in the first couple seconds after connecting
 	GameRemoveFlagRun("ap_spawn_kill_saver")
@@ -720,6 +737,14 @@ local function connect()
 
 	local function on_room_info()
 		Log.Info("on_room_info")
+
+		if GameHasFlagRun("ap_connected_once") then
+			if ap:get_seed() ~= Globals.Seed:get() then
+				ForceDisconnect("Reconnected to wrong room for this save file")
+				return
+			end
+		end
+
 		Globals.Seed:set(ap:get_seed())
 
 		if messages_setting == "none" then
@@ -772,9 +797,10 @@ local function connect()
 		RECV_MSG.Bounced(bounce)
 	end
 
-	local hostname = tostring(host) .. ":" .. tostring(port)
+	hostname = tostring(host) .. ":" .. tostring(port)
 	Log.Warn("Connecting on " .. hostname)
 	ap = APLIB(uuid, GAME_NAME, hostname)
+	LogWindow:SetAP(ap)
 
 	ap:set_socket_connected_handler(on_socket_connected)
 	ap:set_socket_error_handler(on_socket_error)
@@ -845,7 +871,7 @@ end
 function OnWorldPostUpdate()
 	UpdateUI()
 
-	if is_player_spawned then
+	if is_player_spawned and not forced_disconnect then
 		ap:poll()
 		CheckGlobalsAndFlags()
 		UpdatePlayerPoptrackerPosition()
@@ -859,6 +885,7 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	-- Workaround: When the player creates a new game, OnPlayerDied gets called (triggers DeathLink).
 	-- However we know they have to pause the game (menu) to start a new game.
 	game_is_paused = is_paused and not is_inventory_pause
+
 	if IsDeathLinkEnabled() > 0 and death_link_status == false then
 		SetDeathLinkEnabled(true)
 		death_link_status = true
@@ -888,7 +915,7 @@ function OnPausePreUpdate()
 	UpdateUI()
 
 	-- Stay connected while the game is paused
-	if is_player_spawned then
+	if is_player_spawned and not forced_disconnect then
 		ap:poll()
 	end
 
@@ -922,7 +949,7 @@ end
 local world_state_initialized = false
 function OnWorldPreUpdate()
 	if not world_state_initialized then
-		LogWindow:create(ap)
+		LogWindow:create()
 		world_state_initialized = true
 	end
 end

@@ -1,5 +1,5 @@
 local APLIB = require("mods.archipelago.bin.lua-apclientpp") ---@type APClient
-local LogWindow = dofile("data/archipelago/lib/ui_lib.lua") ---@class UI_class
+local LogWindow = dofile("data/archipelago/lib/ui_lib.lua") ---@class LogWindow : UI_class
 local Globals = dofile("data/archipelago/scripts/globals.lua") ---@type Globals
 
 local color_map = {
@@ -37,7 +37,7 @@ function GuiSetNextNinePieceAlpha(alpha)
 end
 
 ---Initializes the log window.
-function LogWindow:create(ap)
+function LogWindow:create()
 	self:New()
 	self:updateDimensionsAndCalc()
 
@@ -53,7 +53,6 @@ function LogWindow:create(ap)
 	end
 	self.tailing_log = true
 	self.tailing_y = 0
-	self.ap = ap
 
 	self:resetPrinter()
 	self:setColor("white")
@@ -61,6 +60,11 @@ function LogWindow:create(ap)
 	self.draw_mode = true
 
 	self.log_limit = ModSettingGet("archipelago.log_limit") or 1000
+end
+
+---@param ap APClient
+function LogWindow:SetAP(ap)
+	self.ap = ap
 end
 
 function LogWindow:updateDimensionsAndCalc()
@@ -236,6 +240,8 @@ end
 
 -- ref: https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#JSONMessagePart
 function LogWindow:drawMessage(msg)
+	if self.ap == nil then return end
+
 	for _, token in ipairs(msg) do
 		if self.draw_mode then
 			if token.color then
