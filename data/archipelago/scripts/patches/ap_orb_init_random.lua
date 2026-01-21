@@ -4,7 +4,7 @@ dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 local function APOrbInitRandom()
 	local AP = dofile("data/archipelago/scripts/constants.lua")
-	local Globals = dofile("data/archipelago/scripts/globals.lua")
+	local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 
 	local entity_id = GetUpdatedEntityID()
 	local pos_x, pos_y = EntityGetTransform(entity_id)

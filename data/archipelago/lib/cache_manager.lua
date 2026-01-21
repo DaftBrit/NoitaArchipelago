@@ -1,6 +1,6 @@
-local Object = dofile("data/archipelago/lib/classic/classic.lua")
+local Object = dofile("data/archipelago/lib/classic/classic.lua") ---@type Object
 local JSON = dofile("data/archipelago/lib/json.lua")
-local Log = dofile("data/archipelago/scripts/logger.lua")
+local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 
 -- TODO: We should consider the following edge cases
 --	1. We don't have write access or some other program took hold of the file

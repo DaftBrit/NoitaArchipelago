@@ -10,8 +10,8 @@ ModMaterialsFileAdd("data/archipelago/materials.xml")
 ModMagicNumbersFileAdd("data/archipelago/magic_numbers.xml")
 
 --LIBS
-local APLIB = require("mods.archipelago.bin.lua-apclientpp")
-local Log = dofile("data/archipelago/scripts/logger.lua")
+local APLIB = require("mods.archipelago.bin.lua-apclientpp") ---@type APClient
+local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 
 local JSON = dofile("data/archipelago/lib/json.lua")
 function JSON:onDecodeError(message, text, location, etc)
@@ -30,28 +30,48 @@ local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 -- Modules
-local Globals = dofile("data/archipelago/scripts/globals.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Cache = dofile("data/archipelago/scripts/caches.lua")
-local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua")
-local LogWindow = dofile("data/archipelago/ui/log_window.lua")
+local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua") --- @type ConnIcon
+local LogWindow = dofile("data/archipelago/ui/log_window.lua") --- @type LogWindow
 local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
-local slot_options = nil
-local connect_tags = {"Lua-APClientPP"}
+local slot_options = nil --- @type table?
+local connect_tags = {
+	["Lua-APClientPP"] = 1
+}
 
 local last_death_time = 0
 local current_player_slot = -1
 local game_is_paused = false
 local is_player_spawned = false
 local death_link_status = false
+local messages_setting = "all"
+local forced_disconnect = false
+local req_restart = false
+local hostname = ""
 
-local ap = nil
+local ap = nil --- @type APClient
+local gui = GuiCreate()
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
 ----------------------------------------------------------------------------------------------------
+
+local function GetConnectionTags()
+	local tags_arr = {}
+	for tag, _ in pairs(connect_tags) do
+		table.insert(tags_arr, tag)
+	end
+	return tags_arr
+end
+
+local function UpdateConnectionTags()
+	if slot_options == nil then return end
+	ap:ConnectUpdate(nil, GetConnectionTags())
+end
 
 -- Toggles DeathLink
 local function SetDeathLinkEnabled(enabled)
@@ -60,16 +80,15 @@ local function SetDeathLinkEnabled(enabled)
 			-- it's already enabled, so no need to continue here
 			return
 		end
-		table.insert(connect_tags, "DeathLink")
-	end
-	if not enabled then
+		connect_tags["DeathLink"] = 1
+	else
 		if death_link_status == false then
 			return
 		end
-		connect_tags = {"Lua-APClientPP"}
+		connect_tags["DeathLink"] = nil
 		death_link_status = false
 	end
-	ap:ConnectUpdate(nil, connect_tags)
+	UpdateConnectionTags()
 end
 
 
@@ -292,6 +311,7 @@ local RECV_MSG = {}
 local function ConnectionError(msg_str)
 	-- commented out since it makes the user think there's a problem when there isn't one
 	-- Log.Error(msg_str)
+	slot_options = nil
 	Log.Warn(msg_str)
 	ConnIcon:setDisconnected(msg_str)
 end
@@ -337,10 +357,26 @@ local function RestoreNewGameItems()
 end
 
 
+local function ForceDisconnect(msg)
+	forced_disconnect = true
+	ConnectionError(msg .. "\nPlease update the settings and restart the game.")
+end
+
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected()
+	if GameHasFlagRun("ap_connected_once") then
+		if tostring(ap:get_player_number()) ~= Globals.PlayerSlot:get() then
+			ForceDisconnect("Reconnected to wrong slot for this save file")
+			return
+		end
+	end
+	current_player_slot = ap:get_player_number()
+	Globals.PlayerSlot:set(current_player_slot)
+
 	GamePrint("$ap_connected_to_server")
-	ConnIcon:setConnected()
+	local connmsg = string.format("Connected to slot %s", ap:get_slot())
+	ConnIcon:setConnected(connmsg)
 
 	GameAddFlagRun("ap_connected_once")
 
@@ -360,9 +396,6 @@ function RECV_MSG.Connected()
 	if slot_options.lock_portals ~= nil then
 		GameAddFlagRun("ap_portals_locked")
 	end
-
-	current_player_slot = ap:get_player_number()
-	Globals.PlayerSlot:set(current_player_slot)
 
 	-- spawn kill saver makes it so you won't get traps in the first couple seconds after connecting
 	GameRemoveFlagRun("ap_spawn_kill_saver")
@@ -399,6 +432,41 @@ function RECV_MSG.Connected()
 	SetDeathLinkEnabled(IsDeathLinkEnabled() > 0)
 end
 
+---@param location integer
+local function PrintLocationCheckedIfNoText(location)
+	if messages_setting ~= "none" then return end
+
+	local msg = {
+		{ text = "Checked " },
+		{ type = "location_id", text = tostring(location), player = tostring(current_player_slot) },
+	}
+	local extra = {}
+
+	RECV_MSG.PrintJSON(msg, extra)
+end
+
+---@param item NetworkItem
+local function PrintItemReceiveMessageIfNoText(item)
+	if messages_setting ~= "none" then return end
+
+	local msg = {
+		{ text = "Received " },
+		{ type = "item_id", text = tostring(item.item), player = tostring(current_player_slot), flags = tostring(item.flags) },
+		{ text = " from "},
+		{ type = "player_id", text = tostring(item.player) },
+		{ text = " (" },
+		{ type = "location_id", text = tostring(item.location), player = tostring(item.player) },
+		{ text = ")" },
+	}
+	local extra = {
+		type = "ItemSend",
+		receiving = current_player_slot,
+		item = item,
+	}
+
+	RECV_MSG.PrintJSON(msg, extra)
+end
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
 function RECV_MSG.ReceivedItems(items)
 	local is_first_time_connected = Cache.ItemDelivery:is_empty()
@@ -416,8 +484,10 @@ function RECV_MSG.ReceivedItems(items)
 			elseif not is_first_time_connected or GameHasFlagRun("ap_spawn_kill_saver") then
 				SpawnReceivedItem(item)
 			end
+		end
 
-
+		if not is_first_time_connected and GameHasFlagRun("ap_spawn_kill_saver") then
+			PrintItemReceiveMessageIfNoText(item)
 		end
 	end
 
@@ -427,11 +497,57 @@ function RECV_MSG.ReceivedItems(items)
 end
 
 
+local function ParseMessage(msg)
+	local result = {}
+	for _, token in ipairs(msg) do
+		if token.type ~= nil then
+			if token.type == "player_id" then
+				local player_id = tonumber(token.text)
+				local name = ap:get_player_alias(player_id)
+				table.insert(result, name)
+			elseif token.type == "item_id" then
+				local item_id = tonumber(token.text)
+				local game = ap:get_player_game(tonumber(token.player))
+				local name = ap:get_item_name(item_id, game)
+				table.insert(result, name)
+			elseif token.type == "location_id" then
+				local location_id = tonumber(token.text)
+				local game = ap:get_player_game(tonumber(token.player))
+				local name = ap:get_location_name(location_id, game)
+				table.insert(result, name)
+			elseif token.text ~= nil then
+				table.insert(result, token.text)
+			end
+		elseif token.text ~= nil then
+			table.insert(result, token.text)
+		end
+	end
+	return table.concat(result, "")
+end
+
+local recent_messages = {}
+local function ShouldPrintMessage(msg_str)
+	local current_time = GameGetRealWorldTimeSinceStarted()
+	local last_time = recent_messages[msg_str] or -1
+	if current_time - last_time < 1 then
+		return false
+	end
+
+	recent_messages[msg_str] = current_time
+	return true
+end
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
 function RECV_MSG.PrintJSON(msg, extra)
-	local msg_str = ap:render_json(msg, APLIB.RenderFormat.TEXT)
+	local msg_str = ParseMessage(msg)
 
-	if extra["type"] == "ItemSend" then
+	if not ShouldPrintMessage(msg_str) then
+		Log.Info(msg_str)
+		return
+	end
+
+	local msg_type = extra["type"]
+	if msg_type == "ItemSend" then
 		local destination_player_id = extra["receiving"]
 		local source_player_id = extra["item"]["player"]
 		local item_id = extra["item"]["item"]
@@ -445,15 +561,29 @@ function RECV_MSG.PrintJSON(msg, extra)
 			GamePrintImportant(item_name, msg_str)
 			return
 		end
-	elseif extra["type"] == "Countdown" then
+
+		if messages_setting ~= "all" and not is_destination_player and not is_source_player then
+			return
+		end
+	elseif msg_type == "Countdown" then
 		local countdown_number = extra["countdown"]
 		if countdown_number == 0 then
 			countdown_fun()
 		end
+	elseif msg_type == "Join" or msg_type == "Part" then
+		if ModSettingGet("archipelago.join_leave_messages") == "off" then
+			return
+		end
+	elseif msg_type == "Hint" then
+		local is_destination_player = extra["receiving"] == current_player_slot
+		local is_source_player = extra["item"]["player"] == current_player_slot
+
+		if messages_setting ~= "all" and not is_destination_player and not is_source_player then
+			return
+		end
 	end
 
 	Log.Info(msg_str)
-	Log.Info(JSON:encode(msg))
 	GamePrint(msg_str)
 	LogWindow:addLogMessage(msg)
 end
@@ -549,12 +679,12 @@ local function CheckCommandFlags()
 	if slot_options ~= nil then
 		if GameHasFlagRun("ap_collect_items_used") then
 			Log.Info("AP: Collecting items...")
-			ap:say("!collect")
+			ap:Say("!collect")
 		end
 
 		if GameHasFlagRun("ap_release_items_used") then
 			Log.Info("AP: Releasing items...")
-			ap:say("!release")
+			ap:Say("!release")
 		end
 	end
 
@@ -600,7 +730,12 @@ local function connect()
 	end
 
 	local function on_socket_error(msg)
-		ConnectionError(msg)
+		if msg:find("actively refused") then
+			-- Don't keep reconnecting if there's no chance it will work
+			ForceDisconnect(msg)
+		else
+			ConnectionError(msg)
+		end
 	end
 
 	local function on_socket_disconnected()
@@ -609,9 +744,25 @@ local function connect()
 
 	local function on_room_info()
 		Log.Info("on_room_info")
+
+		if GameHasFlagRun("ap_connected_once") then
+			if ap:get_seed() ~= Globals.Seed:get() then
+				ForceDisconnect("Reconnected to wrong room for this save file")
+				return
+			end
+		end
+
 		Globals.Seed:set(ap:get_seed())
-		-- client version 0.4.1
-		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, {"Lua-APClientPP"}, { 0, 6, 2 })
+
+		if messages_setting == "none" then
+			connect_tags["NoText"] = 1
+		end
+		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, GetConnectionTags(), { 0, 6, 2 })
+
+		GlobalsSetValue("ap_collect_permission", tostring(ap:get_permission("collect") or APLIB.Permission.GOAL))
+		GlobalsSetValue("ap_release_permission", tostring(ap:get_permission("release") or APLIB.Permission.GOAL))
+		Log.Warn("Collect perm: " .. tostring(ap:get_permission("collect")))
+		Log.Warn("Release perm: " .. tostring(ap:get_permission("release")))
 	end
 
 	local function on_slot_connected(slot_data)
@@ -621,7 +772,7 @@ local function connect()
 	end
 
 	local function on_slot_refused(reasons)
-		ConnectionError("Slot refused: " .. table.concat(reasons, ", "))
+		ForceDisconnect("Slot refused: " .. table.concat(reasons, ", "))
 	end
 
 	local function on_items_received(items)
@@ -638,6 +789,9 @@ local function connect()
 		Log.Info("on_location_checked: " .. JSON:encode(locations))
 		for _, location_id in pairs(locations) do
 			remove_collected_item(location_id)
+			if GameHasFlagRun("ap_spawn_kill_saver") then
+				PrintLocationCheckedIfNoText(location_id)
+			end
 		end
 	end
 
@@ -650,7 +804,10 @@ local function connect()
 		RECV_MSG.Bounced(bounce)
 	end
 
-	ap = APLIB(uuid, GAME_NAME, host .. ":" .. port)
+	hostname = tostring(host) .. ":" .. tostring(port)
+	Log.Warn("Connecting on " .. hostname)
+	ap = APLIB(uuid, GAME_NAME, hostname)
+	LogWindow:SetAP(ap)
 
 	ap:set_socket_connected_handler(on_socket_connected)
 	ap:set_socket_error_handler(on_socket_error)
@@ -663,8 +820,6 @@ local function connect()
 	ap:set_location_checked_handler(on_location_checked)
 	ap:set_print_json_handler(on_print_json)
 	ap:set_bounced_handler(on_bounced)
-
-	LogWindow:create(ap)
 end
 
 local function UpdateUI()
@@ -673,6 +828,14 @@ local function UpdateUI()
 		LogWindow:toggle()
 	end
 	LogWindow:update()
+
+	if (forced_disconnect or slot_options == nil) and req_restart then
+		GuiStartFrame(gui)
+		GuiColorSetForNextWidget(gui, 1, 0, 0, 1)
+		GuiLayoutBeginVertical(gui, 1, 1)
+		GuiText(gui, 0, 0, "Mod restart required for updated settings to take effect")
+		GuiLayoutEnd(gui)
+	end
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -723,7 +886,7 @@ end
 function OnWorldPostUpdate()
 	UpdateUI()
 
-	if is_player_spawned then
+	if is_player_spawned and not forced_disconnect then
 		ap:poll()
 		CheckGlobalsAndFlags()
 		UpdatePlayerPoptrackerPosition()
@@ -737,6 +900,7 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	-- Workaround: When the player creates a new game, OnPlayerDied gets called (triggers DeathLink).
 	-- However we know they have to pause the game (menu) to start a new game.
 	game_is_paused = is_paused and not is_inventory_pause
+
 	if IsDeathLinkEnabled() > 0 and death_link_status == false then
 		SetDeathLinkEnabled(true)
 		death_link_status = true
@@ -746,7 +910,24 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 		death_link_status = false
 	end
 
+	-- Disable/enable text messages if settings change
+	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
+	if messages_setting == "none" and not connect_tags["NoText"] then
+		Log.Info("Disabling text")
+		connect_tags["NoText"] = 1
+		UpdateConnectionTags()
+	elseif messages_setting ~= "none" and connect_tags["NoText"] then
+		Log.Info("Enabling text")
+		connect_tags["NoText"] = nil
+		UpdateConnectionTags()
+	end
+
 	LogWindow:close()
+
+	local newhostname = ModSettingGetNextValue("archipelago.server_address") .. ":" .. ModSettingGetNextValue("archipelago.server_port")
+	if hostname ~= newhostname then
+		req_restart = true
+	end
 end
 
 -- Called while the game is paused
@@ -754,7 +935,7 @@ function OnPausePreUpdate()
 	UpdateUI()
 
 	-- Stay connected while the game is paused
-	if is_player_spawned then
+	if is_player_spawned and not forced_disconnect then
 		ap:poll()
 	end
 
@@ -779,9 +960,18 @@ end
 function OnModInit()
 	GameRemoveFlagRun("AP_LocationInfo_received")
 	create_dir("archipelago_cache")
+	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
 	ConnIcon:create()
 	connect()
 	PrintActiveModInfo()
+end
+
+local world_state_initialized = false
+function OnWorldPreUpdate()
+	if not world_state_initialized then
+		LogWindow:create()
+		world_state_initialized = true
+	end
 end
 
 function OnPlayerSpawned()

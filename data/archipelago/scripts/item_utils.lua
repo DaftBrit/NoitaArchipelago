@@ -3,8 +3,8 @@ dofile_once("data/archipelago/scripts/newgame_spawner.lua")
 
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
-local Globals = dofile("data/archipelago/scripts/globals.lua")
-local Log = dofile("data/archipelago/scripts/logger.lua")
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
+local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 
 -- Traps
 function BadTimes()

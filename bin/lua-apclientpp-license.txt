@@ -30,7 +30,7 @@ for more details and individual licenses.
 
 MIT License
 
-Copyright (c) 2022 black-sliver, FelicitusNeko
+Copyright (c) 2022-2025 black-sliver, FelicitusNeko, highrow623, NewSoupVi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

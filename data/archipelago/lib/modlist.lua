@@ -1,5 +1,4 @@
----@type nxml
-local nxml = dofile_once("data/archipelago/lib/nxml.lua")
+local nxml = dofile_once("data/archipelago/lib/nxml.lua") ---@type nxml
 
 --- @class Modlist
 local Modlist = {}
@@ -19,11 +18,18 @@ local function xml_has_flag(modxml, tagname)
 	return value ~= nil and value ~= "0"
 end
 
+local function GetContent(filename)
+	return ModTextFileGetContent(filename)
+end
+
 ---Unprotected file read
 ---@param filename string
 ---@return string
 local function read_whole_file(filename)
 	local f = io.open(filename, "r")
+	if f == nil then
+		return "<Mod />"
+	end
 	local result = f:read("*a")
 	f:close()
 	return result

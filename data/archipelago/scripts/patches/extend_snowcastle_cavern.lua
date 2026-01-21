@@ -1,6 +1,6 @@
 local function ap_extend_snowcastle_cavern()
 	local AP = dofile("data/archipelago/scripts/constants.lua")
-	local Globals = dofile("data/archipelago/scripts/globals.lua")
+	local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 	local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 	-- Local constants

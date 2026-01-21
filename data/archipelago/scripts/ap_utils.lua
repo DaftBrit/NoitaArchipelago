@@ -1,8 +1,8 @@
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/perks/perk.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
-local Log = dofile("data/archipelago/scripts/logger.lua")
-local Globals = dofile("data/archipelago/scripts/globals.lua")
+local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
+local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 
 
 function contains_element(tbl, elem)
