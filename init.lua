@@ -50,9 +50,11 @@ local is_player_spawned = false
 local death_link_status = false
 local messages_setting = "all"
 local forced_disconnect = false
+local req_restart = false
 local hostname = ""
 
 local ap = nil --- @type APClient
+local gui = GuiCreate()
 
 ----------------------------------------------------------------------------------------------------
 -- DEATHLINK
@@ -309,6 +311,7 @@ local RECV_MSG = {}
 local function ConnectionError(msg_str)
 	-- commented out since it makes the user think there's a problem when there isn't one
 	-- Log.Error(msg_str)
+	slot_options = nil
 	Log.Warn(msg_str)
 	ConnIcon:setDisconnected(msg_str)
 end
@@ -356,7 +359,6 @@ end
 
 local function ForceDisconnect(msg)
 	forced_disconnect = true
-	slot_options = nil
 	ConnectionError(msg .. "\nPlease update the settings and restart the game.")
 end
 
@@ -728,7 +730,12 @@ local function connect()
 	end
 
 	local function on_socket_error(msg)
-		ConnectionError(msg)
+		if msg:find("actively refused") then
+			-- Don't keep reconnecting if there's no chance it will work
+			ForceDisconnect(msg)
+		else
+			ConnectionError(msg)
+		end
 	end
 
 	local function on_socket_disconnected()
@@ -765,7 +772,7 @@ local function connect()
 	end
 
 	local function on_slot_refused(reasons)
-		ConnectionError("Slot refused: " .. table.concat(reasons, ", "))
+		ForceDisconnect("Slot refused: " .. table.concat(reasons, ", "))
 	end
 
 	local function on_items_received(items)
@@ -821,6 +828,14 @@ local function UpdateUI()
 		LogWindow:toggle()
 	end
 	LogWindow:update()
+
+	if (forced_disconnect or slot_options == nil) and req_restart then
+		GuiStartFrame(gui)
+		GuiColorSetForNextWidget(gui, 1, 0, 0, 1)
+		GuiLayoutBeginVertical(gui, 1, 1)
+		GuiText(gui, 0, 0, "Mod restart required for updated settings to take effect")
+		GuiLayoutEnd(gui)
+	end
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -908,6 +923,11 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	end
 
 	LogWindow:close()
+
+	local newhostname = ModSettingGetNextValue("archipelago.server_address") .. ":" .. ModSettingGetNextValue("archipelago.server_port")
+	if hostname ~= newhostname then
+		req_restart = true
+	end
 end
 
 -- Called while the game is paused
