@@ -94,10 +94,10 @@ end
 
 -- Updates a death timer to prevent immediate re-sends of deaths that have been received.
 local function UpdateDeathTime()
-	local curr_death_time = os.time()
-	if curr_death_time - last_death_time <= 1 then return false end
+	local curr_death_time = ap:get_server_time()
+	local result = curr_death_time - last_death_time > 1
 	last_death_time = curr_death_time
-	return true
+	return result
 end
 
 
