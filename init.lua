@@ -881,6 +881,51 @@ local function PrintActiveModInfo()
 	end
 end
 
+local function GetPrintableSettingStr(name, value, value_next)
+	local value_str = tostring(value)
+	local value_next_str = tostring(value_next)
+
+	if name:find("password", 1, true) or name:find("passwd", 1, true) or name:find("pwd", 1, true) then
+		value_str = "<HIDDEN>"
+		value_next_str = "<HIDDEN>"
+	end
+
+	if value_str == value_next_str then
+		return string.format("    %s = %s\n", name, value_str)
+	end
+	return string.format("    %s = %s -> %s\n", name, value_str, value_next_str)
+end
+
+local last_settings = ""
+local function PrintActiveSettings()
+	local settings_str = "[SETTINGS]\n"
+
+	local modids = Modlist.GetIDs()
+	local activemods = {}
+	for _, modid in ipairs(modids) do
+		activemods[modid:lower()] = true
+	end
+
+	local num_settings = ModSettingGetCount()
+	for i = 0, num_settings - 1 do
+		local name, value, value_next = ModSettingGetAtIndex(i)
+
+		local strend = name:find(".", 1, true)
+		if strend == nil then goto continue end
+
+		local setting_modid = name:sub(1, strend - 1)
+		if not activemods[setting_modid:lower()] then goto continue end
+
+		settings_str = settings_str .. GetPrintableSettingStr(name, value, value_next)
+		::continue::
+	end
+
+	if settings_str ~= last_settings then
+		Log.Info(settings_str)
+		last_settings = settings_str
+	end
+end
+
 -- Called every update frame in Noita
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnWorldPostUpdate
 function OnWorldPostUpdate()
@@ -928,6 +973,8 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	if hostname ~= newhostname then
 		req_restart = true
 	end
+
+	PrintActiveSettings()
 end
 
 -- Called while the game is paused
@@ -948,6 +995,7 @@ function OnPlayerDied(player)
 	if slot_options == nil or IsDeathLinkEnabled() == 0 or game_is_paused or not UpdateDeathTime() then return end
 	local death_msg = GetCauseOfDeath() or "skill issue"
 	local slotname = ap:get_slot()
+	Log.Info("Deathlink triggered - player died (" .. death_msg .. ")")
 	ap:Bounce({
 		time = last_death_time,
 		cause = slotname .. " died to " .. death_msg,
@@ -963,13 +1011,14 @@ function OnModInit()
 	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
 	ConnIcon:create()
 	connect()
-	PrintActiveModInfo()
 end
 
 local world_state_initialized = false
 function OnWorldPreUpdate()
 	if not world_state_initialized then
 		LogWindow:create()
+		PrintActiveModInfo()
+		PrintActiveSettings()
 		world_state_initialized = true
 	end
 end

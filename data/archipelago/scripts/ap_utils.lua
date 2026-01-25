@@ -391,7 +391,7 @@ end
 -- for use with same slot co-op and for collects
 function remove_collected_item(location_id)
 	local ap_entities = EntityGetWithTag("ap_item")
-	for _, entity_id in pairs(ap_entities) do
+	for _, entity_id in ipairs(ap_entities) do
 		local stored_location_id = getInternalVariableValue(entity_id, "ap_location_id", "value_int")
 		if stored_location_id == location_id then
 			print("removed entity " .. entity_id .. " because it was collected or your co-op partner grabbed it")
