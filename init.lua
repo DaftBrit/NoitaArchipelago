@@ -105,7 +105,8 @@ local function IsDeathLinkEnabled()
 	if slot_options == nil then
 		return 0
 	end
-	local death_link_setting = ModSettingGet("archipelago.death_link")
+
+	local death_link_setting = tostring(ModSettingGet("archipelago.death_link"))
 	if slot_options.death_link == 0 or death_link_setting == "off" then
 		return 0
 	elseif death_link_setting == "on" then
@@ -113,8 +114,7 @@ local function IsDeathLinkEnabled()
 	elseif death_link_setting == "traps" then
 		return 2
 	else
-		Log.Info(death_link_setting)
-		Log.Error("Error in IsDeathLinkEnabled")
+		Log.Error("Error in IsDeathLinkEnabled: " .. death_link_setting)
 		return 0
 	end
 end
@@ -320,10 +320,16 @@ end
 local function SpawnReceivedItem(item)
 	local item_id = item["item"]
 	if ShouldDeliverItem(item) then
+		local delivered = true
 		if GameHasFlagRun("ap_spawn_kill_saver") then
-			SpawnItem(item_id, true)
+			delivered = SpawnItem(item_id, true)
 		elseif item_table[item_id].redeliverable then
-			SpawnItem(item_id, false)
+			delivered = SpawnItem(item_id, false)
+		end
+
+		if not delivered then
+			-- Using this instead of async so that restarting will still redeliver the item
+			-- TODO add to redelivery queue
 		end
 	end
 end

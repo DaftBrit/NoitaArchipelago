@@ -9,6 +9,10 @@ local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 -- Traps
 function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
+
+	-- TODO use the actual TI file to allow modded TI items, then choose bad events from that.
+	-- No need for an exact copy in this repo.
+	-- Also look at https://github.com/Miczu/Noita-Twitch-Integration for more bad events.
 	dofile("data/archipelago/scripts/ap_badtimes.lua")
 
 	local event = streaming_events[Random(1, #streaming_events)]
@@ -44,7 +48,7 @@ function SpawnItem(item_id, traps)
 	local item = item_table[item_id]
 	if item == nil then
 		Log.Error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
-		return
+		return false
 	end
 	-- setting the random seed using arbitrary offsets that get modified on each spawn
 	local rand_x = tonumber(GlobalsGetValue("ap_random_hax"))
@@ -52,7 +56,8 @@ function SpawnItem(item_id, traps)
 	SeedRandom(rand_x, rand_y)
 
 	if item_id == AP.TRAP_ID then
-		if not traps then return end
+		if not traps then return true end
+		-- It's fine if a trap gets dodged by poly
 		BadTimes()
 		GlobalsSetValue("ap_random_hax", tostring(rand_x + 2))
 		Log.Info("Badtimes")
@@ -60,9 +65,11 @@ function SpawnItem(item_id, traps)
 		Globals.HMPortalsUnlocked:set(Globals.HMPortalsUnlocked:get_num(0) + 1)
 		Log.Info("Progressive portal received")
 	elseif item.perk ~= nil then
+		if get_player() == nil then return false end
 		give_perk(item.perk)
 		Log.Info("Perk spawned")
 	elseif item.gold_amount ~= nil then
+		if get_player() == nil then return false end
 		add_money(item.gold_amount)
 	elseif item.potion ~= nil then
 		spawn_potion(item.items[1])
@@ -81,7 +88,9 @@ function SpawnItem(item_id, traps)
 		Log.Info("Item spawned" .. item_to_spawn)
 	else
 		Log.Error("[AP] Item " .. tostring(item_id) .. " not properly configured")
+		return true -- don't redeliver this error item
 	end
+	return true
 end
 
 
