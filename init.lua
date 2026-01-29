@@ -317,20 +317,36 @@ local function ConnectionError(msg_str)
 end
 
 
-local function SpawnReceivedItem(item)
-	local item_id = item["item"]
-	if ShouldDeliverItem(item) then
-		local delivered = true
-		if GameHasFlagRun("ap_spawn_kill_saver") then
-			delivered = SpawnItem(item_id, true)
-		elseif item_table[item_id].redeliverable then
-			delivered = SpawnItem(item_id, false)
-		end
+---@param item_id integer
+local function TrySpawnItem(item_id)
+	local delivered = true
+	if GameHasFlagRun("ap_spawn_kill_saver") then
+		delivered = SpawnItem(item_id, true)
+	elseif item_table[item_id].redeliverable then
+		delivered = SpawnItem(item_id, false)
+	end
 
-		if not delivered then
-			-- Using this instead of async so that restarting will still redeliver the item
-			-- TODO add to redelivery queue
-		end
+	if not delivered then
+		-- Using this instead of async so that restarting will still redeliver the item
+		Globals.RedeliveryQueue:append(item_id)
+	end
+end
+
+
+---@param item NetworkItem
+local function SpawnReceivedItem(item)
+	if ShouldDeliverItem(item) then
+		local item_id = item.item
+		TrySpawnItem(item_id)
+	end
+end
+
+
+---Items failed due to being polymorphed so the player entity was not found.
+local function CheckRedeliveryQueue()
+	local items = Globals.RedeliveryQueue:get_table()
+	for _, item_id in ipairs(items) do
+		TrySpawnItem(item_id)
 	end
 end
 
@@ -338,7 +354,7 @@ end
 local function SpawnAllNewGameItems()
 	local ng_items = {}
 	for _, item in pairs(Cache.ItemDelivery:reference()) do
-		local item_id = item["item"]
+		local item_id = item.item
 		if item_table[item_id].newgame then
 			ng_items[item_id] = (ng_items[item_id] or 0) + 1
 		end
@@ -474,9 +490,10 @@ local function PrintItemReceiveMessageIfNoText(item)
 end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#receiveditems
+---@param items NetworkItem[]
 function RECV_MSG.ReceivedItems(items)
 	local is_first_time_connected = Cache.ItemDelivery:is_empty()
-	for _, item in pairs(items) do
+	for _, item in ipairs(items) do
 		-- we're in sync or we're continuing the game and receiving items in async
 		if not Cache.ItemDelivery:is_set(tostring(item.index)) then
 			Cache.ItemDelivery:set(tostring(item.index), item)
@@ -711,6 +728,7 @@ local function CheckGlobalsAndFlags()
 		if slow_check_timer > 60 then
 			slow_check_timer = 0
 			CheckShopScouted()
+			CheckRedeliveryQueue()
 		end
 	end
 

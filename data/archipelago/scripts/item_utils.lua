@@ -43,6 +43,9 @@ function GivePlayerOrbsOnSpawn(orb_count)
 end
 
 
+---@param item_id integer
+---@param traps boolean
+---@return boolean
 function SpawnItem(item_id, traps)
 	Log.Info("item spawning shortly")
 	local item = item_table[item_id]
@@ -94,6 +97,7 @@ function SpawnItem(item_id, traps)
 end
 
 
+---@param item_counts table<integer, integer>
 function NGSpawnItems(item_counts)
 	if _G.ng_spawn_check ~= true then
 		_G.ng_spawn_check = true

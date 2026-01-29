@@ -6,6 +6,7 @@ local Globals = {
 	LocationUnlockQueue = GlobalComplex("AP_COMPONENT_ITEM_UNLOCK_QUEUE"), --- @type GlobalComplex
 	ShopScoutedQueue = GlobalComplex("AP_COMPONENT_SHOPITEM_SCOUTED_QUEUE"), --- @type GlobalComplex
 	ShopScouted = GlobalComplex("AP_COMPONENT_SHOPITEM_SCOUTED"), --- @type GlobalComplex
+	RedeliveryQueue = GlobalComplex("AP_REDELIVERY_QUEUE"), --- @type GlobalComplex
 	Seed = Global("ARCHIPELAGO_SEED"), --- @type Global
 	FirstLoadDone = Global("ARCHIPELAGO_FIRST_LOAD_DONE"), --- @type Global
 	PlayerSlot = Global("ARCHIPELAGO_PLAYER_SLOT"), --- @type Global

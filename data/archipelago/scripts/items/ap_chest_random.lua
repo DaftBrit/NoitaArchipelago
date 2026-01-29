@@ -1,11 +1,7 @@
-dofile_once("data/scripts/lib/utilities.lua")
-dofile_once("data/scripts/gun/gun_actions.lua")
-dofile_once("data/scripts/game_helpers.lua")
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local AP = dofile("data/archipelago/scripts/constants.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
-dofile_once("data/archipelago/scripts/item_utils.lua")
 dofile_once("data/scripts/items/chest_random.lua")
 
 
@@ -40,7 +36,7 @@ local function on_open(entity_item)
 				end
 				local item_id = location.item_id
 				if location.is_our_item then
-					SpawnItem(item_id, true)
+					Globals.RedeliveryQueue:append(item_id)
 					GameAddFlagRun("ap" .. i)
 				end
 				item_spawned = true
