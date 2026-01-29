@@ -345,6 +345,7 @@ end
 ---Items failed due to being polymorphed so the player entity was not found.
 local function CheckRedeliveryQueue()
 	local items = Globals.RedeliveryQueue:get_table()
+	Globals.RedeliveryQueue:reset()
 	for _, item_id in ipairs(items) do
 		TrySpawnItem(item_id)
 	end
