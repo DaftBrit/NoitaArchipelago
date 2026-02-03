@@ -317,22 +317,6 @@ local function ConnectionError(msg_str)
 end
 
 
----@param item_id integer
-local function TrySpawnItem(item_id)
-	local delivered = true
-	if GameHasFlagRun("ap_spawn_kill_saver") then
-		delivered = SpawnItem(item_id, true)
-	elseif item_table[item_id].redeliverable then
-		delivered = SpawnItem(item_id, false)
-	end
-
-	if not delivered then
-		-- Using this instead of async so that restarting will still redeliver the item
-		Globals.RedeliveryQueue:append(item_id)
-	end
-end
-
-
 ---@param item NetworkItem
 local function SpawnReceivedItem(item)
 	if ShouldDeliverItem(item) then

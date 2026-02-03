@@ -60,7 +60,6 @@ end
 ---@param traps boolean
 ---@return boolean
 function SpawnItem(item_id, traps)
-	Log.Info("item spawning shortly")
 	local item = item_table[item_id]
 	if item == nil then
 		Log.Error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
@@ -107,6 +106,22 @@ function SpawnItem(item_id, traps)
 		return true -- don't redeliver this error item
 	end
 	return true
+end
+
+
+---@param item_id integer
+function TrySpawnItem(item_id)
+	local delivered = true
+	if GameHasFlagRun("ap_spawn_kill_saver") then
+		delivered = SpawnItem(item_id, true)
+	elseif item_table[item_id].redeliverable then
+		delivered = SpawnItem(item_id, false)
+	end
+
+	if not delivered then
+		-- Using this instead of async so that restarting will still redeliver the item
+		Globals.RedeliveryQueue:append(item_id)
+	end
 end
 
 
