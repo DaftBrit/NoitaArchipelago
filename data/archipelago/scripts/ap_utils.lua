@@ -5,6 +5,9 @@ local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 
 
+---@param tbl table
+---@param elem any
+---@return boolean
 function contains_element(tbl, elem)
 	for _, v in ipairs(tbl or {}) do
 		if v == elem then return true end
@@ -12,20 +15,28 @@ function contains_element(tbl, elem)
 	return false
 end
 
-
+---@param s string
+---@return boolean
 function not_empty(s)
 	return s ~= nil and s ~= ''
 end
 
-
+--- @return entity_id|nil
 function get_player()
 	return EntityGetWithTag("player_unit")[1]
 end
 
--- Should always succeed
+--- Gets a position for spawning items. Should always succeed.
+--- Checks positions in this order:
+---   1. Entity tagged with `player_unit`
+---   2. Entity tagged with `polymorphed_player`
+---   3. Entity tagged with `polymorphed_cessation`
+---   4. Camera position
+---@return number x
+---@return number y
 function get_spawn_position()
 	local x, y = 0, 0
-	local player_entity = EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
+	local player_entity = get_player() or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
 	if player_entity ~= nil then
 		x, y = EntityGetTransform(player_entity)
 	else
@@ -34,7 +45,11 @@ function get_spawn_position()
 	return x, y
 end
 
-
+--- Staggers an x,y position randomly
+---@param x number|nil
+---@param y number|nil
+---@return number x
+---@return number y
 function random_offset(x, y)
 	if x == nil then x = 0 end
 	if y == nil then y = 0 end
@@ -44,18 +59,25 @@ function random_offset(x, y)
 end
 
 
---Function to spawn a perk at the player and then have the player automatically pick it up
+---Function to spawn a perk at the player and then have the player automatically pick it up
+---@param perk_name string
 function give_perk(perk_name)
-	for _, p in ipairs(get_players()) do
-		local x, y = EntityGetTransform(p)
-		local perk = perk_spawn(x, y, perk_name)
-		if perk then
-			perk_pickup(perk, p, EntityGetName(perk), false, false)
-		end
+	local p = get_player()
+	if p == nil then
+		Log.Error("give_perk - player doesn't exist for " .. perk_name)
+	end
+
+	local x, y = get_spawn_position()
+	local perk = perk_spawn(x, y, perk_name)
+	if perk and p then
+		perk_pickup(perk, p, EntityGetName(perk), false, false)
 	end
 end
 
-
+---@param potion string filename
+---@param x number|nil
+---@param y number|nil
+---@return entity_id
 function spawn_potion(potion, x, y)
 	-- if a position is not called, spawn it at the player
 	if x == nil or y == nil then
@@ -79,9 +101,14 @@ function spawn_potion(potion, x, y)
 	return potion_entity
 end
 
-
+---@param items string[]
 function add_items_to_inventory(items)
 	local player = get_player()
+	if player == nil then
+		Log.Error("add_items_to_inventory - player doesn't exist")
+		return
+	end
+
 	for _, path in ipairs(items) do
 		local item = EntityLoad(path)
 		if item then
@@ -94,26 +121,27 @@ end
 
 
 -- Uses the player's position to initialize the random seed
+---@param a number|nil
+---@param b number|nil
 function SeedRandom(a, b)
 	if a == nil or b == nil then
 		a = 0
 		b = 0
 	end
-	for _, p in ipairs(get_players()) do
-		local x, y = EntityGetTransform(p)
-		SetRandomSeed(x + a, y + b)
-	end
+	local x, y = get_spawn_position()
+	SetRandomSeed(x + a, y + b)
 end
 
-
+---@param filename string
+---@param xoff number|nil
+---@param yoff number|nil
+---@return entity_id
 function EntityLoadAtPlayer(filename, xoff, yoff)
-	for _, p in ipairs(get_players()) do
-		local x, y = EntityGetTransform(p)
-		return EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
-	end
+	local x, y = get_spawn_position()
+	return EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
 end
 
-
+---@return string
 function GetCauseOfDeath()
 	local raw_death_msg = StatsGetValue("killed_by")
 	local origin, cause = string.match(raw_death_msg or " | ", "(.*) | (.*)")
@@ -141,6 +169,8 @@ end
 
 -- Modified from @Priskip in Noita Discord (https://github.com/Priskip)
 -- Removes an Extra Life perk and returns true if one exists
+---@param entity_id entity_id
+---@return boolean
 function DecreaseExtraLife(entity_id)
 	-- guard
 	if entity_id == nil then return false end
@@ -174,6 +204,8 @@ end
 
 
 -- health and money functions from the cheatgui mod
+---@return number current HP
+---@return number max HP
 function get_health()
 	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
 	return ComponentGetValue2(dm, "hp"), ComponentGetValue2(dm, "max_hp")
@@ -181,6 +213,8 @@ end
 
 
 -- Note that these hp values get mulitplied by 25 by the game. Setting it to 80 means 2,000 health
+---@param cur_hp number
+---@param max_hp number
 function set_health(cur_hp, max_hp)
 	local damagemodels = EntityGetComponent(get_player(), "DamageModelComponent")
 	for _, damagemodel in ipairs(damagemodels or {}) do
@@ -189,7 +223,7 @@ function set_health(cur_hp, max_hp)
 	end
 end
 
-
+---@param health_increase number
 function add_cur_and_max_health(health_increase)
 	local cur_hp, max_hp = get_health()
 	set_health(cur_hp + health_increase, max_hp + health_increase)
@@ -202,6 +236,7 @@ function fully_heal()
 end
 
 
+---@param amt number
 local function set_money(amt)
 	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
 	if wallet then
@@ -210,6 +245,7 @@ local function set_money(amt)
 end
 
 
+---@param amt number
 function add_money(amt)
 	local player_id = get_player()
 	local x, y = EntityGetTransform(player_id)
@@ -389,6 +425,7 @@ end
 
 
 -- for use with same slot co-op and for collects
+---@param location_id integer
 function remove_collected_item(location_id)
 	local ap_entities = EntityGetWithTag("ap_item")
 	for _, entity_id in ipairs(ap_entities) do
@@ -402,6 +439,12 @@ function remove_collected_item(location_id)
 end
 
 
+---@param entity_file string
+---@param x number
+---@param y number
+---@param vel_x number
+---@param vel_y number
+---@return entity_id
 function shoot_projectile_ownerless(entity_file, x, y, vel_x, vel_y)
 	local entity_id = EntityLoad( entity_file, x, y )
 	local null_owner = 0
@@ -460,6 +503,8 @@ function give_debug_items()
 	-- don't aim other directions. the linear arc means it snaps to 8 directions
 end
 
+---@param dirname string
+---@return boolean
 local function dir_exists(dirname)
 	-- Universal way of checking whether a file or directory exists
 	local ok, err = os.rename(dirname, dirname)
@@ -473,6 +518,7 @@ local function dir_exists(dirname)
 	return ok
 end
 
+---@param dirname string
 function create_dir(dirname)
 	-- Prevent console window from appearing if it already exists
 	if dir_exists(dirname) then return end

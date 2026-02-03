@@ -6,12 +6,29 @@ local AP = dofile("data/archipelago/scripts/constants.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 
+
+local bad_events = nil
+local function InitBadTimes()
+	if bad_events ~= nil then return end
+	bad_events = {}
+
+	dofile_once("data/scripts/streaming_integration/event_list.lua")
+	for _, event in ipairs(streaming_events) do
+		if event.kind and event.kind <= STREAMING_EVENT_BAD then
+			table.insert(bad_events, event)
+		end
+	end
+end
+
+
 -- Traps
+-- Also look at https://github.com/Miczu/Noita-Twitch-Integration for more bad events ideas.
 function BadTimes()
 	--Function to spawn "Bad Times" events, uses the noita streaming integration system
-	dofile("data/archipelago/scripts/ap_badtimes.lua")
+	InitBadTimes()
 
-	local event = streaming_events[Random(1, #streaming_events)]
+	-- TODO weighted random sample based on `event.weight`
+	local event = bad_events[Random(1, #bad_events)]
 	GamePrintImportant(event.ui_name, event.ui_description)
 	_streaming_run_event(event.id)
 end
@@ -39,12 +56,14 @@ function GivePlayerOrbsOnSpawn(orb_count)
 end
 
 
+---@param item_id integer
+---@param traps boolean
+---@return boolean
 function SpawnItem(item_id, traps)
-	Log.Info("item spawning shortly")
 	local item = item_table[item_id]
 	if item == nil then
 		Log.Error("[AP] spawn_item: Item id " .. tostring(item_id) .. " does not exist!")
-		return
+		return false
 	end
 	-- setting the random seed using arbitrary offsets that get modified on each spawn
 	local rand_x = tonumber(GlobalsGetValue("ap_random_hax"))
@@ -52,7 +71,8 @@ function SpawnItem(item_id, traps)
 	SeedRandom(rand_x, rand_y)
 
 	if item_id == AP.TRAP_ID then
-		if not traps then return end
+		if not traps then return true end
+		-- It's fine if a trap gets dodged by poly
 		BadTimes()
 		GlobalsSetValue("ap_random_hax", tostring(rand_x + 2))
 		Log.Info("Badtimes")
@@ -60,9 +80,11 @@ function SpawnItem(item_id, traps)
 		Globals.HMPortalsUnlocked:set(Globals.HMPortalsUnlocked:get_num(0) + 1)
 		Log.Info("Progressive portal received")
 	elseif item.perk ~= nil then
+		if get_player() == nil then return false end
 		give_perk(item.perk)
 		Log.Info("Perk spawned")
 	elseif item.gold_amount ~= nil then
+		if get_player() == nil then return false end
 		add_money(item.gold_amount)
 	elseif item.potion ~= nil then
 		spawn_potion(item.items[1])
@@ -81,10 +103,29 @@ function SpawnItem(item_id, traps)
 		Log.Info("Item spawned" .. item_to_spawn)
 	else
 		Log.Error("[AP] Item " .. tostring(item_id) .. " not properly configured")
+		return true -- don't redeliver this error item
+	end
+	return true
+end
+
+
+---@param item_id integer
+function TrySpawnItem(item_id)
+	local delivered = true
+	if GameHasFlagRun("ap_spawn_kill_saver") then
+		delivered = SpawnItem(item_id, true)
+	elseif item_table[item_id].redeliverable then
+		delivered = SpawnItem(item_id, false)
+	end
+
+	if not delivered then
+		-- Using this instead of async so that restarting will still redeliver the item
+		Globals.RedeliveryQueue:append(item_id)
 	end
 end
 
 
+---@param item_counts table<integer, integer>
 function NGSpawnItems(item_counts)
 	if _G.ng_spawn_check ~= true then
 		_G.ng_spawn_check = true

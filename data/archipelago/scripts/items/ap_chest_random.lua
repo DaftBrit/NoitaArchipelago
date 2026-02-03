@@ -1,14 +1,12 @@
-dofile_once("data/scripts/lib/utilities.lua")
-dofile_once("data/scripts/gun/gun_actions.lua")
-dofile_once("data/scripts/game_helpers.lua")
 local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local AP = dofile("data/archipelago/scripts/constants.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
-dofile_once("data/archipelago/scripts/item_utils.lua")
 dofile_once("data/scripts/items/chest_random.lua")
+dofile_once("data/archipelago/scripts/item_utils.lua")
 
 
+---@param entity_item entity_id
 local function on_open(entity_item)
 	local biome_comp_id = EntityGetFirstComponent(entity_item, "VariableStorageComponent")
 	if biome_comp_id == nil then
@@ -39,8 +37,9 @@ local function on_open(entity_item)
 					Log.Error("ap_chest_random failed to retrieve info from cache")
 				end
 				local item_id = location.item_id
+				Log.Warn("Trying to spawn chest item " .. tostring(item_id) .. " for location " .. tostring(i))
 				if location.is_our_item then
-					SpawnItem(item_id, true)
+					TrySpawnItem(item_id)
 					GameAddFlagRun("ap" .. i)
 				end
 				item_spawned = true
@@ -54,8 +53,10 @@ local function on_open(entity_item)
 	EntityLoad("data/entities/particles/image_emitters/chest_effect.xml", x, y)
 end
 
-
-function item_pickup( entity_item, entity_who_picked, name )
-	on_open( entity_item )
-	EntityKill( entity_item )
+---@param entity_item entity_id
+---@param entity_who_picked entity_id
+---@param name string
+function item_pickup(entity_item, entity_who_picked, name)
+	on_open(entity_item)
+	EntityKill(entity_item)
 end
