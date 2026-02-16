@@ -31,38 +31,51 @@ local function IsEntityOwned(entity_id)
 	return false
 end
 
+local function IsFogRevealedForCredit()
+	-- Not visible
+	local kill_credit = tostring(ModSettingGet("archipelago.kills_in_fog") or "no")
+	if kill_credit == "no" then
+		local entity_id = GetUpdatedEntityID()
+		local x, y = EntityGetTransform(entity_id)
+		if GameGetFogOfWar(x, y) > 250 then return false end
+	end
+	return true
+end
+
 ---@param entity_thats_responsible entity_id
 ---@return bool
 local function IsPlayerKill(damage_type_bit_field, entity_thats_responsible)
-	if IsValidEntity(entity_thats_responsible) then
-		-- Obvious credit, killed by us
-		if EntityHasTag(entity_thats_responsible, "player_unit") then return true end
-		if EntityHasTag(entity_thats_responsible, "polymorphed_player") then return true end
-		if EntityHasTag(entity_thats_responsible, "polymorphed_cessation") then return true end
+	local kill_credit = tostring(ModSettingGet("archipelago.kill_credit") or "rules")
 
-		-- Killed by a charmed enemy or perk
-		if IsEntityOwned(entity_thats_responsible) then return true end
+	if kill_credit ~= "everything" then
+		if IsValidEntity(entity_thats_responsible) then
+			-- Obvious credit, killed by us
+			if EntityHasTag(entity_thats_responsible, "player_unit") then return true end
+			if kill_credit == "restricted" then return false end
 
-		-- Killed by sadekivi
-		if EntityGetFilename(entity_thats_responsible) == "data/entities/misc/beam_from_sky.xml" then return true end
+			if EntityHasTag(entity_thats_responsible, "polymorphed_player") then return true end
+			if EntityHasTag(entity_thats_responsible, "polymorphed_cessation") then return true end
 
-		-- Killed by something else
-		return false
+			-- Killed by a charmed enemy or perk
+			if IsEntityOwned(entity_thats_responsible) then return true end
+
+			-- Killed by sadekivi
+			if EntityGetFilename(entity_thats_responsible) == "data/entities/misc/beam_from_sky.xml" then return true end
+
+			-- Killed by something else
+			return false
+		elseif kill_credit == "restricted" then
+			return false
+		end
+
+		-- Most likely died naturally instead of by an attack
+		if bit.band(damage_type_bit_field, Dmg.DAMAGE_FIRE) then return false end
+		if bit.band(damage_type_bit_field, Dmg.DAMAGE_MATERIAL) then return false end
+		if bit.band(damage_type_bit_field, Dmg.DAMAGE_DROWNING) then return false end
 	end
 
-	local entity_id = GetUpdatedEntityID()
-	local x, y = EntityGetTransform(entity_id)
-
-	-- Most likely died naturally instead of by an attack
-	if bit.band(damage_type_bit_field, Dmg.DAMAGE_FIRE) then return false end
-	if bit.band(damage_type_bit_field, Dmg.DAMAGE_MATERIAL) then return false end
-	if bit.band(damage_type_bit_field, Dmg.DAMAGE_DROWNING) then return false end
-
-	-- Not visible
-	if GameGetFogOfWar(x, y) > 250 then return false end
-
 	-- Visible enemy died maybe from physics damage or something
-	return true
+	return IsFogRevealedForCredit()
 end
 
 ---@return string
@@ -76,6 +89,26 @@ local function GetAnimalName()
 	return ""
 end
 
+---@param name string
+local function CountKill(name)
+	local location_id = Animals.KillToLocationId[name]
+	if not GameHasFlagRun("ap_killsanity_" .. name) then
+		GameAddFlagRun("ap_killsanity_" .. name)
+		if location_id == nil then
+			Log.Warn("Killsanity not supported for: " .. name)
+			return
+		else
+			Log.Info("Counting killsanity kill for: " .. name)
+		end
+	end
+
+	if Globals.MissingLocationsSet:has_key(location_id) then
+		GameAddFlagRun("ap" .. location_id)
+		Globals.LocationUnlockQueue:append(location_id)
+		Globals.MissingLocationsSet:remove_key(location_id)
+	end
+end
+
 ---@param damage_type_bit_field integer
 ---@param damage_message string
 ---@param entity_thats_responsible entity_id
@@ -84,27 +117,15 @@ function death(damage_type_bit_field, damage_message, entity_thats_responsible, 
 	local name = GetAnimalName()
 	if name == "" then return end
 
-	--Log.Error(string.format("Killed a %s: %s [%08X]", name, damage_message, damage_type_bit_field))
-
-	if IsPlayerKill(damage_message, entity_thats_responsible) then
-		local location_id = Animals.KillToLocationId[name]
-		if location_id == nil and not GameHasFlagRun("ap_killsanity_" .. name) then
-			GameAddFlagRun("ap_killsanity_" .. name)
-			Log.Warn("Killsanity not supported for: " .. name)
-			return
-		end
-
-		if Globals.MissingLocationsSet:has_key(location_id) then
-			GameAddFlagRun("ap" .. location_id)
-			Globals.LocationUnlockQueue:append(location_id)
-			Globals.MissingLocationsSet:remove_key(location_id)
-		end
-	else
+	if IsPlayerKill(damage_type_bit_field, entity_thats_responsible) then
+		CountKill(name)
+	elseif not GameHasFlagRun("ap_killsanity_" .. name) then
 		if IsValidEntity(entity_thats_responsible) then
-			local killed_by_str = string.format("    killed by %s (%s)", EntityGetName(entity_thats_responsible), EntityGetFilename(entity_thats_responsible))
-			local log_str = string.format("Killed a %s: %s [%08X]\n%s", name, damage_message, damage_type_bit_field, killed_by_str)
-
-			Log.Error(log_str)
+			local log_str = string.format("%s died: %s [%08X] killed by %s", name, damage_message, damage_type_bit_field, EntityGetName(entity_thats_responsible))
+			Log.Info(log_str)
+		else
+			local log_str = string.format("%s died: %s [%08X]", name, damage_message, damage_type_bit_field)
+			Log.Info(log_str)
 		end
 	end
 end

@@ -15,7 +15,7 @@ dofile("data/scripts/lib/utilities.lua") -- for GUI_OPTION
 
 local translations = {
 	["$ap_menu_server_settings_name"] = {
-		en="Server Settings"
+		en="Server"
 	},
 	["$ap_menu_server_settings_desc"] = {
 		en="Archipelago server settings "
@@ -75,10 +75,16 @@ local translations = {
 		en="Releases all items contained in your world to other worlds."
 	},
 	["$ap_menu_game_settings_name"] = {
-		en="Game Settings"
+		en="Game"
 	},
 	["$ap_menu_game_settings_desc"] = {
 		en="Game-specific settings for the Archipelago mod."
+	},
+	["$ap_menu_killsanity_settings_name"] = {
+		en="Killsanity"
+	},
+	["$ap_menu_killsanity_settings_desc"] = {
+		en="Game-specific settings for Killsanity credit."
 	},
 	["$ap_log_limit_settings_name"] = {
 		en="Log Limit"
@@ -121,6 +127,18 @@ local translations = {
 	},
 	["$ap_join_messages_settings_desc"] = {
 		en = "Determine whether to show join/leave messages (hidden if Text Messages is set to None)"
+	},
+	["$ap_killcredit_settings_name"] = {
+		en = "Kill Credit"
+	},
+	["$ap_killcredit_settings_desc"] = {
+		en = "Determines how kill credit is granted.\nRules based is tailored for best experience."
+	},
+	["$ap_kills_in_fog_settings_name"] = {
+		en = "Obscured Deaths"
+	},
+	["$ap_kills_in_fog_settings_desc"] = {
+		en = "Unexplainable deaths in fogged areas count as kills."
 	},
 }
 
@@ -304,7 +322,6 @@ local mod_settings =
 				value_min = 100,
 				value_max = 5000,
 				scope = MOD_SETTING_SCOPE_RUNTIME_RESTART,
-
 			},
 			{
 				id = "debug_items",
@@ -313,6 +330,36 @@ local mod_settings =
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 				hidden = true,
+			},
+		},
+	},
+	{
+		category_id = "ap_killsanity_settings",
+		ui_name = translate("$ap_menu_killsanity_settings_name"),
+		ui_description = translate("$ap_menu_killsanity_settings_desc"),
+		settings = {
+			{
+				id = "kill_credit",
+				ui_name = translate("$ap_killcredit_settings_name"),
+				ui_description = translate("$ap_killcredit_settings_desc"),
+				value_default = "rules",
+				values = {
+					{"restricted", "Restricted (direct kills only)"},
+					{"rules", "Rules Based (more forgiving)"},
+					{"everything", "Always"},
+				},
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				id = "kills_in_fog",
+				ui_name = translate("$ap_kills_in_fog_settings_name"),
+				ui_description = translate("$ap_kills_in_fog_settings_desc"),
+				value_default = "no",
+				values = {
+					{"no", "Excluded"},
+					{"yes", "Included"},
+				},
+				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},
 		},
 	},
