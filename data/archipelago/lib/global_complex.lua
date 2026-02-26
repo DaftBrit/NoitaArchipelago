@@ -2,6 +2,7 @@ local Global = dofile("data/archipelago/lib/globals_manager.lua")
 local JSON = dofile("data/archipelago/lib/json.lua")
 
 --- @class GlobalComplex : Global
+--- @field protected super Global parent object
 local GlobalComplex = Global:extend()
 
 ---@param str string

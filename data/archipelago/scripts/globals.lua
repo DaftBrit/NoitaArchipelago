@@ -1,5 +1,6 @@
 local Global = dofile("data/archipelago/lib/globals_manager.lua") --- @type Global
 local GlobalComplex = dofile("data/archipelago/lib/global_complex.lua") --- @type GlobalComplex
+local GlobalNumeric = dofile("data/archipelago/lib/global_numeric.lua") --- @type GlobalNumeric
 
 --- @class Globals
 local Globals = {
@@ -17,6 +18,7 @@ local Globals = {
 	PedestalLocationsSet = GlobalComplex("AP_PEDESTAL_LOCATIONS"), --- @type GlobalComplex
 
 	LogHistory = GlobalComplex("AP_LOG_HISTORY"), --- @type GlobalComplex
+	NumMinesAreas = GlobalNumeric("AP_MINES_SECTIONS"), --- @type GlobalNumeric
 }
 
 return Globals

@@ -8,8 +8,7 @@ function GlobalImpl:new(key_name)
 	self.key = key_name
 end
 
---- Gets a global, returned as a string. Automatically converts `default_value` to a number.
----comment
+--- Gets a global, returned as a string. Automatically converts `default_value` to a string.
 ---@param default_value any
 ---@return string
 function GlobalImpl:get(default_value)
