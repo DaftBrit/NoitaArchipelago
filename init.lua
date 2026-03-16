@@ -703,11 +703,17 @@ end
 
 -- Checks data toggled by external lua scripts that init.lua doesn't have access to
 local slow_check_timer = 0
+local fast_check_timer = 0
 local function CheckGlobalsAndFlags()
 	if slot_options ~= nil then
 		CheckVictoryConditionFlag()
-		CheckComponentItemsUnlocked()
-		CheckLocationFlags()
+
+		fast_check_timer = fast_check_timer + 1
+		if fast_check_timer > 10 then
+			fast_check_timer = 0
+			CheckComponentItemsUnlocked()
+			CheckLocationFlags()
+		end
 
 		slow_check_timer = slow_check_timer + 1
 		if slow_check_timer > 60 then
