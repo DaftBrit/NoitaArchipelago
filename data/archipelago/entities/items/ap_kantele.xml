@@ -58,7 +58,7 @@
 	<LuaComponent
 		execute_on_added="1"
 		remove_after_executed="1"
-		script_source_file="mods/archipelago/data/archipelago/entities/items/kantele_setup.lua"
+		script_source_file="data/archipelago/entities/items/kantele_setup.lua"
 		>
 	</LuaComponent>
 
@@ -75,4 +75,3 @@
 	<Base file="data/entities/base_wand_pickup.xml" > <LuaComponent _enabled="0" script_item_picked_up="" /> </Base>
 
 </Entity>
-

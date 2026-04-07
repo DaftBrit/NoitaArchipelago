@@ -3,6 +3,7 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
+dofile_once("data/archipelago/lib/pathcheck.lua")
 
 -- Apply patches to data files
 dofile_once("data/archipelago/scripts/apply_ap_patches.lua")
@@ -10,7 +11,7 @@ ModMaterialsFileAdd("data/archipelago/materials.xml")
 ModMagicNumbersFileAdd("data/archipelago/magic_numbers.xml")
 
 --LIBS
-local APLIB = require("mods.archipelago.bin.lua-apclientpp") ---@type APClient
+local APLIB = require(ModPath():gsub("/", ".") .. "bin.lua-apclientpp") ---@type APClient
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 
 local JSON = dofile("data/archipelago/lib/json.lua")
@@ -1021,6 +1022,12 @@ end
 -- Called at the earliest possible time
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnModInit
 function OnModInit()
+	if BadPath() ~= nil then
+		Log.Error([[Unexpected mod location detected! Some things may break!
+		  Expected: mods/archipelago/
+		  Got: ]] .. BadPath())
+	end
+
 	GameRemoveFlagRun("AP_LocationInfo_received")
 	create_dir("archipelago_cache")
 	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")

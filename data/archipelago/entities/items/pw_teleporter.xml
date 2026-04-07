@@ -1,7 +1,7 @@
 <Entity tags="wand">
 
 	<AbilityComponent
-		_enabled="1" 
+		_enabled="1"
 		sprite_file="data/items_gfx/wands/custom/scepter_01.xml"
 		swim_propel_amount="0"
 		ui_name=""
@@ -11,21 +11,21 @@
 		reload_time_frames="0"
 		mana_charge_speed="35"
 		mana_max="140"
-		use_gun_script="1" 
+		use_gun_script="1"
 		>
-		<gun_config 
+		<gun_config
 			shuffle_deck_when_empty="0"
 			reload_time="2"
 			deck_capacity="12" >
 		</gun_config>
-		<gunaction_config 
+		<gunaction_config
 			fire_rate_wait="1" >
 		</gunaction_config>
 	</AbilityComponent>
 
-	<HotspotComponent 
-		_tags="shoot_pos" 
-		offset.x="17" 
+	<HotspotComponent
+		_tags="shoot_pos"
+		offset.x="17"
 		offset.y="-0.5" >
 	</HotspotComponent>
 
@@ -37,10 +37,10 @@
 		</ItemComponent>
 	</Base>
 
-	<LuaComponent 
+	<LuaComponent
 		execute_on_added="1"
 		remove_after_executed="1"
-		script_source_file="mods/archipelago/data/archipelago/entities/items/pw_teleporter_setup.lua"
+		script_source_file="data/archipelago/entities/items/pw_teleporter_setup.lua"
 		>
 	</LuaComponent>
 
@@ -49,6 +49,5 @@
 	<ManaReloaderComponent
 		_tags="enabled_in_world,enabled_in_hand,enabled_in_inventory" >
 	</ManaReloaderComponent>
-   
-</Entity>
 
+</Entity>

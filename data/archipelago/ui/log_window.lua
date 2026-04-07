@@ -1,4 +1,4 @@
-local APLIB = require("mods.archipelago.bin.lua-apclientpp") ---@type APClient
+local APLIB = require(ModPath():gsub("/", ".") .. "bin.lua-apclientpp") ---@type APClient
 local LogWindow = dofile("data/archipelago/lib/ui_lib.lua") ---@class LogWindow : UI_class
 local Globals = dofile("data/archipelago/scripts/globals.lua") ---@type Globals
 
