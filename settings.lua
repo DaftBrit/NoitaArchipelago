@@ -1,6 +1,10 @@
 dofile("data/scripts/lib/mod_settings.lua") -- see this file for documentation on some of the features.
 dofile("data/scripts/lib/utilities.lua") -- for GUI_OPTION
 
+local MOD_VERSION = "1.6.0"
+local mod_id = "archipelago" -- This should match the name of your mod's folder.
+mod_settings_version = 1 -- This is a magic global that can be used to migrate settings to new mod versions. call mod_settings_get_version() before mod_settings_update() to get the old value.
+
 -- This file can't access other files from this or other mods in all circumstances.
 -- Settings will be automatically saved.
 -- Settings don't have access unsafe lua APIs.
@@ -210,13 +214,15 @@ local function APReleaseItemsButton(mod_id, gui, in_main_menu, im_id, setting)
 	APItemPermButton("ap_release", gui, in_main_menu)
 end
 
-local mod_id = "archipelago" -- This should match the name of your mod's folder.
-mod_settings_version = 1 -- This is a magic global that can be used to migrate settings to new mod versions. call mod_settings_get_version() before mod_settings_update() to get the old value.
 local mod_settings =
 {
 	{
 		image_filename = "mods/archipelago/data/archipelago/logo.png",
 		ui_fn = mod_setting_image,
+	},
+	{
+		ui_name = "Version " .. MOD_VERSION,
+		ui_fn = mod_setting_title,
 	},
 	{
 		category_id = "ap_server_settings",

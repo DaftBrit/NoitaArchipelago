@@ -3,6 +3,8 @@
 -- This software is released under the MIT License.
 -- https://opensource.org/licenses/MIT
 
+local MOD_VERSION = "1.6.0"
+
 dofile_once("data/archipelago/lib/pathcheck.lua")
 
 -- Apply patches to data files
@@ -35,11 +37,23 @@ local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Cache = dofile("data/archipelago/scripts/caches.lua")
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua") --- @type ConnIcon
 local LogWindow = dofile("data/archipelago/ui/log_window.lua") --- @type LogWindow
+local PauseMenu = dofile("data/archipelago/ui/pause_menu.lua") --- @type PauseMenu
 local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
-local slot_options = nil --- @type table?
+
+---@class SlotOpts
+---@field victory_condition integer?
+---@field death_link integer?
+---@field path_option integer?
+---@field orbs_as_checks integer?
+---@field shop_price number?
+---@field lock_portals integer?
+
+---@type SlotOpts?
+local slot_options = nil
+
 local connect_tags = {
 	["Lua-APClientPP"] = 1
 }
@@ -396,7 +410,7 @@ function RECV_MSG.Connected()
 		GameAddFlagRun("ap_peaceful_goal")
 	end
 	if slot_options.shop_price ~= nil then
-		GlobalsSetValue("ap_shop_price", slot_options.shop_price)
+		GlobalsSetValue("ap_shop_price", tostring(slot_options.shop_price))
 	end
 	if slot_options.path_option == 4 then
 		GameAddFlagRun("ap_parallel_worlds")
@@ -995,6 +1009,7 @@ end
 
 -- Called while the game is paused
 function OnPausePreUpdate()
+	PauseMenu:update(MOD_VERSION, slot_options, IsDeathLinkEnabled())
 	UpdateUI()
 
 	-- Stay connected while the game is paused
