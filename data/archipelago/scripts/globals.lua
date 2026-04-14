@@ -17,6 +17,7 @@ local Globals = {
 	PedestalLocationsSet = GlobalComplex("AP_PEDESTAL_LOCATIONS"), --- @type GlobalComplex
 
 	LogHistory = GlobalComplex("AP_LOG_HISTORY"), --- @type GlobalComplex
+	TrapLinkQueue = GlobalComplex("AP_TRAP_LINK_QUEUE"), --- @type GlobalComplex
 }
 
 return Globals

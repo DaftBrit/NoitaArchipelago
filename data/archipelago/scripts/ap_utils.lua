@@ -15,15 +15,27 @@ function contains_element(tbl, elem)
 	return false
 end
 
----@param s string
+---@param s string?
 ---@return boolean
 function not_empty(s)
 	return s ~= nil and s ~= ''
 end
 
+---@param s string
+---@return string
+function sanitize(s)
+	return s:gsub("[^%w_]", "_"):lower()
+end
+
 --- @return entity_id|nil
 function get_player()
 	return EntityGetWithTag("player_unit")[1]
+end
+
+--- Retrieves the player entity even if it is polymorphed
+--- @return entity_id|nil
+function get_player_always()
+	return get_player() or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
 end
 
 --- Gets a position for spawning items. Should always succeed.
@@ -35,8 +47,9 @@ end
 ---@return number x
 ---@return number y
 function get_spawn_position()
-	local x, y = 0, 0
-	local player_entity = get_player() or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
+	local x = 0
+	local y = 0
+	local player_entity = get_player_always()
 	if player_entity ~= nil then
 		x, y = EntityGetTransform(player_entity)
 	else
