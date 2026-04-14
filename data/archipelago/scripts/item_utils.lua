@@ -1,37 +1,11 @@
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 dofile_once("data/archipelago/scripts/newgame_spawner.lua")
+dofile_once("data/archipelago/scripts/trap_utils.lua")
 
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
-
-
-local bad_events = nil
-local function InitBadTimes()
-	if bad_events ~= nil then return end
-	bad_events = {}
-
-	dofile_once("data/scripts/streaming_integration/event_list.lua")
-	for _, event in ipairs(streaming_events) do
-		if event.kind and event.kind <= STREAMING_EVENT_BAD then
-			table.insert(bad_events, event)
-		end
-	end
-end
-
-
--- Traps
--- Also look at https://github.com/Miczu/Noita-Twitch-Integration for more bad events ideas.
-function BadTimes()
-	--Function to spawn "Bad Times" events, uses the noita streaming integration system
-	InitBadTimes()
-
-	-- TODO weighted random sample based on `event.weight`
-	local event = bad_events[Random(1, #bad_events)]
-	GamePrintImportant(event.ui_name, event.ui_description)
-	_streaming_run_event(event.id)
-end
 
 
 function ResetOrbID()

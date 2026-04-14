@@ -22,7 +22,13 @@ local translations = {
 		en="Server"
 	},
 	["$ap_menu_server_settings_desc"] = {
-		en="Archipelago server settings "
+		en="Archipelago server settings"
+	},
+	["$ap_menu_integration_settings_name"] = {
+		en="Integrations"
+	},
+	["$ap_menu_integration_settings_desc"] = {
+		en="Archipelago integration settings"
 	},
 	["$ap_menu_server_settings_address_name"] = {
 		en="Server"
@@ -65,6 +71,12 @@ local translations = {
 	},
 	["$ap_death_link_settings_desc"] = {
 		en="When set to On, the death link setting in your Archipelago YAML will be used.\nWhen set to Off, this will override your YAML and disable death link.\nWhen set to Traps, it will act as On if death link was enabled in your YAML,\nexcept it will trigger a random trap effect when a death link is received.\nBoth On and Traps will still send death links when you die."
+	},
+	["$ap_trap_link_settings_name"] = {
+		en="Trap Link"
+	},
+	["$ap_trap_link_settings_desc"] = {
+		en="When any client with Trap Link on receives a trap item, all clients with Trap Link receive the same trap."
 	},
 	["$ap_collect_items"] = {
 		en="> Collect Items"
@@ -144,13 +156,27 @@ local translations = {
 	["$ap_kills_in_fog_settings_desc"] = {
 		en = "Unexplainable deaths in fogged areas count as kills."
 	},
+	["$ap_ti_traps_authors_name"] = {
+		en = "Enabled Trap Authors"
+	},
+	["$ap_ti_traps_authors_desc"] = {
+		en = "Restart to populate with new authors."
+	},
 }
 
 local lang_id = "en"
 
-local function translate(msg)
+---@param s string
+---@return string
+local function sanitize(s)
+	return s:gsub("[^%w_]", "_"):lower()
+end
+
+---@param msg string
+---@return string
+local function T(msg)
 	local translation_table = translations[msg] or {}
-	return translation_table[lang_id] or translation_table["en"] or msg
+	return translation_table[lang_id] or translation_table["en"] or GameTextGetTranslatedOrNot(msg)
 end
 
 -- Global override to create clear field buttons (pretty much just a hack)
@@ -181,12 +207,12 @@ local function APOptionButton(gui, name, disabled, perm)
 		GuiColorSetForNextWidget(gui, 0, 1, 0, 1)
 	end
 
-	local result = GuiButton(gui, 1, 0, 0, translate(name))
-	local tooltip_str = translate(name .. "_tooltip")
+	local result = GuiButton(gui, 1, 0, 0, T(name))
+	local tooltip_str = T(name .. "_tooltip")
 
 	local perm_tooltip_str = "$ap_perms_tooltip_" .. tostring(perm)
 	if translations[perm_tooltip_str] ~= nil then
-		tooltip_str = tooltip_str .. "\n" .. translate(perm_tooltip_str)
+		tooltip_str = tooltip_str .. "\n" .. T(perm_tooltip_str)
 	end
 	GuiTooltip(gui, tooltip_str, "")
 
@@ -214,6 +240,7 @@ local function APReleaseItemsButton(mod_id, gui, in_main_menu, im_id, setting)
 	APItemPermButton("ap_release", gui, in_main_menu)
 end
 
+local mod_settings_trap_authors = {}
 local mod_settings =
 {
 	{
@@ -226,13 +253,13 @@ local mod_settings =
 	},
 	{
 		category_id = "ap_server_settings",
-		ui_name = translate("$ap_menu_server_settings_name"),
-		ui_description = translate("$ap_menu_server_settings_desc"),
+		ui_name = T("$ap_menu_server_settings_name"),
+		ui_description = T("$ap_menu_server_settings_desc"),
 		settings = {
 			{
 				id = "server_address",
-				ui_name = translate("$ap_menu_server_settings_address_name"),
-				ui_description = translate("$ap_menu_server_settings_address_desc"),
+				ui_name = T("$ap_menu_server_settings_address_name"),
+				ui_description = T("$ap_menu_server_settings_address_desc"),
 				value_default = "archipelago.gg",
 				text_max_length = 120,
 				allowed_characters = "%-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~",
@@ -240,8 +267,8 @@ local mod_settings =
 			},
 			{
 				id = "server_port",
-				ui_name = translate("$ap_menu_server_settings_port_name"),
-				ui_description = translate("$ap_menu_server_settings_port_desc"),
+				ui_name = T("$ap_menu_server_settings_port_name"),
+				ui_description = T("$ap_menu_server_settings_port_desc"),
 				value_default = "",
 				text_max_length = 5,
 				allowed_characters = "0123456789",
@@ -249,8 +276,8 @@ local mod_settings =
 			},
 			{
 				id = "slot_name",
-				ui_name = translate("$ap_menu_server_settings_slot_name"),
-				ui_description = translate("$ap_menu_server_settings_slot_desc"),
+				ui_name = T("$ap_menu_server_settings_slot_name"),
+				ui_description = T("$ap_menu_server_settings_slot_desc"),
 				value_default = "",
 				text_max_length = 120,
 				allowed_characters = " !#$%&'()+,-.0123456789;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~",
@@ -258,28 +285,16 @@ local mod_settings =
 			},
 			{
 				id = "passwd",
-				ui_name = translate("$ap_menu_server_settings_password_name"),
-				ui_description = translate("$ap_menu_server_settings_password_desc"),
+				ui_name = T("$ap_menu_server_settings_password_name"),
+				ui_description = T("$ap_menu_server_settings_password_desc"),
 				value_default = "",
 				text_max_length = 120,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
-				id = "death_link",
-				ui_name = translate("$ap_death_link_settings_name"),
-				ui_description = translate("$ap_death_link_settings_desc"),
-				value_default = "on",
-				values = {
-					{"off", "Off"},
-					{"on", "On"},
-					{"traps", "Traps"}
-				},
-				scope = MOD_SETTING_SCOPE_RUNTIME,
-			},
-			{
 				id = "messages",
-				ui_name = translate("$ap_messages_settings_name"),
-				ui_description = translate("$ap_messages_settings_desc"),
+				ui_name = T("$ap_messages_settings_name"),
+				ui_description = T("$ap_messages_settings_desc"),
 				value_default = "self",
 				values = {
 					{"all", "All"},
@@ -290,26 +305,54 @@ local mod_settings =
 			},
 			{
 				id = "join_leave_messages",
-				ui_name = translate("$ap_join_messages_settings_name"),
-				ui_description = translate("$ap_join_messages_settings_desc"),
-				value_default = "on",
-				values = {
-					{"on", "On"},
-					{"off", "Off"},
-				},
+				ui_name = T("$ap_join_messages_settings_name"),
+				ui_description = T("$ap_join_messages_settings_desc"),
+				value_default = true,
 				scope = MOD_SETTING_SCOPE_RUNTIME,
 			},
 		},
 	},
 	{
+		category_id = "ap_integration_settings",
+		ui_name = T("$ap_menu_integration_settings_name"),
+		ui_description = T("$ap_menu_integration_settings_desc"),
+		settings = {
+			{
+				id = "death_link",
+				ui_name = T("$ap_death_link_settings_name"),
+				ui_description = T("$ap_death_link_settings_desc"),
+				value_default = "on",
+				values = {
+					{"off", T("$option_off")},
+					{"on", T("$option_on")},
+					{"traps", "Traps"}
+				},
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				id = "trap_link",
+				ui_name = T("$ap_trap_link_settings_name"),
+				ui_description = T("$ap_trap_link_settings_desc"),
+				value_default = true,
+				scope = MOD_SETTING_SCOPE_RUNTIME,
+			},
+			{
+				category_id = "ap_ti_trap_categories",
+				ui_name = T("$ap_ti_traps_authors_name"),
+				ui_description = T("$ap_ti_traps_authors_desc"),
+				settings = mod_settings_trap_authors,
+			},
+		},
+	},
+	{
 		category_id = "ap_game_settings",
-		ui_name = translate("$ap_menu_game_settings_name"),
-		ui_description = translate("$ap_menu_game_settings_desc"),
+		ui_name = T("$ap_menu_game_settings_name"),
+		ui_description = T("$ap_menu_game_settings_desc"),
 		settings = {
 			{
 				id = "orb_art",
-				ui_name = translate("$ap_orb_art_settings_name"),
-				ui_description = translate("$ap_orb_art_settings_desc"),
+				ui_name = T("$ap_orb_art_settings_name"),
+				ui_description = T("$ap_orb_art_settings_desc"),
 				value_default = "ap_logo",
 				values = {
 					{"vanilla", "Vanilla"},
@@ -322,8 +365,8 @@ local mod_settings =
 			},
 			{
 				id = "log_limit",
-				ui_name = translate("$ap_log_limit_settings_name"),
-				ui_description = translate("$ap_log_limit_settings_desc"),
+				ui_name = T("$ap_log_limit_settings_name"),
+				ui_description = T("$ap_log_limit_settings_desc"),
 				value_default = 1000,
 				value_min = 100,
 				value_max = 5000,
@@ -331,8 +374,8 @@ local mod_settings =
 			},
 			{
 				id = "debug_items",
-				ui_name = translate("$ap_menu_server_settings_debug_items_name"),
-				ui_description = translate("$ap_menu_server_settings_debug_items_desc"),
+				ui_name = T("$ap_menu_server_settings_debug_items_name"),
+				ui_description = T("$ap_menu_server_settings_debug_items_desc"),
 				value_default = false,
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 				hidden = true,
@@ -341,13 +384,13 @@ local mod_settings =
 	},
 	{
 		category_id = "ap_killsanity_settings",
-		ui_name = translate("$ap_menu_killsanity_settings_name"),
-		ui_description = translate("$ap_menu_killsanity_settings_desc"),
+		ui_name = T("$ap_menu_killsanity_settings_name"),
+		ui_description = T("$ap_menu_killsanity_settings_desc"),
 		settings = {
 			{
 				id = "kill_credit",
-				ui_name = translate("$ap_killcredit_settings_name"),
-				ui_description = translate("$ap_killcredit_settings_desc"),
+				ui_name = T("$ap_killcredit_settings_name"),
+				ui_description = T("$ap_killcredit_settings_desc"),
 				value_default = "rules",
 				values = {
 					{"restricted", "Restricted (direct kills only)"},
@@ -358,8 +401,8 @@ local mod_settings =
 			},
 			{
 				id = "kills_in_fog",
-				ui_name = translate("$ap_kills_in_fog_settings_name"),
-				ui_description = translate("$ap_kills_in_fog_settings_desc"),
+				ui_name = T("$ap_kills_in_fog_settings_name"),
+				ui_description = T("$ap_kills_in_fog_settings_desc"),
 				value_default = "no",
 				values = {
 					{"no", "Excluded"},
@@ -371,8 +414,8 @@ local mod_settings =
 	},
 	{
 		category_id = "ap_commands",
-		ui_name = translate("$ap_menu_commands_name"),
-		ui_description = translate("$ap_menu_commands_desc"),
+		ui_name = T("$ap_menu_commands_name"),
+		ui_description = T("$ap_menu_commands_desc"),
 		settings = {
 			{
 				ui_fn = APCollectItemsButton,
@@ -407,7 +450,35 @@ function ModSettingsGuiCount()
 	return mod_settings_gui_count( mod_id, mod_settings )
 end
 
+---@param in_main_menu boolean
+local function InitModAuthors(in_main_menu)
+	if #mod_settings_trap_authors ~= 0 then return end
+
+	local author_setting_names = "archipelago.traps_author_names"
+	local authorlist_str = ModSettingGetNextValue(author_setting_names) or ModSettingGet(author_setting_names) or ""
+	if type(authorlist_str) ~= "string" then authorlist_str = "" end
+
+	if not in_main_menu then
+		authorlist_str = GlobalsGetValue("ap_trap_authors_runtime", authorlist_str)
+	end
+
+	for author in authorlist_str:gmatch("[^|]+") do
+		local author_str = author
+		if author_str == "nil" then
+			author_str = "Unknown"
+		end
+
+		table.insert(mod_settings_trap_authors, {
+			id = "archipelago.traps_author_enabled_" .. sanitize(author),
+			ui_name = author_str,
+			value_default = true,
+			scope = MOD_SETTING_SCOPE_RUNTIME,
+		})
+	end
+end
+
 -- This function is called to display the settings UI for this mod. Your mod's settings wont be visible in the mod settings menu if this function isn't defined correctly.
 function ModSettingsGui( gui, in_main_menu )
+	InitModAuthors(in_main_menu)
 	mod_settings_gui( mod_id, mod_settings, gui, in_main_menu )
 end
