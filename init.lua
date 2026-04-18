@@ -616,7 +616,16 @@ end
 function RECV_MSG.Bounced(msg)
 	if contains_element(msg["tags"], "DeathLink") then
 		local death_link_option = IsDeathLinkEnabled()
-		if death_link_option == 0 or not UpdateDeathTime() then return end
+		if death_link_option == 0 then
+			Log.Info("Rejecting DeathLink: death_link_option = " .. tostring(death_link_option))
+			return
+		end
+
+		local last_time = last_death_time
+		if not UpdateDeathTime() then
+			Log.Info("Rejecting DeathLink: too soon, last = " .. tostring(last_time) .. ", curr = " .. tostring(last_death_time))
+			return
+		end
 
 		local cause = msg["data"]["cause"]
 		local source = msg["data"]["source"]
@@ -642,8 +651,12 @@ function RECV_MSG.Bounced(msg)
 					ComponentSetValue2(gsc_id, "extra_death_msg", cause)
 				end
 				EntityKill(player)
+				Log.Info("DeathLink: get fked")
+			else
+				Log.Info("DeathLink: extra life saved you")
 			end
 		else
+			Log.Info("DeathLink: picking a trap...")
 			BadTimes()
 		end
 
