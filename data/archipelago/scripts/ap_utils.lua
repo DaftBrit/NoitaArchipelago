@@ -15,10 +15,16 @@ function contains_element(tbl, elem)
 	return false
 end
 
----@param s string
+---@param s string?
 ---@return boolean
 function not_empty(s)
 	return s ~= nil and s ~= ''
+end
+
+---@param s string
+---@return string
+function sanitize(s)
+	return s:gsub("[^%w_]", "_"):lower()
 end
 
 --- @return entity_id|nil

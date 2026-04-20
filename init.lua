@@ -54,11 +54,13 @@ local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 ---@type SlotOpts?
 local slot_options = nil
 
+local prev_connect_tags_str = ""
 local connect_tags = {
 	["Lua-APClientPP"] = 1
 }
 
 local last_death_time = 0
+local last_trap_time = 0
 local current_player_slot = -1
 local game_is_paused = false
 local is_player_spawned = false
@@ -75,6 +77,7 @@ local gui = GuiCreate()
 -- DEATHLINK
 ----------------------------------------------------------------------------------------------------
 
+---@return table
 local function GetConnectionTags()
 	local tags_arr = {}
 	for tag, _ in pairs(connect_tags) do
@@ -85,10 +88,17 @@ end
 
 local function UpdateConnectionTags()
 	if slot_options == nil then return end
-	ap:ConnectUpdate(nil, GetConnectionTags())
+
+	local new_conn_tags = GetConnectionTags()
+
+	local new_conn_tags_str = table.concat(new_conn_tags, ",")
+	if new_conn_tags_str == prev_connect_tags_str then return end
+	prev_connect_tags_str = new_conn_tags_str
+
+	ap:ConnectUpdate(nil, new_conn_tags)
 end
 
--- Toggles DeathLink
+-- Toggles DeathLink, requires calling UpdateConnectionTags() separately afterwards
 local function SetDeathLinkEnabled(enabled)
 	if enabled then
 		if death_link_status == true then
@@ -103,9 +113,15 @@ local function SetDeathLinkEnabled(enabled)
 		connect_tags["DeathLink"] = nil
 		death_link_status = false
 	end
-	UpdateConnectionTags()
 end
 
+local function SetTrapLinkEnabled(enabled)
+	if enabled then
+		connect_tags["TrapLink"] = 1
+	else
+		connect_tags["TrapLink"] = nil
+	end
+end
 
 -- Updates a death timer to prevent immediate re-sends of deaths that have been received.
 local function UpdateDeathTime()
@@ -132,6 +148,13 @@ local function IsDeathLinkEnabled()
 		Log.Error("Error in IsDeathLinkEnabled: " .. death_link_setting)
 		return 0
 	end
+end
+
+local function IsTrapLinkEnabled()
+	if slot_options == nil then
+		return false
+	end
+	return ModSettingGet("archipelago.trap_link") == true
 end
 
 
@@ -452,6 +475,8 @@ function RECV_MSG.Connected()
 	SetupLocationScouts()
 	-- Enable deathlink if the setting on the server and the mod setting said to
 	SetDeathLinkEnabled(IsDeathLinkEnabled() > 0)
+	SetTrapLinkEnabled(IsTrapLinkEnabled())
+	UpdateConnectionTags()
 end
 
 ---@param location integer
@@ -594,7 +619,7 @@ function RECV_MSG.PrintJSON(msg, extra)
 			countdown_fun()
 		end
 	elseif msg_type == "Join" or msg_type == "Part" then
-		if ModSettingGet("archipelago.join_leave_messages") == "off" then
+		if ModSettingGet("archipelago.join_leave_messages") == false then
 			return
 		end
 	elseif msg_type == "Hint" then
@@ -612,54 +637,61 @@ function RECV_MSG.PrintJSON(msg, extra)
 end
 
 
+---@param source string?
+---@param cause string?
+local function RecvDeathLink(source, cause)
+	local death_link_option = IsDeathLinkEnabled()
+	if death_link_option == 0 then
+		Log.Info("Rejecting DeathLink: death_link_option = " .. tostring(death_link_option))
+		return
+	end
+
+	local last_time = last_death_time
+	if not UpdateDeathTime() then
+		Log.Info("Rejecting DeathLink: too soon, last = " .. tostring(last_time) .. ", curr = " .. tostring(last_death_time))
+		return
+	end
+
+	if cause == nil or cause == "" then
+		local message = GameTextGet(death_link_option == 1 and "$ap_died" or "$ap_died_traps", tostring(source))
+		GamePrintImportant(message, "$ap_deathlink_triggered")
+	else
+		GamePrintImportant(cause, "$ap_deathlink_triggered")
+	end
+
+	local player = get_player()
+	-- Don't try anything if the player doesn't exist (gj you dodged it)
+	if player == nil then return end
+
+	if death_link_option == 1 then
+		if not DecreaseExtraLife(player) then
+			local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
+			if gsc_id ~= nil then
+				ComponentSetValue2(gsc_id, "extra_death_msg", cause)
+			end
+			EntityKill(player)
+			Log.Info("DeathLink: get fked")
+		else
+			Log.Info("DeathLink: extra life saved you")
+		end
+	else
+		Log.Info("DeathLink: picking a trap...")
+		BadTimes(true)
+	end
+end
+
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
 function RECV_MSG.Bounced(msg)
-	if contains_element(msg["tags"], "DeathLink") then
-		local death_link_option = IsDeathLinkEnabled()
-		if death_link_option == 0 then
-			Log.Info("Rejecting DeathLink: death_link_option = " .. tostring(death_link_option))
-			return
+	local tags = msg["tags"]
+	local data = msg["data"]
+
+	if contains_element(tags, "DeathLink") then
+		RecvDeathLink(data["source"], data["cause"])
+	elseif contains_element(tags, "TrapLink") then
+		-- Don't receive traps from the same slot since they get shared through receiving items
+		if data["source"] ~= ap:get_slot() then
+			RecvTrapLink(data["source"], data["trap_name"])
 		end
-
-		local last_time = last_death_time
-		if not UpdateDeathTime() then
-			Log.Info("Rejecting DeathLink: too soon, last = " .. tostring(last_time) .. ", curr = " .. tostring(last_death_time))
-			return
-		end
-
-		local cause = msg["data"]["cause"]
-		local source = msg["data"]["source"]
-
-		if cause == nil or cause == "" then
-			if death_link_option == 1 then
-				GamePrintImportant(source .. " died and took you with them")
-			else
-				GamePrintImportant(source .. " died and is trying to take you with them")
-			end
-		else
-			GamePrintImportant(cause)
-		end
-
-		local player = get_player()
-		-- Don't try anything if the player doesn't exist (gj you dodged it)
-		if player == nil then return end
-
-		if death_link_option == 1 then
-			if not DecreaseExtraLife(player) then
-				local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
-				if gsc_id ~= nil then
-					ComponentSetValue2(gsc_id, "extra_death_msg", cause)
-				end
-				EntityKill(player)
-				Log.Info("DeathLink: get fked")
-			else
-				Log.Info("DeathLink: extra life saved you")
-			end
-		else
-			Log.Info("DeathLink: picking a trap...")
-			BadTimes()
-		end
-
 	else
 		Log.Warn("Unsupported Bounced type received. " .. JSON:encode(msg))
 	end
@@ -800,7 +832,10 @@ local function connect()
 		if messages_setting == "none" then
 			connect_tags["NoText"] = 1
 		end
-		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, GetConnectionTags(), { 0, 6, 2 })
+
+		local connection_tags = GetConnectionTags()
+		prev_connect_tags_str = table.concat(connection_tags, ",")
+		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, connection_tags, { 0, 6, 2 })
 
 		GlobalsSetValue("ap_collect_permission", tostring(ap:get_permission("collect") or APLIB.Permission.GOAL))
 		GlobalsSetValue("ap_release_permission", tostring(ap:get_permission("release") or APLIB.Permission.GOAL))
@@ -998,18 +1033,19 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 		death_link_status = false
 	end
 
+	SetTrapLinkEnabled(IsTrapLinkEnabled())
+
 	-- Disable/enable text messages if settings change
 	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
 	if messages_setting == "none" and not connect_tags["NoText"] then
 		Log.Info("Disabling text")
 		connect_tags["NoText"] = 1
-		UpdateConnectionTags()
 	elseif messages_setting ~= "none" and connect_tags["NoText"] then
 		Log.Info("Enabling text")
 		connect_tags["NoText"] = nil
-		UpdateConnectionTags()
 	end
 
+	UpdateConnectionTags()
 	LogWindow:close()
 
 	local newhostname = ModSettingGetNextValue("archipelago.server_address") .. ":" .. ModSettingGetNextValue("archipelago.server_port")
@@ -1067,6 +1103,7 @@ local world_state_initialized = false
 function OnWorldPreUpdate()
 	if not world_state_initialized then
 		LogWindow:create()
+		InitStreamingTraps()
 		PrintActiveModInfo()
 		PrintActiveSettings()
 		world_state_initialized = true
