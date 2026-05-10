@@ -1,7 +1,15 @@
 -- streaming_integration/event_list.lua
 dofile_once("data/scripts/streaming_integration/event_utilities.lua")
+dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
+
+local total_random_calls = 0
+local function InitRandomSeed()
+	local x, y = get_spawn_position()
+	SetRandomSeed(x + GameGetFrameNum(), y + total_random_calls)
+	total_random_calls = total_random_calls + 1
+end
 
 --- Replacement for add_icon_above_head with description included.
 ---@param game_effect_entity entity_id
@@ -59,12 +67,46 @@ local function ApplyCustomStatusEffect(event, game_effect_file, frames, icon, hu
 
 	local effect_entity = LoadGameEffectEntityTo(player, game_effect_file)
 	if effect_entity ~= 0 then
+		print_error("loaded effect entity")
 		local effect_comp = EntityGetFirstComponent(effect_entity, "GameEffectComponent")
 		if effect_comp ~= nil then
 			ComponentSetValue2(effect_comp, "frames", frames)
 		end
 		AddIcon(effect_entity, icon, event, hudonly)
 	end
+end
+
+---@param distance number maximum distance to search (rectangular)
+---@param radius number distance away from wall
+---@return number x
+---@return number y
+local function GetRandomSpawnPosNearby(distance, radius)
+	InitRandomSeed()
+	local x, y = get_spawn_position()
+
+	local spawn_x = x
+	local spawn_y = y
+	local best_dist = 0
+	for _ = 1,10 do
+		local _, hit_x, hit_y = RaytraceSurfacesAndLiquiform(x, y, x + Random(-distance, distance), y + Random(-distance, distance))
+
+		local new_dist = get_distance2(x, y, hit_x, hit_y)
+		if new_dist > best_dist then
+			spawn_x = hit_x
+			spawn_y = hit_y
+			best_dist = new_dist
+		end
+	end
+
+	-- NOTE: FindFreePositionForBody does not work
+
+	local dx = spawn_x - x
+	local dy = spawn_y - y
+	local dlen = math.sqrt(dx*dx + dy*dy)
+
+	spawn_x = spawn_x - dx / dlen * radius
+	spawn_y = spawn_y - dy / dlen * radius
+	return spawn_x, spawn_y
 end
 
 ---@type string[]?
@@ -77,13 +119,6 @@ local banned_fungal_list = {
 	rock_hard = true,
 	rock_hard_border = true,
 }
-
-local total_random_calls = 0
-local function InitRandomSeed()
-	local x, y = get_spawn_position()
-	SetRandomSeed(x + GameGetFrameNum(), y + total_random_calls)
-	total_random_calls = total_random_calls + 1
-end
 
 local function InitFungalPool()
 	if chaos_fungal_shift_pool ~= nil then return end
@@ -216,6 +251,20 @@ local archipelago_traps = {
 		end
 	},
 	{
+		id = "AP_FREEZE",
+		ui_name = "$ap_trap_freeze",
+		action = function(event)
+			ApplyStatusEffect(event, "FROZEN", 360, "data/ui_gfx/status_indicators/frozen.png")
+		end
+	},
+	{
+		id = "AP_CHILLED",
+		ui_name = "$ap_trap_chilled",
+		action = function(event)
+			ApplyStatusEffect(event, "INTERNAL_ICE", 1200, "data/ui_gfx/status_indicators/ingestion_freezing.png")
+		end
+	},
+	{
 		id = "AP_CHAOS_FUNGAL_SHIFT",
 		ui_name = "$ap_trap_chaos_fungal_shift",
 		action = function(event)
@@ -224,7 +273,83 @@ local archipelago_traps = {
 			ChaosFungalShift()
 			ChaosFungalShift()
 		end
-	}
+	},
+	{
+		id = "AP_TNT",
+		ui_name = "$ap_trap_tnt",
+		action = function(event)
+			local x, y = GetRandomSpawnPosNearby(20, 8)
+			EntityLoad("data/archipelago/entities/props/minecraft_tnt.xml", x, y - 10)
+		end
+	},
+	{
+		id = "AP_TNT_BARREL",
+		ui_name = "$ap_trap_tnt_barrel",
+		action = function(event)
+			local x, y = GetRandomSpawnPosNearby(20, 8)
+			EntityLoad("data/archipelago/entities/props/barrel_tnt.xml", x, y - 10)
+		end
+	},
+	{
+		id = "AP_BEES",
+		ui_name = "$ap_trap_bees",
+		action = function(event)
+			local spawn_x, spawn_y = GetRandomSpawnPosNearby(200, 20)
+			for _ = 1,15 do
+				local _, hit_x, hit_y = RaytraceSurfacesAndLiquiform(spawn_x, spawn_y, spawn_x + Random(-30, 30), spawn_y + Random(-30, 30))
+				EntityLoad("data/archipelago/entities/animals/bee.xml", (spawn_x + hit_x) / 2, (spawn_y + hit_y) / 2)
+			end
+		end
+	},
+	{
+		id = "AP_144P",
+		ui_name = "$ap_trap_144p",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_144p.xml", 1200, "data/ui_gfx/status_indicators/confusion.png", true)
+		end
+	},
+	{
+		id = "AP_FLIP_VER",
+		ui_name = "$ap_trap_flip_vertical",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_flip_ver.xml", 1200, "data/ui_gfx/status_indicators/confusion.png", true)
+		end
+	},
+	{
+		id = "AP_FLIP_HOR",
+		ui_name = "$ap_trap_flip_horizontal",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_flip_hor.xml", 1200, "data/ui_gfx/gun_actions/horizontal_arc.png", true)
+		end
+	},
+	{
+		id = "AP_ZOOM_IN",
+		ui_name = "$ap_trap_zoom_in",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_zoom_in.xml", 1200, "data/ui_gfx/status_indicators/confusion.png", true)
+		end
+	},
+	{
+		id = "AP_ZOOM_OUT",
+		ui_name = "$ap_trap_zoom_out",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_zoom_out.xml", 1200, "data/ui_gfx/status_indicators/confusion.png", true)
+		end
+	},
+	{
+		id = "AP_FISH_EYE",
+		ui_name = "$ap_trap_fisheye",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_fisheye.xml", 1200, "data/ui_gfx/status_indicators/confusion.png", true)
+		end
+	},
+	{
+		id = "AP_INVERT_COLOUR",
+		ui_name = "$ap_trap_invert_colour",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_invert_colours.xml", 1200, "data/ui_gfx/status_indicators/confusion.png", true)
+		end
+	},
 }
 
 for _, trap in ipairs(archipelago_traps) do
