@@ -2,14 +2,13 @@
 dofile_once("data/scripts/streaming_integration/event_utilities.lua")
 dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/archipelago/scripts/ap_utils.lua")
-local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
+dofile_once("data/archipelago/scripts/ap_fungal_utils.lua")
 
-local total_random_calls = 0
-local function InitRandomSeed()
-	local x, y = get_spawn_position()
-	SetRandomSeed(x + GameGetFrameNum(), y + total_random_calls)
-	total_random_calls = total_random_calls + 1
-end
+local NULL_ENTITY = 0
+local NULL_COMPONENT = 0
+
+---@cast NULL_ENTITY -integer,+entity_id
+---@cast NULL_COMPONENT -integer,+component_id
 
 --- Replacement for add_icon_above_head with description included.
 ---@param game_effect_entity entity_id
@@ -45,15 +44,17 @@ end
 ---@param frames integer
 ---@param icon string
 ---@param hudonly boolean?
+---@return entity_id effect entity
 local function ApplyStatusEffect(event, game_effect, frames, icon, hudonly)
 	local player = get_player_always()
-	if player == nil then return end
+	if player == nil then return NULL_ENTITY end
 
 	local effect_comp, effect_entity = GetGameEffectLoadTo(player, game_effect, false)
-	if effect_comp ~= 0 and effect_entity ~= 0 then
+	if effect_comp ~= NULL_COMPONENT and effect_entity ~= NULL_ENTITY then
 		ComponentSetValue2(effect_comp, "frames", frames)
 		AddIcon(effect_entity, icon, event, hudonly)
 	end
+	return effect_entity
 end
 
 ---@param event table
@@ -61,19 +62,20 @@ end
 ---@param frames integer
 ---@param icon string
 ---@param hudonly boolean?
+---@return entity_id effect entity
 local function ApplyCustomStatusEffect(event, game_effect_file, frames, icon, hudonly)
 	local player = get_player_always()
-	if player == nil then return end
+	if player == nil then return NULL_ENTITY end
 
 	local effect_entity = LoadGameEffectEntityTo(player, game_effect_file)
-	if effect_entity ~= 0 then
-		print_error("loaded effect entity")
+	if effect_entity ~= NULL_ENTITY then
 		local effect_comp = EntityGetFirstComponent(effect_entity, "GameEffectComponent")
 		if effect_comp ~= nil then
 			ComponentSetValue2(effect_comp, "frames", frames)
 		end
 		AddIcon(effect_entity, icon, event, hudonly)
 	end
+	return effect_entity
 end
 
 ---@param distance number maximum distance to search (rectangular)
@@ -107,104 +109,6 @@ local function GetRandomSpawnPosNearby(distance, radius)
 	spawn_x = spawn_x - dx / dlen * radius
 	spawn_y = spawn_y - dy / dlen * radius
 	return spawn_x, spawn_y
-end
-
----@type string[]?
-local chaos_fungal_shift_pool = nil
-local banned_fungal_list = {
-	rat_powder = true,
-	fungus_powder = true,
-	fungus_powder_bad = true,
-	monster_powder_test = true,
-	rock_hard = true,
-	rock_hard_border = true,
-}
-
-local function InitFungalPool()
-	if chaos_fungal_shift_pool ~= nil then return end
-	chaos_fungal_shift_pool = {}
-
-	-- Same pool as fungal pain
-	---@type string[][]
-	local all_materials = {
-		CellFactory_GetAllLiquids(false),
-		CellFactory_GetAllSands(false),
-		CellFactory_GetAllGases(false),
-		CellFactory_GetAllFires(false),
-	}
-
-	for _, category in ipairs(all_materials) do
-		for _, material in ipairs(category) do
-			local id = CellFactory_GetType(material)
-			if not banned_fungal_list[material] and not CellFactory_HasTag(id, "[NO_FUNGAL_SHIFT]") and not CellFactory_HasTag(id, "[box2d]") then
-				table.insert(chaos_fungal_shift_pool, material)
-			end
-		end
-	end
-end
-
-local already_has_fungal_icon = false
-local function HasFungalShiftIcon(entity)
-	if already_has_fungal_icon then return true end
-
-	if entity == nil then return false end
-	local children = EntityGetAllChildren(entity) or {}
-	for _, it in ipairs(children) do
-		if (EntityGetName(it) == "fungal_shift_ui_icon") then
-			already_has_fungal_icon = true
-			return true
-		end
-	end
-	return false
-end
-
-local function AddFungalShiftIcon()
-	local player = get_player()
-	if player == nil or HasFungalShiftIcon(player) then return end
-
-	local icon_entity = EntityCreateNew("fungal_shift_ui_icon")
-	EntityAddComponent2(icon_entity, "UIIconComponent", {
-		name = "$status_reality_mutation",
-		description = "$statusdesc_reality_mutation",
-		icon_sprite_file = "data/ui_gfx/status_indicators/fungal_shift.png"
-	})
-	EntityAddChild(player, icon_entity)
-end
-
-local function ChaosFungalShift()
-	InitRandomSeed()
-	InitFungalPool()
-
-	-- Randomize materials
-	local from_material = chaos_fungal_shift_pool[Random(1, #chaos_fungal_shift_pool)]
-	local to_material = nil
-	for _ = 1,1000 do
-		to_material = chaos_fungal_shift_pool[Random(1, #chaos_fungal_shift_pool)]
-		if to_material ~= from_material then break end
-	end
-	if to_material == from_material then
-		Log.Error("Failed to get a fungal shift material")
-		return
-	end
-
-	-- Convert
-	local from_id = CellFactory_GetType(from_material)
-	local to_id = CellFactory_GetType(to_material)
-	Log.Info(CellFactory_GetUIName(from_id) .. " -> " .. CellFactory_GetUIName(to_id))
-	ConvertMaterialEverywhere(from_id, to_id)
-
-	-- Effects
-	local x, y = get_spawn_position()
-	GameTriggerMusicFadeOutAndDequeueAll(5.0)
-	GameTriggerMusicEvent("music/oneshot/tripping_balls_01", false, x, y)
-
-	for _ = 1,3 do
-		EntityLoad("data/entities/particles/treble_eye.xml", x + Randomf(-120, 120), y + Randomf(-120, 120))
-	end
-
-	local from_material_str = GameTextGetTranslatedOrNot(CellFactory_GetUIName(from_id))
-	GamePrint(GameTextGet("$logdesc_reality_mutation", from_material_str))
-	AddFungalShiftIcon()
 end
 
 local archipelago_traps = {
@@ -347,7 +251,111 @@ local archipelago_traps = {
 		id = "AP_INVERT_COLOUR",
 		ui_name = "$ap_trap_invert_colour",
 		action = function(event)
-			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_invert_colours.xml", 1200, "data/ui_gfx/status_indicators/confusion.png", true)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_invert_colours.xml", 1800, "data/ui_gfx/status_indicators/confusion.png", true)
+		end
+	},
+	{
+		id = "AP_RANDOM_STATUS",
+		ui_name = "$ap_trap_random_status",
+		action = function(event)
+			InitRandomSeed()
+			local bad_status_traps = {
+				"AP_STUN", "AP_CONFUSION", "AP_ON_FIRE", "AP_POISON", "AP_FREEZE", "AP_CHILLED", "SLIMY_PLAYER", "OILED_PLAYER", "DRUNK_PLAYER", "SLOW_PLAYER", "PLAYER_GAS", "TWITCHY",
+			}
+			local next_trap_id = bad_status_traps[Random(1, #bad_status_traps)]
+			for _, trap in ipairs(streaming_events) do
+				if trap.id == next_trap_id then
+					trap.action(trap)
+					break
+				end
+			end
+		end
+	},
+	{
+		id = "AP_INSTANT_DAMAGE",
+		ui_name = "$ap_trap_instant_damage",
+		action = function(event)
+			local player = get_player()
+			if player == nil then return end
+			EntityInflictDamage(player, 0.5, "DAMAGE_CURSE", "$ap_trap_instant_damage", "NONE", 0, 0)
+		end
+	},
+	{
+		id = "AP_INSTANT_DEATH",
+		ui_name = "$ap_trap_instant_death",
+		kind = STREAMING_EVENT_AWFUL,
+		action = function(event)
+			local player = get_player()
+			if player == nil then return end
+			EntityInflictDamage(player, 999999999, "DAMAGE_CURSE", "$ap_trap_instant_death", "NONE", 0, 0)
+		end
+	},
+	{
+		id = "AP_ONE_HP",
+		ui_name = "$ap_trap_one_hp",
+		kind = STREAMING_EVENT_AWFUL,
+		action = function(event)
+			local player = get_player()
+			if player == nil then return end
+
+			local damage_comps = EntityGetComponent(player, "DamageModelComponent") or {}
+			for _, comp in ipairs(damage_comps) do
+				-- Play the damage sound effect
+				EntityInflictDamage(player, -0.0000001, "DAMAGE_CURSE", "$ap_trap_one_hp", "NONE", 0, 0)
+				ComponentSetValue2(comp, "hp", 1.0 / 25)
+			end
+		end
+	},
+	{
+		id = "AP_INVISIBLE_BAD",
+		ui_name = "$ap_trap_invisible_bad",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_invisible_bad.xml", 1200, "data/ui_gfx/status_indicators/invisibility.png", true)
+		end
+	},
+	{
+		id = "AP_MANA_DRAIN",
+		ui_name = "$ap_trap_mana_drain",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_mana_drain.xml", 2700, "data/ui_gfx/status_indicators/mana_regeneration.png", true)
+		end
+	},
+	{
+		id = "AP_POLY_FROG",
+		ui_name = "$ap_trap_poly_frog",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_poly_frog.xml", 1200, "data/ui_gfx/status_indicators/polymorph_random.png", true)
+		end
+	},
+	{
+		id = "AP_EXTREME_CHAOS",
+		ui_name = "$ap_trap_extreme_chaos",
+		kind = STREAMING_EVENT_AWFUL,
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/entities/misc/effect_trip_02.xml", 600, "data/ui_gfx/status_indicators/trip.png", true)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_extreme_chaos.xml", 601, "data/ui_gfx/status_indicators/trip.png", true)
+		end
+	},
+	{
+		id = "AP_RADIOACTIVE",
+		ui_name = "$ap_trap_radioactive",
+		action = function(event)
+			ApplyStatusEffect(event, "RADIOACTIVE", 1800, "data/ui_gfx/status_indicators/radioactive.png")
+		end
+	},
+	{
+		-- WORK IN PROGRESS --
+		id = "AP_TARR_TRAP",
+		ui_name = "$ap_trap_tarr",
+		action = function(event)
+			InitRandomSeed()
+			local num_spawns = Random(1, 5)
+
+			local spawn_x, spawn_y = GetRandomSpawnPosNearby(50, 25)
+			for _ = 1,num_spawns do
+				local _, hit_x, hit_y = RaytraceSurfacesAndLiquiform(spawn_x, spawn_y, spawn_x + Random(-20, 20), spawn_y + Random(-20, 20))
+				EntityLoad("data/archipelago/entities/animals/tarr.xml", (spawn_x + hit_x) / 2, (spawn_y + hit_y) / 2)
+			end
 		end
 	},
 }

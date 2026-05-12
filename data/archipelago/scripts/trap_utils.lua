@@ -2,6 +2,13 @@
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 
+--[[
+TrapLink spreadsheet candidates:
+- Fungal Shift Trap
+- Polymorph Trap
+- Blind Trap
+- Invisible Enemies Trap
+]]
 
 local traplink_aliases_recv = {
 	["ANIMAL TRAP"] = "AP_POLY_SELF",
@@ -26,6 +33,7 @@ local traplink_aliases_recv = {
 	["REVERSE TRAP"] = "AP_CONFUSION",
 	["SLOW TRAP"] = "SLOW_PLAYER",
 	["SLOWNESS TRAP"] = "SLOW_PLAYER",
+	["CURSE TRAP"] = "SLOW_PLAYER",
 	["STUN TRAP"] = "AP_STUN",
 	["TELEPORT TRAP"] = "AP_TELEPORT",
 	["POISON TRAP"] = "AP_POISON",
@@ -51,6 +59,19 @@ local traplink_aliases_recv = {
 	["ZOOM TRAP"] = "AP_ZOOM_IN",
 	["FISH EYE TRAP"] = "AP_FISH_EYE",
 	["INVERT COLORS TRAP"] = "AP_INVERT_COLOUR",
+	["RANDOM STATUS TRAP"] = "AP_RANDOM_STATUS",
+	["CLEAR IMAGE TRAP"] = "REMOVE_GROUND",
+	["DAMAGE TRAP"] = "AP_INSTANT_DAMAGE",
+	["INSTANT DEATH TRAP"] = "AP_INSTANT_DEATH",
+	["ONE HIT KO"] = "AP_ONE_HP",
+	["INVISIBLE TRAP"] = "AP_INVIS_BAD",
+	["INVISIBILITY TRAP"] = "AP_INVIS_BAD",
+	["INVISIBALL TRAP"] = "AP_INVIS_BAD",
+	["MANA DRAIN TRAP"] = "AP_MANA_DRAIN",
+	["FROG TRAP"] = "AP_POLY_FROG",
+	["EXTREME CHAOS MODE"] = "AP_EXTREME_CHAOS",
+	["RADIATION TRAP"] = "AP_RADIOACTIVE",
+	["GRAVITY_TRAP"] = "GRAVITY_PLAYER",
 }
 
 local traplink_aliases_send = {
@@ -84,6 +105,17 @@ local traplink_aliases_send = {
 	AP_ZOOM_OUT = "Zoom Out Trap",
 	AP_FISH_EYE = "Fish Eye Trap",
 	AP_INVERT_COLOUR = "Invert Colors Trap",
+	AP_RANDOM_STATUS = "Random Status Trap",
+	REMOVE_GROUND = "Clear Image Trap",
+	AP_INSTANT_DAMAGE = "Damage Trap",
+	AP_INSTANT_DEATH = "Instant Death Trap",
+	AP_ONE_HP = "One Hit KO",
+	AP_INVIS_BAD = "Invisible Trap",
+	AP_MANA_DRAIN = "Mana Drain Trap",
+	AP_POLY_FROG = "Frog Trap",
+	AP_EXTREME_CHAOS = "Extreme Chaos Mode",
+	AP_RADIOACTIVE = "Radiation Trap",
+	GRAVITY_PLAYER = "Gravity Trap",
 }
 
 local ap_streaming_initialized = false

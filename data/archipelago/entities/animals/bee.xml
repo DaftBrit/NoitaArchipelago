@@ -1,4 +1,6 @@
 <Entity name="$ap_animal_bee">
+	<VariableStorageComponent _tags="no_gold_drop"/>
+
 	<Base file="data/entities/base_enemy_flying.xml" >
 		<AnimalAIComponent
 			_enabled="1"
@@ -91,5 +93,4 @@
 		set_speed_parameter="1"
 		auto_play="1"/>
 
-	<VariableStorageComponent _tags="no_gold_drop"/>
 </Entity>
