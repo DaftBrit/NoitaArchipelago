@@ -38,6 +38,14 @@ function get_player_always()
 	return get_player() or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
 end
 
+local total_random_calls = 0
+--- For maximum random
+function InitRandomSeed()
+	local x, y = get_spawn_position()
+	SetRandomSeed(x + GameGetFrameNum(), y + total_random_calls)
+	total_random_calls = total_random_calls + 1
+end
+
 --- Gets a position for spawning items. Should always succeed.
 --- Checks positions in this order:
 ---   1. Entity tagged with `player_unit`
