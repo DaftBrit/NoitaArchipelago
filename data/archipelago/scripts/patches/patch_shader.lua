@@ -65,6 +65,16 @@ shader_append("data/shaders/post_final.vert",
         tex_coord_y_inverted_ = (tex_coord_y_inverted_ - 0.5) * 4.0 + 0.5;
         tex_coord_glow_ = (tex_coord_glow_ - 0.5) * 4.0 + 0.5;
 	}
+	if (AP_CAMERA_ROTATE.x == 1.0) {
+		float angle = radians(45.0);
+
+		mat2 rot = mat2(
+			cos(angle), -sin(angle),
+			sin(angle),  cos(angle)
+		);
+
+		gl_Position.xy = rot * gl_Position.xy;
+	}
 ]]
 )
 

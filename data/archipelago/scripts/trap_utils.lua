@@ -8,6 +8,7 @@ TrapLink spreadsheet candidates:
 - Polymorph Trap
 - Blind Trap
 - Invisible Enemies Trap
+- Chaos Polymorph Trap
 ]]
 
 local traplink_aliases_recv = {
@@ -20,6 +21,7 @@ local traplink_aliases_recv = {
 	["CHAOS CONTROL TRAP"] = "AP_STUN",
 	["CONFUSE TRAP"] = "AP_CONFUSION",
 	["CONFUSION TRAP"] = "AP_CONFUSION",
+	["CONFOUND TRAP"] = "AP_CONFUSION",
 	["ELECTROCUTION TRAP"] = "AP_STUN",
 	["FIRE TRAP"] = "AP_ON_FIRE",
 	["GAS TRAP"] = "PLAYER_GAS",
@@ -32,6 +34,7 @@ local traplink_aliases_recv = {
 	["REVERSE CONTROLS TRAP"] = "AP_CONFUSION",
 	["REVERSE TRAP"] = "AP_CONFUSION",
 	["SLOW TRAP"] = "SLOW_PLAYER",
+	["FRAME SLIME TRAP"] = "SLOW_PLAYER",
 	["SLOWNESS TRAP"] = "SLOW_PLAYER",
 	["CURSE TRAP"] = "SLOW_PLAYER",
 	["STUN TRAP"] = "AP_STUN",
@@ -63,6 +66,7 @@ local traplink_aliases_recv = {
 	["CLEAR IMAGE TRAP"] = "REMOVE_GROUND",
 	["DAMAGE TRAP"] = "AP_INSTANT_DAMAGE",
 	["INSTANT DEATH TRAP"] = "AP_INSTANT_DEATH",
+	["BLUE BALLS CURSE"] = "AP_ONE_HP",
 	["ONE HIT KO"] = "AP_ONE_HP",
 	["INVISIBLE TRAP"] = "AP_INVIS_BAD",
 	["INVISIBILITY TRAP"] = "AP_INVIS_BAD",
@@ -72,6 +76,17 @@ local traplink_aliases_recv = {
 	["EXTREME CHAOS MODE"] = "AP_EXTREME_CHAOS",
 	["RADIATION TRAP"] = "AP_RADIOACTIVE",
 	["GRAVITY_TRAP"] = "GRAVITY_PLAYER",
+	["WHOOPS! TRAP"] = "AP_WHOOPS_TRAP",
+	["EMPTY ITEM BOX TRAP"] = "AP_EMPTY_ITEM_BOX",
+	["EJECT ABILITY"] = "AP_EJECT_ABILITY",
+	["DOUBLE DAMAGE"] = "AP_DOUBLE_DAMAGE",
+	["CAMERA ROTATE TRAP"] = "AP_CAMERA_ROTATE",
+	["AAA TRAP"] = "AP_SHEEP_SFX",
+	["BUBBLE TRAP"] = "AP_STUN",
+	["FAST TRAP"] = "AP_BECOME_SPEED",
+	["ENCHANTMENT TRAP"] = "AP_BECOME_SPEED",
+	["GADGET SHUFFLE TRAP"] = "AP_SPELL_SHUFFLE",
+	["Sticky Floor Trap"] = "AP_STICKY_GROUND",
 }
 
 local traplink_aliases_send = {
@@ -116,6 +131,15 @@ local traplink_aliases_send = {
 	AP_EXTREME_CHAOS = "Extreme Chaos Mode",
 	AP_RADIOACTIVE = "Radiation Trap",
 	GRAVITY_PLAYER = "Gravity Trap",
+	AP_WHOOPS_TRAP = "Whoops! Trap",
+	AP_EMPTY_ITEM_BOX = "Empty Item Box Trap",
+	AP_EJECT_ABILITY = "Eject Ability",
+	AP_DOUBLE_DAMAGE = "Double Damage",
+	AP_CAMERA_ROTATE = "Camera Rotate Trap",
+	AP_SHEEP_SFX = "Aaa Trap",
+	AP_BECOME_SPEED = "Fast Trap",
+	AP_SPELL_SHUFFLE = "Gadget Shuffle Trap",
+	AP_STICKY_GROUND = "Sticky Floor Trap",
 }
 
 local ap_streaming_initialized = false

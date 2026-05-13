@@ -1,6 +1,5 @@
 <Entity>
-	<InheritTransformComponent
-		_enabled="1" />
+	<InheritTransformComponent only_position="1" />
 
 	<GameEffectComponent
 		effect="CUSTOM"
@@ -12,4 +11,13 @@
 		script_source_file="data/archipelago/scripts/status_effects/chaos_fungal_shift.lua"
 		execute_every_n_frame="60"
 		/>
+
+	<DrugEffectModifierComponent>
+		<fx_add
+			distortion_amount="0.5"
+			color_amount="0.4"
+			fractals_amount="1.0"
+		/>
+	</DrugEffectModifierComponent>
+
 </Entity>

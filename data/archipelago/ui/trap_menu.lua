@@ -11,6 +11,7 @@ local TrapMenu = {
 	gui = GuiCreate(),
 	initialized = false,
 	trap_list = {},
+	awful_traps = {},
 	author_menu_open = "",
 }
 
@@ -25,6 +26,10 @@ function TrapMenu:create()
 			local author_list = self.trap_list[author] or {}
 			table.insert(author_list, event.id)
 			self.trap_list[author] = author_list
+
+			if event.kind == STREAMING_EVENT_AWFUL then
+				self.awful_traps[event.id] = true
+			end
 		end
 	end
 
@@ -61,6 +66,9 @@ function TrapMenu:update()
 		if is_open then
 			GuiLayoutBeginVertical(self.gui, 10, 0, true)
 			for id, trap_name in ipairs(author_traps) do
+				if self.awful_traps[trap_name] then
+					GuiColorSetForNextWidget(self.gui, 1, 0.5, 0.5, 1)
+				end
 				if GuiButton(self.gui, id + 1000, 0, 0, trap_name .. "  ") then
 					RunStreamingEvent(trap_name)
 				end
