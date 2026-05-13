@@ -1,0 +1,23 @@
+<Entity>
+	<!-- Originally from Twitch Integration, permission from Soler -->
+	<InheritTransformComponent only_position="1" />
+
+	<GameEffectComponent
+		effect="CUSTOM"
+		custom_effect_id="AP_BECOME_SPEED"
+		frames="-1"
+		/>
+
+	<GameEffectComponent
+		effect="MOVEMENT_FASTER_2X"
+		frames="-1"
+		/>
+	<GameEffectComponent
+		effect="MOVEMENT_FASTER_2X"
+		frames="-1"
+		/>
+	<GameEffectComponent
+		effect="MOVEMENT_FASTER_2X"
+		frames="-1"
+		/>
+</Entity>

@@ -1,0 +1,7 @@
+<Entity tags="glue_anchor">
+	<Base file="data/entities/projectiles/glue_anchor.xml">
+		<LuaComponent script_source_file="data/archipelago/scripts/projectiles/super_glue_anchor.lua"/>
+		<LifetimeComponent lifetime="1200"/>
+	</Base>
+
+</Entity>

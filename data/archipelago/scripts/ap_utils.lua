@@ -42,7 +42,7 @@ local total_random_calls = 0
 --- For maximum random
 function InitRandomSeed()
 	local x, y = get_spawn_position()
-	SetRandomSeed(x + GameGetFrameNum(), y + total_random_calls)
+	SetRandomSeed(x + GameGetFrameNum(), y * total_random_calls)
 	total_random_calls = total_random_calls + 1
 end
 
@@ -547,5 +547,21 @@ function create_dir(dirname)
 	local code = os.execute("mkdir " .. dirname)
 	if code ~= 0 then
 		Log.Error("Failed to create cache directory '" .. dirname .. "'. Error code: " .. tostring(code))
+	end
+end
+
+--- Stolen from Fair Mod
+---@param entity entity_id
+---@param item_entity entity_id
+function EntityDropItem(entity, item_entity)
+	EntityRemoveFromParent(item_entity)
+	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_hand", false)
+	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_world", true)
+
+	local inventory_comp = EntityGetFirstComponentIncludingDisabled(entity, "Inventory2Component")
+	if inventory_comp ~= nil then
+		ComponentSetValue2(inventory_comp, "mActiveItem", 0)
+		ComponentSetValue2(inventory_comp, "mActualActiveItem", 0)
+		ComponentSetValue2(inventory_comp, "mForceRefresh", true)
 	end
 end
