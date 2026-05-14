@@ -78,7 +78,7 @@ local gui = GuiCreate()
 -- DEATHLINK
 ----------------------------------------------------------------------------------------------------
 
----@return table
+---@return string[] taglist
 local function GetConnectionTags()
 	local tags_arr = {}
 	for tag, _ in pairs(connect_tags) do
@@ -99,7 +99,8 @@ local function UpdateConnectionTags()
 	ap:ConnectUpdate(nil, new_conn_tags)
 end
 
--- Toggles DeathLink, requires calling UpdateConnectionTags() separately afterwards
+--- Toggles DeathLink, requires calling UpdateConnectionTags() separately afterwards
+---@param enabled boolean
 local function SetDeathLinkEnabled(enabled)
 	if enabled then
 		if death_link_status == true then
@@ -116,6 +117,7 @@ local function SetDeathLinkEnabled(enabled)
 	end
 end
 
+---@param enabled boolean
 local function SetTrapLinkEnabled(enabled)
 	if enabled then
 		connect_tags["TrapLink"] = 1
@@ -132,7 +134,7 @@ local function UpdateDeathTime()
 	return result
 end
 
-
+---@return integer state 0 = off, 1 = on, 2 = traps
 local function IsDeathLinkEnabled()
 	if slot_options == nil then
 		return 0
@@ -151,6 +153,7 @@ local function IsDeathLinkEnabled()
 	end
 end
 
+---@return boolean
 local function IsTrapLinkEnabled()
 	if slot_options == nil then
 		return false
@@ -160,11 +163,12 @@ end
 
 local function CheckTrapLinkQueue()
 	local traps = Globals.TrapLinkQueue:get_table()
-	for trapname in ipairs(traps) do
+	for _,trap in ipairs(traps) do
 		ap:Bounce({
 			time = ap:get_server_time(),
-			trap_name = trapname,
-			source = ap:get_slot()
+			trap_name = trap.trap_name,
+			source = ap:get_slot(),
+			noita_id = trap.noita_id,
 		}, nil, nil, {"TrapLink"})
 	end
 	Globals.TrapLinkQueue:reset()
@@ -178,7 +182,7 @@ end
 local function CheckVictoryConditionFor(flag, msg)
 	if GameHasFlagRun(flag) then
 		Log.Info(msg)
-		ap:StatusUpdate(30)	-- ClientStatus.CLIENT_GOAL
+		ap:StatusUpdate(APClient.ClientStatus.GOAL)
 		GameRemoveFlagRun(flag)
 	end
 end
@@ -711,7 +715,7 @@ function RECV_MSG.Bounced(msg)
 	elseif contains_element(tags, "TrapLink") then
 		-- Don't receive traps from the same slot since they get shared through receiving items
 		if data["source"] ~= ap:get_slot() then
-			RecvTrapLink(data["source"], data["trap_name"])
+			RecvTrapLink(data["source"], data["trap_name"], data["noita_id"])
 		end
 	else
 		Log.Warn("Unsupported Bounced type received. " .. JSON:encode(msg))

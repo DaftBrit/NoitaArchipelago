@@ -1,0 +1,58 @@
+<Entity name="$ap_animal_thwimp" >
+	<SpriteComponent
+		image_file="data/archipelago/entities/animals/thwimp.png"
+		offset_x="5.5"
+		offset_y="5.5"
+		z_index="-1"
+		update_transform_rotation="0"
+		never_ragdollify_on_death="1"
+		has_special_scale="1"
+		special_scale_x="0.9"
+		special_scale_y="0.9"
+		/>
+
+		<!-- TODO custom material, check fairmod minecart -->
+	<PhysicsImageShapeComponent
+		is_root="1"
+		image_file="data/archipelago/entities/animals/thwimp_physics.png"
+		use_sprite="1"
+		centered="1"
+		material="ap_heavy_rock_entity"
+		/>
+
+	<CameraBoundComponent
+		max_count="30"
+		distance="160000"/>
+
+	<PhysicsBody2Component
+		fixed_rotation="1"
+		auto_clean="0"
+		buoyancy="0"
+		/>
+
+	<PhysicsBodyCollisionDamageComponent/>
+
+	<VelocityComponent
+		liquid_drag="0"
+		air_friction="0"
+		mass="10"
+		affect_physics_bodies="1"
+		/>
+
+	<LuaComponent
+		script_source_file="data/archipelago/entities/animals/thwimp_ai.lua"
+		execute_every_n_frame="1"
+		vm_type="ONE_PER_COMPONENT_INSTANCE"
+		/>
+
+	<AreaDamageComponent
+		update_every_n_frame="8"
+		damage_per_frame="0.4"
+		aabb_min.x="-8"
+		aabb_min.y="-8"
+		aabb_max.x="8"
+		aabb_max.y="8"
+		death_cause="$ap_animal_thwimp"
+		/>
+
+</Entity>

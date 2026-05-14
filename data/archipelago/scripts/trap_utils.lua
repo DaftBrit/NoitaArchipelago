@@ -11,6 +11,7 @@ TrapLink spreadsheet candidates:
 - Chaos Polymorph Trap
 ]]
 
+-- Targets must either be either vanilla or archipelago events
 local traplink_aliases_recv = {
 	["ANIMAL TRAP"] = "AP_POLY_SELF",
 	["BOMB TRAP"] = "RAIN_BOMB",
@@ -34,7 +35,7 @@ local traplink_aliases_recv = {
 	["REVERSE CONTROLS TRAP"] = "AP_CONFUSION",
 	["REVERSE TRAP"] = "AP_CONFUSION",
 	["SLOW TRAP"] = "SLOW_PLAYER",
-	["FRAME SLIME TRAP"] = "SLOW_PLAYER",
+	["FRAME SLIME TRAP"] = "AP_LAG",
 	["SLOWNESS TRAP"] = "SLOW_PLAYER",
 	["CURSE TRAP"] = "SLOW_PLAYER",
 	["STUN TRAP"] = "AP_STUN",
@@ -75,7 +76,7 @@ local traplink_aliases_recv = {
 	["FROG TRAP"] = "AP_POLY_FROG",
 	["EXTREME CHAOS MODE"] = "AP_EXTREME_CHAOS",
 	["RADIATION TRAP"] = "AP_RADIOACTIVE",
-	["GRAVITY_TRAP"] = "GRAVITY_PLAYER",
+	["GRAVITY TRAP"] = "GRAVITY_PLAYER",
 	["WHOOPS! TRAP"] = "AP_WHOOPS_TRAP",
 	["EMPTY ITEM BOX TRAP"] = "AP_EMPTY_ITEM_BOX",
 	["EJECT ABILITY"] = "AP_EJECT_ABILITY",
@@ -83,20 +84,37 @@ local traplink_aliases_recv = {
 	["CAMERA ROTATE TRAP"] = "AP_CAMERA_ROTATE",
 	["AAA TRAP"] = "AP_SHEEP_SFX",
 	["BUBBLE TRAP"] = "AP_STUN",
+	["SLEEP TRAP"] = "AP_STUN",
 	["FAST TRAP"] = "AP_BECOME_SPEED",
 	["ENCHANTMENT TRAP"] = "AP_BECOME_SPEED",
 	["GADGET SHUFFLE TRAP"] = "AP_SPELL_SHUFFLE",
-	["Sticky Floor Trap"] = "AP_STICKY_GROUND",
+	["SHUFFLE TRAP"] = "AP_SPELL_SHUFFLE",
+	["STICKY FLOOR TRAP"] = "AP_STICKY_GROUND",
+	["HONEY TRAP"] = "AP_STICKY_GROUND",
+	["METEOR TRAP"] = "AP_METEOR",
+	["CONTROLLER DRIFT TRAP"] = "AP_STICK_DRIFT",
+	["JUMP TRAP"] = "AP_JUMP_TRAP",
+	["JUMPING JACKS TRAP"] = "AP_JUMP_TRAP",
+	["UNDERWATER TRAP"] = "AP_UNDERWATER",
+	["MONKEY MASH TRAP"] = "AP_MONKEY_MASH",
+	["W I D E TRAP"] = "AP_WIDE",
+	["TINY TRAP"] = "AP_TINY",
+	["THWIMP TRAP"] = "AP_SPAWN_THWIMP",
+	["MY TURN! TRAP"] = "AP_MONKEY_MASH",
 }
 
 local traplink_aliases_send = {
 	AP_CONFUSION = "Confuse Trap",
+	TWITCH_EXTENDED_INVERT_CONTROLS = "Confuse Trap",
 	AP_ON_FIRE = "Fire Trap",
 	AP_POLY_SELF = "Animal Trap",
 	AP_STUN = "Stun Trap",
 	DRUNK_PLAYER = "Hiccup Trap",
 	PLAYER_GAS = "Gas Trap",
 	RAIN_BOMB = "Bomb Trap",
+	TWITCH_EXTENDED_BOMB = "Bomb Trap",
+	TWITCH_EXTENDED_BOMB_CURSE = "Bomb Trap",
+	TWITCH_EXTENDED_HOLY_BOMB = "Bomb Trap",
 	SLOW_BULLETS = "Bullet Time Trap",
 	SLOW_PLAYER = "Slow Trap",
 	SPAWN_SHOPKEEPER = "Police Trap",
@@ -131,6 +149,7 @@ local traplink_aliases_send = {
 	AP_EXTREME_CHAOS = "Extreme Chaos Mode",
 	AP_RADIOACTIVE = "Radiation Trap",
 	GRAVITY_PLAYER = "Gravity Trap",
+	TWITCH_EXTENDED_PROJECTILE_ATTRACTION = "Gravity Trap",
 	AP_WHOOPS_TRAP = "Whoops! Trap",
 	AP_EMPTY_ITEM_BOX = "Empty Item Box Trap",
 	AP_EJECT_ABILITY = "Eject Ability",
@@ -140,6 +159,24 @@ local traplink_aliases_send = {
 	AP_BECOME_SPEED = "Fast Trap",
 	AP_SPELL_SHUFFLE = "Gadget Shuffle Trap",
 	AP_STICKY_GROUND = "Sticky Floor Trap",
+	AP_METEOR = "Meteor Trap",
+	TWITCH_EXTENDED_TRANSFORM_BOMBS = "Items to Bombs",
+	CONGATWITCH_SWAPPER_CURSE = "Swap Trap",
+	CONGATWITCH_RANDOM_WRAITHS = "Ghost",
+	CONGATWITCH_MANA_DRAIN = "Mana Drain Trap",
+	CONGATWITCH_LAG_PLAYER = "Frame Slime Trap",
+	CONGATWITCH_JUMPSCARE = "Syntax Jumpscare Trap",
+	CONGATWITCH_POPQUIZ = "Math Quiz Trap",
+	AP_STICK_DRIFT = "Controller Drift Trap",
+	AP_JUMP_TRAP = "Jump Trap",
+	AP_UNDERWATER = "Underwater Trap",
+	AP_MONKEY_MASH = "Monkey Mash Trap",
+	AP_LAG = "Frame Slime Trap",
+	TWITCH_EXTENDED_EARTHQUAKE = "Rockfall Trap",
+	AP_WIDE = "W I D E Trap",
+	AP_TINY = "Tiny Trap",
+	AP_SPAWN_THWIMP = "Thwimp Trap",
+	TWITCH_EXTENDED_SHUFFLE_WAND = "Shuffle Trap",
 }
 
 local ap_streaming_initialized = false
@@ -215,10 +252,13 @@ end
 --- Receive a trap from TrapLink
 ---@param source string?
 ---@param trap_name string
-function RecvTrapLink(source, trap_name)
+function RecvTrapLink(source, trap_name, noita_trap_name)
 	InitStreamingTraps()
 
-	local noita_trap_name = traplink_aliases_recv[trap_name:upper()]
+	if noita_trap_name == nil or ap_local_streaming_event_lookup[noita_trap_name] == nil then
+		noita_trap_name = traplink_aliases_recv[trap_name:upper()]
+	end
+
 	if noita_trap_name == nil then
 		Log.Warn("No trap name found for: " .. trap_name)
 		return
@@ -238,7 +278,11 @@ function BadTimes(notraplink)
 	if not notraplink then
 		local traplink_name = traplink_aliases_send[noita_id]
 		if traplink_name ~= nil then
-			Globals.TrapLinkQueue:append(traplink_name)
+			-- TODO also pass original trap ID for matching between Noita games
+			Globals.TrapLinkQueue:append({
+				trap_name=traplink_name,
+				noita_id=noita_id,
+			})
 		end
 	end
 end

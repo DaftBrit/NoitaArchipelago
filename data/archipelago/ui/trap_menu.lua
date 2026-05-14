@@ -69,7 +69,7 @@ function TrapMenu:update()
 				if self.awful_traps[trap_name] then
 					GuiColorSetForNextWidget(self.gui, 1, 0.5, 0.5, 1)
 				end
-				if GuiButton(self.gui, id + 1000, 0, 0, trap_name .. "  ") then
+				if GuiButton(self.gui, id + 1000, 0, 0, trap_name .. "  ", 0.5) then
 					RunStreamingEvent(trap_name)
 				end
 

@@ -1,0 +1,20 @@
+<Entity>
+	<InheritTransformComponent only_position="1" />
+
+	<GameEffectComponent
+		effect="CUSTOM"
+		custom_effect_id="AP_UNDERWATER"
+		frames="-1"
+		/>
+
+	<DrugEffectModifierComponent>
+		<fx_add
+			distortion_amount="1"
+		/>
+	</DrugEffectModifierComponent>
+
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/underwater.lua"
+		/>
+
+</Entity>

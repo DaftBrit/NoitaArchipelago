@@ -107,6 +107,48 @@ local ap_status_list = {
 		effect_entity = "data/archipelago/entities/misc/effect_speed.xml",
 		is_harmful = true,
 	},
+	{
+		id = "AP_STICK_DRIFT",
+		ui_name = "$ap_trap_stick_drift",
+		effect_entity = "data/archipelago/entities/misc/effect_stick_drift.xml",
+		is_harmful = true,
+	},
+	{
+		id = "AP_JUMP_TRAP",
+		ui_name = "$ap_trap_jump",
+		effect_entity = "data/archipelago/entities/misc/effect_jumping.xml",
+		is_harmful = true,
+	},
+	{
+		id = "AP_UNDERWATER",
+		ui_name = "$ap_trap_underwater",
+		effect_entity = "data/archipelago/entities/misc/effect_underwater.xml",
+		is_harmful = true,
+	},
+	{
+		id = "AP_LAG",
+		ui_name = "$ap_trap_lag",
+		effect_entity = "data/archipelago/entities/misc/effect_lag.xml",
+		is_harmful = true,
+	},
+	{
+		id = "AP_MONKEY_MASH",
+		ui_name = "$ap_trap_monkey_mash",
+		effect_entity = "data/archipelago/entities/misc/effect_monkey_mash.xml",
+		is_harmful = true,
+	},
+	{
+		id = "AP_WIDE",
+		ui_name = "$ap_trap_wide",
+		effect_entity = "data/archipelago/entities/misc/effect_wide.xml",
+		is_harmful = true,
+	},
+	{
+		id = "AP_TINY",
+		ui_name = "$ap_trap_tiny",
+		effect_entity = "data/archipelago/entities/misc/effect_tiny.xml",
+		is_harmful = true,
+	},
 }
 
 for _, status in ipairs(ap_status_list) do
