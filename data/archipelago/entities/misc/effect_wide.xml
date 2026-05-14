@@ -1,0 +1,24 @@
+<Entity>
+	<InheritTransformComponent only_position="1" />
+
+	<GameEffectComponent
+		effect="CUSTOM"
+		custom_effect_id="AP_WIDE"
+		frames="-1"
+		/>
+
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/wide_start.lua"
+		execute_every_n_frame="1"
+		remove_after_executed="1"
+		/>
+
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/wide_end.lua"
+		execute_every_n_frame="-1"
+		execute_on_removed="1"
+		/>
+
+	<VariableStorageComponent _tags="factor" name="factor" value_float="1" />
+
+</Entity>

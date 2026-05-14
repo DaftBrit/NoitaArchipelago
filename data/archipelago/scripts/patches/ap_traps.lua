@@ -320,7 +320,7 @@ local archipelago_traps = {
 		action = function(event)
 			local player = get_player()
 			if player == nil then return end
-			EntityInflictDamage(player, 999999999, "DAMAGE_CURSE", "$ap_trap_instant_death", "NONE", 0, 0)
+			EntityInflictDamage(player, 99999999, "DAMAGE_CURSE", "$ap_trap_instant_death", "NONE", 0, 0)
 		end
 	},
 	{
@@ -589,6 +589,93 @@ local archipelago_traps = {
 			end
 		end
 	},
+	{
+		id = "AP_METEOR",
+		ui_name = "$ap_trap_meteor",
+		ui_icon = "data/ui_gfx/gun_actions/meteor_rain.png",
+		delay_timer = 300,
+		action_delayed = function(event)
+			local x, y = get_spawn_position()
+			shoot_projectile_ownerless("data/entities/projectiles/deck/meteor_rain.xml", x, y, 0, 0)
+		end
+	},
+	{
+		id = "AP_STICK_DRIFT",
+		ui_name = "$ap_trap_stick_drift",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_stick_drift.xml", 1200, true)
+		end
+	},
+	{
+		id = "AP_JUMP_TRAP",
+		ui_name = "$ap_trap_jump",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_jumping.xml", 1200, true)
+		end
+	},
+	{
+		id = "AP_UNDERWATER",
+		ui_name = "$ap_trap_underwater",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_underwater.xml", 1800, true)
+		end
+	},
+	{
+		id = "AP_MONKEY_MASH",
+		ui_name = "$ap_trap_monkey_mash",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_monkey_mash.xml", 1800, true)
+		end
+	},
+	{
+		id = "AP_LAG",
+		ui_name = "$ap_trap_lag",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_lag.xml", 1200, true)
+		end
+	},
+	{
+		id = "AP_WIDE",
+		ui_name = "$ap_trap_wide",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_wide.xml", 3600, true)
+		end
+	},
+	{
+		id = "AP_TINY",
+		ui_name = "$ap_trap_tiny",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_tiny.xml", 3600, true)
+		end
+	},
+	{
+		id = "AP_SPAWN_THWIMP",
+		ui_name = "$ap_trap_spawn_thwimp",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			local x, y = get_spawn_position()
+			local _, _, target_y = RaytracePlatforms(x, y, x, y - 100)
+
+			EntityLoad("data/archipelago/entities/animals/thwimp.xml", x, target_y + 10)
+		end
+	},
+	--[[ TODO:
+		- fracture/crystal: DrugEffectComponent -> fractals_amount = 1, fractals_size = 40
+		- disable A (jump) -> disable "up" -> Grounded TI event
+		- disable B (attack) -> disable "use wand" -> Disarm -> Ceasefire TI event
+		- disable Z (crouch/hover) -> disable "throw" and "kick"? too lame?
+		- disable C up (first person, dive, play instrument) -> disable interact
+		- inverted mouse
+		- items to bombs (spells to bombs)
+		- iron boots: slow and heavy
+	]]
 }
 
 for _, trap in ipairs(archipelago_traps) do

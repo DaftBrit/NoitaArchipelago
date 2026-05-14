@@ -47,6 +47,34 @@
     </StatusEffects>
   </CellDataChild>
 
+  <CellData
+		tags="[box2d],[matter_eater_ignore_list],[sunbaby_ignore_list],[indestructible]"
+  	name="ap_heavy_rock_entity"
+		ui_name="$ap_animal_thwimp"
+		density="11"
+		cell_type="solid"
+		solid_friction="1"
+		solid_static_type="0"
+		solid_gravity_scale="3"
+		solid_restitution="0"
+		platform_type="0"
+		hp="100000"
+		durability="14"
+		electrical_conductivity="0"
+		wang_color="ff223445"
+		audio_physics_material_wall="rock"
+		audio_physics_material_solid="rock"
+		audio_size_multiplier="3.0"
+		>
+			<Graphics
+				texture_file="data/materials_gfx/rock.png"
+				color="ff2d2dac" />
+  </CellData>
+
+<!-- ################## -->
+<!-- ##  REACTIONS   ## -->
+<!-- ################## -->
+
   <Reaction
     probability="20"
     input_cell1="ap_chest" input_cell2="[fire]"
