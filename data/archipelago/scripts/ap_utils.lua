@@ -15,15 +15,35 @@ function contains_element(tbl, elem)
 	return false
 end
 
----@param s string
+---@param s string?
 ---@return boolean
 function not_empty(s)
 	return s ~= nil and s ~= ''
 end
 
+---@param s string
+---@return string
+function sanitize(s)
+	return s:gsub("[^%w_]", "_"):lower()
+end
+
 --- @return entity_id|nil
 function get_player()
 	return EntityGetWithTag("player_unit")[1]
+end
+
+--- Retrieves the player entity even if it is polymorphed
+--- @return entity_id|nil
+function get_player_always()
+	return get_player() or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
+end
+
+local total_random_calls = 0
+--- For maximum random
+function InitRandomSeed()
+	local x, y = get_spawn_position()
+	SetRandomSeed(x + GameGetFrameNum(), y * total_random_calls)
+	total_random_calls = total_random_calls + 1
 end
 
 --- Gets a position for spawning items. Should always succeed.
@@ -35,8 +55,9 @@ end
 ---@return number x
 ---@return number y
 function get_spawn_position()
-	local x, y = 0, 0
-	local player_entity = get_player() or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
+	local x = 0
+	local y = 0
+	local player_entity = get_player_always()
 	if player_entity ~= nil then
 		x, y = EntityGetTransform(player_entity)
 	else
@@ -526,5 +547,21 @@ function create_dir(dirname)
 	local code = os.execute("mkdir " .. dirname)
 	if code ~= 0 then
 		Log.Error("Failed to create cache directory '" .. dirname .. "'. Error code: " .. tostring(code))
+	end
+end
+
+--- Stolen from Fair Mod
+---@param entity entity_id
+---@param item_entity entity_id
+function EntityDropItem(entity, item_entity)
+	EntityRemoveFromParent(item_entity)
+	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_hand", false)
+	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_world", true)
+
+	local inventory_comp = EntityGetFirstComponentIncludingDisabled(entity, "Inventory2Component")
+	if inventory_comp ~= nil then
+		ComponentSetValue2(inventory_comp, "mActiveItem", 0)
+		ComponentSetValue2(inventory_comp, "mActualActiveItem", 0)
+		ComponentSetValue2(inventory_comp, "mForceRefresh", true)
 	end
 end

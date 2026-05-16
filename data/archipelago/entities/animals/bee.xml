@@ -1,0 +1,96 @@
+<Entity name="$ap_animal_bee">
+	<VariableStorageComponent _tags="no_gold_drop"/>
+
+	<Base file="data/entities/base_enemy_flying.xml" >
+		<AnimalAIComponent
+			_enabled="1"
+			preferred_job="JobDefault"
+			attack_melee_damage_min="0.06"
+			attack_melee_damage_max="0.14"
+			attack_dash_damage="0.08"
+			attack_dash_speed="1"
+			attack_dash_lob="0.2"
+			attack_dash_enabled="1"
+			attack_dash_distance="20"
+			creature_detection_range_x="1024"
+			creature_detection_range_y="1024"
+			food_material="honey"
+			needs_food="1"
+			sense_creatures="1"
+			attack_ranged_enabled="0"
+			can_fly="1"
+			can_walk="0"
+			attack_knockback_multiplier="0"
+			dont_counter_attack_own_herd="1"
+			attack_if_damaged_probability="0"
+			escape_if_damaged_probability="0"
+			aggressiveness_min="100"
+			aggressiveness_max="100"
+			attack_melee_frames_between="4"
+			sense_creatures_through_walls="1"
+			/>
+
+		<DamageModelComponent
+			ragdoll_filenames_file=""
+			hp="0.2"
+			fire_probability_of_ignition="0"
+			/>
+
+		<SpriteComponent
+			image_file="data/archipelago/entities/animals/bee_gfx.xml"
+			offset_x="0"
+			offset_y="0"
+			/>
+
+		<PathFindingComponent
+			can_walk="0"
+			can_fly="1" />
+
+		<PathFindingGridMarkerComponent
+			marker_work_flag="16" />
+
+		<GenomeDataComponent
+			herd_id="fly"
+			food_chain_rank="15"
+			is_predator="1" />
+
+		<CharacterPlatformingComponent
+			jump_velocity_y="-12"
+			run_velocity="20"
+			fly_speed_max_up="120"
+			fly_speed_max_down="120"
+			fly_speed_mult="40"
+			fly_speed_change_spd="5"
+    	pixel_gravity="50"
+			fly_velocity_x="60"
+			fly_smooth_y="1"
+			accel_x_air="0.2"
+		/>
+
+		<CameraBoundComponent
+			max_count="30"
+			distance="160000"/>
+
+		<HitboxComponent
+			_enabled="1"
+			aabb_max_x="4"
+			aabb_max_y="4"
+			aabb_min_x="-4"
+			aabb_min_y="-4" />
+
+		<CharacterDataComponent
+			collision_aabb_min_x="-3.0"
+			collision_aabb_max_x="3.0"
+			collision_aabb_min_y="-3"
+			collision_aabb_max_y="3"
+			mass="1.0"
+			/>
+	</Base>
+
+	<AudioLoopComponent
+		file="data/audio/Desktop/animals.bank"
+		event_name="animals/wing_flap_insect/movement_loop"
+		set_speed_parameter="1"
+		auto_play="1"/>
+
+</Entity>

@@ -1,0 +1,21 @@
+<Entity>
+	<InheritTransformComponent only_position="1" />
+
+	<GameEffectComponent
+		effect="CUSTOM"
+		custom_effect_id=""
+		frames="-1"
+		/>
+
+  <LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/shader_start.lua"
+		execute_every_n_frame="4"
+		remove_after_executed="1"
+		/>
+
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/shader_end.lua"
+		execute_every_n_frame="-1"
+		execute_on_removed="1"
+		/>
+</Entity>

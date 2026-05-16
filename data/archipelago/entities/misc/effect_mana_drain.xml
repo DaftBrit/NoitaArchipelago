@@ -1,0 +1,13 @@
+<Entity>
+	<InheritTransformComponent only_position="1" />
+
+	<GameEffectComponent
+		effect="CUSTOM"
+		custom_effect_id="AP_MANA_DRAIN"
+		frames="-1"
+		/>
+
+  <LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/mana_drain.lua"
+		/>
+</Entity>

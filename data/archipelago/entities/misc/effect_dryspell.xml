@@ -1,0 +1,43 @@
+<Entity>
+	<!-- Originally from Twitch Integration, permission from Soler -->
+	<InheritTransformComponent only_position="1" />
+	<GameEffectComponent
+		effect="CUSTOM"
+		custom_effect_id="TWITCH_DRYSPELL"
+		frames="-1"/>
+
+	<MagicConvertMaterialComponent
+      kill_when_finished="0"
+      from_material_tag="[liquid]"
+      steps_per_frame="10"
+      to_material="air"
+      clean_stains="0"
+      is_circle="1"
+      radius="32"
+	  	loop="1"
+	  />
+
+	<!-- remove current stains, and disable stains -->
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/dryspell_start.lua"
+		execute_every_n_frame="-1"
+		execute_on_added="1"
+		>
+	</LuaComponent>
+
+	<!-- re-enable stains -->
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/dryspell_end.lua"
+		execute_every_n_frame="-1"
+		execute_on_removed="1"
+		>
+	</LuaComponent>
+
+	<!-- just in case -->
+	<Entity>
+		<GameEffectComponent effect="STAINS_DROP_FASTER" />
+		<GameEffectComponent effect="STAINS_DROP_FASTER" />
+		<GameEffectComponent effect="STAINS_DROP_FASTER" />
+		<GameEffectComponent effect="STAINS_DROP_FASTER" />
+	</Entity>
+</Entity>

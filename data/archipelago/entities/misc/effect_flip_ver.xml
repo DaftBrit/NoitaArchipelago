@@ -1,0 +1,5 @@
+<Entity>
+	<Base file="data/archipelago/entities/misc/effect_shader_toggle.xml">
+		<GameEffectComponent custom_effect_id="AP_FLIP_VER"/>
+	</Base>
+</Entity>

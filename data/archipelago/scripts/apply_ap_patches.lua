@@ -39,8 +39,12 @@ ModLuaFileAppend("data/scripts/biomes/coalmine.lua", "data/archipelago/scripts/p
 ModLuaFileAppend("data/scripts/biomes/tower.lua", "data/archipelago/scripts/patches/ap_extend_tower_enemies.lua")
 
 ModLuaFileAppend("data/scripts/buildings/forge_item_convert.lua", "data/archipelago/scripts/patches/extend_forge_item_convert.lua")
+ModLuaFileAppend("data/scripts/streaming_integration/event_list.lua", "data/archipelago/scripts/patches/ap_traps.lua")
+ModLuaFileAppend("data/scripts/status_effects/status_list.lua", "data/archipelago/scripts/patches/ap_status_list.lua")
 
 -- ADDITIONAL SCRIPTS
 dofile_once("data/archipelago/scripts/patches/patch_pixel_scenes.lua")
 dofile_once("data/archipelago/scripts/patches/patch_portals.lua")
 dofile_once("data/archipelago/scripts/patches/patch_deaths.lua")
+dofile_once("data/archipelago/scripts/patches/patch_shader.lua")
+dofile_once("data/archipelago/scripts/patches/patch_emissives.lua")
