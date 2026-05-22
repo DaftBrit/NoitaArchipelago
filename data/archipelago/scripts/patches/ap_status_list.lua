@@ -149,6 +149,19 @@ local ap_status_list = {
 		effect_entity = "data/archipelago/entities/misc/effect_tiny.xml",
 		is_harmful = true,
 	},
+	{
+		id = "AP_MONOCHROME",
+		ui_name = "$ap_trap_spooky",
+		effect_entity = "data/archipelago/entities/misc/effect_monochrome.xml",
+		is_harmful = true,
+	},
+	{
+		id = "AP_SPELLS_TO_BOMBS",
+		ui_name = "$ap_trap_spells_to_bombs",
+		ui_description = "$ap_trap_spells_to_bombs_desc",
+		effect_entity = "data/archipelago/entities/misc/effect_bombs.xml",
+		is_harmful = true,
+	},
 }
 
 for _, status in ipairs(ap_status_list) do

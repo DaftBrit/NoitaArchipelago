@@ -101,6 +101,13 @@ local traplink_aliases_recv = {
 	["TINY TRAP"] = "AP_TINY",
 	["THWIMP TRAP"] = "AP_SPAWN_THWIMP",
 	["MY TURN! TRAP"] = "AP_MONKEY_MASH",
+	["SPOOKY TIME"] = "AP_MONOCHROME",
+	["ANIMAL BONUS TRAP"] = "AP_ANIMAL_SPAWN",
+	["SPOTLIGHT TRAP"] = "AP_BLINDNESS",
+	["ITEMS TO BOMBS"] = "AP_SPELLS_TO_BOMBS",
+	["POWERPOINT TRAP"] = "AP_LAG",
+	["ROCKFALL TRAP"] = "AP_EARTHQUAKE",
+	["LAUGHTER TRAP"] = "AP_SHEEP_SFX",
 }
 
 local traplink_aliases_send = {
@@ -161,6 +168,7 @@ local traplink_aliases_send = {
 	AP_STICKY_GROUND = "Sticky Floor Trap",
 	AP_METEOR = "Meteor Trap",
 	TWITCH_EXTENDED_TRANSFORM_BOMBS = "Items to Bombs",
+	AP_SPELLS_TO_BOMBS = "Items to Bombs",
 	CONGATWITCH_SWAPPER_CURSE = "Swap Trap",
 	CONGATWITCH_RANDOM_WRAITHS = "Ghost",
 	CONGATWITCH_MANA_DRAIN = "Mana Drain Trap",
@@ -177,6 +185,11 @@ local traplink_aliases_send = {
 	AP_TINY = "Tiny Trap",
 	AP_SPAWN_THWIMP = "Thwimp Trap",
 	TWITCH_EXTENDED_SHUFFLE_WAND = "Shuffle Trap",
+	AP_MONOCHROME = "Spooky Time",
+	AP_ANIMAL_SPAWN = "Animal Bonus Trap",
+	TWITCH_EXTENDED_BLINDNESS = "Spotlight Trap",
+	AP_BLINDNESS = "Spotlight Trap",
+	AP_EARTHQUAKE = "Rockfall Trap",
 }
 
 local ap_streaming_initialized = false
