@@ -1,0 +1,8 @@
+<Entity>
+	<InheritTransformComponent only_position="1" />
+	<Base file="data/entities/particles/teleportation_blast.xml" />
+
+	<LifetimeComponent
+		lifetime="30"
+		/>
+</Entity>

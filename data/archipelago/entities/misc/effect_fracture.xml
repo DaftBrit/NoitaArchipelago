@@ -1,0 +1,20 @@
+<Entity>
+	<Base file="data/archipelago/entities/misc/effect_shader_toggle.xml">
+		<GameEffectComponent custom_effect_id="AP_FRACTURE"/>
+	</Base>
+
+
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/fracture_fade_in.lua"
+		/>
+
+	<VariableStorageComponent _tags="frac_size" name="frac_size" value_float="0.1" />
+
+	<!-- DrugEffectModifierComponent>
+		<fx_add
+		fractals_amount="0.4"
+		fractals_size="20"
+		/>
+	</DrugEffectModifierComponent -->
+
+</Entity>

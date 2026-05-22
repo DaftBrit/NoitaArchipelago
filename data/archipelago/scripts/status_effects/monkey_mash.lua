@@ -1,97 +1,126 @@
+dofile_once("data/archipelago/scripts/ap_utils.lua")
+
 local player = EntityGetRootEntity(GetUpdatedEntityID())
 local player_x, player_y = EntityGetTransform(player)
+local controls = EntityGetFirstComponentIncludingDisabled(player, "ControlsComponent")
+if controls == nil then return end
 
----@param tbl any[]
----@param itm any
----@return integer
-local function find_item_index(tbl, itm)
-	for i,v in ipairs(tbl) do
-		if v == itm then return i end
+ComponentSetValue2(controls, "enabled", false)
+
+local all_button_names = {
+	"Fire", "Fire2", "Action", "Throw", "Interact", "Left", "Right", "Up", "Down", "Jump", "Fly", "ChangeItemR", "ChangeItemL", "Inventory", "DropItem", "Kick", "Eat"
+}
+
+local monkey_button_names = {
+	"Fire", "Fire2", "Interact", "Left", "Right", "Fly", "ChangeItemR", "ChangeItemL", "Inventory", "Kick", "Eat"
+}
+
+local instant_switch_names = {
+	Fire = true,
+	Interact = true,
+	ChangeItemR = true,
+	ChangeItemL = true,
+	Kick = true
+}
+
+local function ReleaseButton(name)
+	ComponentSetValue2(controls, "mButtonDown" .. name, false)
+	if name == "ChangeItemR" or name == "ChangeItemL" then
+		ComponentSetValue2(controls, "mButtonCount" .. name, 0)
 	end
-	return 1
 end
 
-local function switch_inventory_item(direction)
-	local inventory_comp = EntityGetFirstComponentIncludingDisabled(player, "Inventory2Component")
-	if inventory_comp == nil then return end
+local function ReleaseAllButtons()
+	for _,name in ipairs(all_button_names) do
+		ReleaseButton(name)
+	end
+end
 
-	local active_item = ComponentGetValue2(inventory_comp, "mActiveItem")
-	local actual_active_item = ComponentGetValue2(inventory_comp, "mActualActiveItem")
+local function PressOnly(name, norelease)
+	if not norelease then
+		ReleaseAllButtons()
+	end
+	ComponentSetValue2(controls, "mButtonDown" .. name, true)
+	ComponentSetValue2(controls, "mButtonFrame" .. name, GameGetFrameNum())
 
-	local children = EntityGetAllChildren(player) or {}
-	local inventory_list = {}
-	for _,child in ipairs(children) do
-		if EntityGetName(child) == "inventory_quick" then
-			inventory_list = EntityGetAllChildren(child) or {}
+	if name == "ChangeItemR" or name == "ChangeItemL" then
+		ComponentSetValue2(controls, "mButtonCount" .. name, 1)
+	end
+	if name == "Jump" or name == "Fly" then
+		PressOnly("Up", true)
+	elseif name == "Eat" then
+		PressOnly("Down", true)
+	end
+end
+
+local function AimAt(x, y)
+	ComponentSetValue2(controls, "mAimingVector", x, y)
+	ComponentSetValue2(controls, "mMousePosition", player_x + x, player_y + y)
+	if x ~= 0 or y ~= 0 then
+		local len = math.sqrt(x * x + y * y)
+		ComponentSetValue2(controls, "mAimingVectorNormalized", x / len, y / len)
+	else
+		ComponentSetValue2(controls, "mAimingVectorNormalized", 0, 0)
+	end
+end
+
+local function OpenInventory()
+	local inv_ui = EntityGetFirstComponentIncludingDisabled(player, "InventoryGuiComponent")
+	if inv_ui ~= nil then
+		if not ComponentGetValue2(inv_ui, "mActive") then
+			ComponentSetValue2(inv_ui, "mActive", true)
+			GamePlaySound("data/audio/Desktop/ui.bank", "ui/inventory_open", player_x, player_y)
 		end
 	end
-	if #inventory_list == 0 then return end
-
-	local idx = find_item_index(inventory_list, active_item) - 1
-	local next_item = inventory_list[(#inventory_list + idx + direction) % #inventory_list + 1]
-
-	EntitySetComponentsWithTagEnabled(active_item, "enabled_in_hand", false)
-	EntitySetComponentsWithTagEnabled(actual_active_item, "enabled_in_hand", false)
-	EntitySetComponentsWithTagEnabled(next_item, "enabled_in_hand", true)
-	ComponentSetValue2(inventory_comp, "mActiveItem", next_item)
-	ComponentSetValue2(inventory_comp, "mActualActiveItem", 0)
-	ComponentSetValue2(inventory_comp, "mForceRefresh", true)
-	GamePlaySound("data/audio/Desktop/ui.bank", "ui/item_equipped", player_x, player_y)
 end
 
-local controller = EntityGetFirstComponentIncludingDisabled(player, "CharacterDataComponent")
-local shooter = EntityGetFirstComponentIncludingDisabled(player, "PlatformShooterPlayerComponent")
-if controller == nil or shooter == nil then return end
+local function CloseInventory()
+	local inv_ui = EntityGetFirstComponentIncludingDisabled(player, "InventoryGuiComponent")
+	if inv_ui ~= nil then
+		if ComponentGetValue2(inv_ui, "mActive") then
+			ComponentSetValue2(inv_ui, "mActive", false)
+			GamePlaySound("data/audio/Desktop/ui.bank", "ui/inventory_close", player_x, player_y)
+		end
+	end
+end
 
-local vx, vy = ComponentGetValue2(controller, "mVelocity")
 
+-- Randomize inputs
+if DirConsistency == nil then DirConsistency = 0 end
 if Input == nil or GameGetFrameNum() % 12 == 0 then
+	if Input == "Inventory" then CloseInventory() end
+
 	local x, y = EntityGetTransform(GetUpdatedEntityID())
 	SetRandomSeed(x, y + GameGetFrameNum())
-	---@type integer?
-	Input = Random(0, 9)
+	---@type string?
+	Input = monkey_button_names[Random(1, #monkey_button_names)]
+
+	if DirConsistency % 6 == 0 then
+		TargetX = Random(-50,50)
+		TargetY = Random(-50,50)
+		MoveTargetX = Random() * 2 - 1
+		MoveTargetY = Random() * 2 - 1
+		DirConsistency = 0
+	end
+	DirConsistency = DirConsistency + 1
 end
 
--- Input == 0	-- Sleep
-if Input == 1 then	-- Left
-	if vx > -60 then
-		ComponentSetValue2(controller, "mVelocity", -60, vy)
-	end
-elseif Input == 2 then	-- Right
-	if vx < 60 then
-		ComponentSetValue2(controller, "mVelocity", 60, vy)
-	end
-elseif Input == 3 then	-- Jump
-	if vy > -60 and ComponentGetValue2(controller, "is_on_ground") then
-		ComponentSetValue2(controller, "mVelocity", vx, -60)
-	end
-elseif Input == 4 then	-- Crouch
-	ComponentSetValue2(shooter, "mCrouching", true)
-elseif Input == 5 then	-- Shoot/Spray
-	ComponentSetValue2(shooter, "mForceFireOnNextUpdate", true)
-	-- TODO spray
-elseif Input == 6 then	-- Next slot
-	switch_inventory_item(1)
+-- Process inputs
+
+AimAt(TargetX, TargetY)
+TargetX = TargetX + MoveTargetX
+TargetY = TargetY + MoveTargetY
+
+if Input == "ChangeItemR" then
+	SwitchInventoryItem(1)
+elseif Input == "ChangeItemL" then
+	SwitchInventoryItem(-1)
+elseif Input == "Inventory" then
+	OpenInventory()
+else
+	PressOnly(Input)
+end
+
+if instant_switch_names[Input] then
 	Input = nil
-elseif Input == 7 then	-- Prev slot
-	switch_inventory_item(-1)
-	Input = nil
-elseif Input == 8 then	-- Open inventory
-	local inv_ui = EntityGetFirstComponentIncludingDisabled(player, "InventoryGuiComponent")
-	if inv_ui ~= nil and ComponentGetValue2(inv_ui, "mActive") == false then
-		ComponentSetValue2(inv_ui, "mActive", true)
-		GamePlaySound("data/audio/Desktop/ui.bank", "ui/inventory_open", player_x, player_y)
-	end
-	Input = nil
-elseif Input == 9 then	-- Close inventory
-	local inv_ui = EntityGetFirstComponentIncludingDisabled(player, "InventoryGuiComponent")
-	if inv_ui ~= nil and ComponentGetValue2(inv_ui, "mActive") == true then
-		ComponentSetValue2(inv_ui, "mActive", false)
-		GamePlaySound("data/audio/Desktop/ui.bank", "ui/inventory_close", player_x, player_y)
-	end
-	Input = nil
-elseif Input == 10 then	-- Throw
-	-- TODO
-elseif Input == 11 then	-- Interact
-	-- TODO
 end

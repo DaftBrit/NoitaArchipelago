@@ -1,0 +1,8 @@
+<!-- Literature Trap -->
+<Entity tags="tablet,normal_tablet">
+	<Base file="data/archipelago/entities/items/pickup/ap_literature_book_base.xml">
+		<PhysicsImageShapeComponent image_file="data/items_gfx/book_s_small.png" />
+		<ItemComponent ui_sprite="data/items_gfx/book_s.png" />
+		<SpriteComponent image_file="data/items_gfx/in_hand/book_s_in_hand.png" />
+	</Base>
+</Entity>

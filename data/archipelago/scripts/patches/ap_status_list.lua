@@ -3,36 +3,42 @@ local ap_status_list = {
 	{
 		id = "AP_144P",
 		ui_name = "$ap_trap_144p",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/144p.png",
 		effect_entity = "data/archipelago/entities/misc/effect_144p.xml",
 		is_harmful = true,
 	},
 	{
 		id = "AP_FLIP_VER",
 		ui_name = "$ap_trap_flip_vertical",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/flip_vertical.png",
 		effect_entity = "data/archipelago/entities/misc/effect_flip_ver.xml",
 		is_harmful = true,
 	},
 	{
 		id = "AP_FLIP_HOR",
 		ui_name = "$ap_trap_flip_horizontal",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/flip_horizontal.png",
 		effect_entity = "data/archipelago/entities/misc/effect_flip_hor.xml",
 		is_harmful = true,
 	},
 	{
 		id = "AP_ZOOM_IN",
 		ui_name = "$ap_trap_zoom_in",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/zoom_in.png",
 		effect_entity = "data/archipelago/entities/misc/effect_zoom_in.xml",
 		is_harmful = true,
 	},
 	{
 		id = "AP_ZOOM_OUT",
 		ui_name = "$ap_trap_zoom_out",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/zoom_out.png",
 		effect_entity = "data/archipelago/entities/misc/effect_zoom_out.xml",
 		is_harmful = true,
 	},
 	{
 		id = "AP_FISH_EYE",
 		ui_name = "$ap_trap_fisheye",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/fisheye.png",
 		effect_entity = "data/archipelago/entities/misc/effect_fisheye.xml",
 		is_harmful = true,
 	},
@@ -52,7 +58,7 @@ local ap_status_list = {
 	{
 		id = "AP_MANA_DRAIN",
 		ui_name = "$ap_trap_mana_drain",
-		ui_icon = "data/ui_gfx/status_indicators/mana_regeneration.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/mana_degradation.png",
 		effect_entity = "data/archipelago/entities/misc/effect_mana_drain.xml",
 		is_harmful = true,
 	},
@@ -128,6 +134,7 @@ local ap_status_list = {
 	{
 		id = "AP_LAG",
 		ui_name = "$ap_trap_lag",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/lag_player.png",
 		effect_entity = "data/archipelago/entities/misc/effect_lag.xml",
 		is_harmful = true,
 	},
@@ -156,17 +163,30 @@ local ap_status_list = {
 		is_harmful = true,
 	},
 	{
+		id = "AP_FRACTURE",
+		ui_name = "$ap_trap_fracture",
+		effect_entity = "data/archipelago/entities/misc/effect_fracture.xml",
+		is_harmful = true,
+	},
+	{
 		id = "AP_SPELLS_TO_BOMBS",
 		ui_name = "$ap_trap_spells_to_bombs",
 		ui_description = "$ap_trap_spells_to_bombs_desc",
 		effect_entity = "data/archipelago/entities/misc/effect_bombs.xml",
 		is_harmful = true,
 	},
+	{
+		id = "AP_SWAPPER_CURSE",
+		ui_name = "$ap_trap_swapper_curse",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/plagiarize_swapper.png",
+		effect_entity = "data/archipelago/entities/misc/effect_swapper_curse.xml",
+		is_harmful = true,
+	},
 }
 
 for _, status in ipairs(ap_status_list) do
 	status.ui_description = status.ui_description or status.ui_name
-	status.ui_icon = status.ui_icon or "data/ui_gfx/status_indicators/confusion.png"
+	status.ui_icon = status.ui_icon or "data/archipelago/ui_gfx/status_effects/ap.png"
 	status.effect_entity = status.effect_entity or ""
 
 	table.insert(status_effects, status)

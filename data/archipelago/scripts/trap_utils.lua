@@ -108,6 +108,15 @@ local traplink_aliases_recv = {
 	["POWERPOINT TRAP"] = "AP_LAG",
 	["ROCKFALL TRAP"] = "AP_EARTHQUAKE",
 	["LAUGHTER TRAP"] = "AP_SHEEP_SFX",
+	["DRY TRAP"] = "AP_DRYSPELL",
+	["FRACTURE TRAP"] = "AP_FRACTURE",
+	["CRYSTAL TRAP"] = "AP_FRACTURE",
+	["LITERATURE TRAP"] = "AP_LITERATURE",
+	["SPAM TRAP"] = "AP_LITERATURE",
+	["SVC EFFECT"] = "AP_RANDOM_STATUS",
+	["EXPLOSION TRAP"] = "AP_EXPLOSION",
+	["EGG TRAP"] = "AP_WORM_EGG",
+	["SWAP TRAP"] = "AP_SWAPPER_CURSE",
 }
 
 local traplink_aliases_send = {
@@ -190,6 +199,12 @@ local traplink_aliases_send = {
 	TWITCH_EXTENDED_BLINDNESS = "Spotlight Trap",
 	AP_BLINDNESS = "Spotlight Trap",
 	AP_EARTHQUAKE = "Rockfall Trap",
+	AP_DRYSPELL = "Dry Trap",
+	AP_FRACTURE = "Fracture Trap",
+	AP_LITERATURE = "Literature Trap",
+	AP_EXPLOSION = "Explosion Trap",
+	AP_WORM_EGG = "Egg Trap",
+	AP_SWAPPER_CURSE = "Swap Trap",
 }
 
 local ap_streaming_initialized = false
