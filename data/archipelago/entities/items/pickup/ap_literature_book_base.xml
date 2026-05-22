@@ -1,0 +1,27 @@
+<!-- Literature Trap -->
+<Entity tags="tablet,normal_tablet">
+	<Base file="data/entities/items/books/base_book.xml">
+		<UIInfoComponent
+			name=""
+			/>
+
+		<ItemComponent
+			item_name=""
+			ui_description=""
+			/>
+
+		<AbilityComponent
+			ui_name=""
+			/>
+
+		<ParticleEmitterComponent
+			_enabled="0"
+			/>
+	</Base>
+
+	<LuaComponent
+		execute_on_added="1"
+		execute_every_n_frame="-1"
+		remove_after_executed="1"
+		script_source_file="data/archipelago/entities/items/pickup/ap_literature_book.lua" />
+</Entity>

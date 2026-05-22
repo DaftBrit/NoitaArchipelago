@@ -26,6 +26,7 @@ local shader_vars = [[
 	uniform vec4 AP_FLIP_HOR;
 	uniform vec4 AP_FLIP_VER;
 	uniform vec4 AP_FRACTURE;
+	uniform vec4 AP_FRACTURE_PROGRESS;
 	uniform vec4 AP_INVERT_COLOUR;
 	uniform vec4 AP_PIXELATE;
 	uniform vec4 AP_ZOOM_IN;
@@ -131,7 +132,51 @@ shader_append("data/shaders/post_final.frag",
 	}
 	if (AP_MONOCHROME.x != 0.0) {
 		float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-		gl_FragColor.rgb = vec3(gray);
+		color = vec3(gray);
+		gl_FragColor.rgb = color;
+	}
+	if (AP_FRACTURE.x != 0.0) {
+		// clanker code
+		vec2  frac_pos   = tex_coord_ * vec2(SCREEN_W, SCREEN_H) + vec2(camera_pos.x, -camera_pos.y);
+		vec2  frac_base  = floor(frac_pos / 100.0);
+		float frac_min1  = 9999.0;
+		float frac_min2  = 9999.0;
+		vec2  frac_c1    = vec2(0.0);
+		vec2  frac_c2    = vec2(0.0);
+
+		for (int dy = -1; dy <= 1; dy++) {
+			for (int dx = -1; dx <= 1; dx++) {
+				vec2  frac_cell   = frac_base + vec2(float(dx), float(dy));
+				vec2  frac_p      = mod(frac_cell, 42.0);
+				vec2  frac_jitter = fract(sin(vec2(dot(frac_p, vec2(127.1, 311.7)),
+												dot(frac_p, vec2(269.5, 183.3)))) * 43758.5453);
+				vec2  frac_centre = (frac_cell + frac_jitter * 0.9) * 100.0;
+				float frac_d      = length(frac_pos - frac_centre);
+				if      (frac_d < frac_min1) { frac_min2 = frac_min1; frac_c2 = frac_c1;
+												frac_min1 = frac_d;   frac_c1 = frac_centre; }
+				else if (frac_d < frac_min2) { frac_min2 = frac_d;   frac_c2 = frac_centre; }
+			}
+		}
+
+		float frac_edge     = frac_min2 - frac_min1;
+		float dist_from_cut = frac_edge - AP_FRACTURE_PROGRESS.x;
+
+		// Warp
+		vec2  edge_normal = normalize(frac_c2 - frac_c1);
+		float warp_amount = (1.0 - smoothstep(0.0, 10.0, dist_from_cut)) * 4.0 * AP_FRACTURE_PROGRESS.x;
+		vec2  warp_uv     = tex_coord_ + edge_normal * warp_amount / vec2(SCREEN_W, SCREEN_H);
+		float warp_blend  = 1.0 - smoothstep(0.0, 20.0, dist_from_cut);
+		gl_FragColor.rgb  = mix(gl_FragColor.rgb, texture2D(tex_fg, warp_uv).rgb, warp_blend);
+
+		// Bevel
+		vec2  light_dir   = normalize(vec2(-1.0, 1.0));
+		float side_facing = dot(normalize(frac_c1 - frac_c2), light_dir);
+		float edge_fade   = 1.0 - smoothstep(0.0, 12.0, dist_from_cut);
+		float bevel       = 1.0 + side_facing * 0.45 * edge_fade;
+
+		float visible     = step(AP_FRACTURE_PROGRESS.x, frac_edge);
+		color = gl_FragColor.rgb * visible * bevel;
+		gl_FragColor.rgb  = color;
 	}
 ]]
 )

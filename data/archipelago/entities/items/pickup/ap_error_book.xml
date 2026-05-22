@@ -2,23 +2,19 @@
 	<Base file="data/entities/items/books/base_book.xml">
 		<UIInfoComponent
 			name="$ap_error_book_title"
-			>
-		</UIInfoComponent>
+			/>
 
 		<ItemComponent
 			item_name="$ap_error_book_title"
 			ui_description="$ap_error_book_desc"
-			>
-		</ItemComponent>
+			/>
 
 		<AbilityComponent
 			ui_name="$ap_error_book_title"
-			>
-		</AbilityComponent>
+			/>
 	</Base>
 	<LuaComponent
 		execute_on_added="1"
 		execute_every_n_frame="30"
-		script_source_file="data/archipelago/scripts/items/ap_error_book.lua" >
-	</LuaComponent>
+		script_source_file="data/archipelago/scripts/items/ap_error_book.lua" />
 </Entity>

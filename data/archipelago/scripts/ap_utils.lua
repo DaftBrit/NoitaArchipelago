@@ -122,6 +122,112 @@ function spawn_potion(potion, x, y)
 	return potion_entity
 end
 
+---Gets the items in the 4 quickbar slots on the right (potions, tablets, etc).
+---@return entity_id[]
+function GetQuickbarNonWandItems()
+	local result = {}
+
+	local player = get_player()
+	if player ~= nil then
+		for _,item in ipairs(GameGetAllInventoryItems(player) or {}) do
+			local item_comp = EntityGetFirstComponentIncludingDisabled(item, "AbilityComponent")
+			if item_comp ~= nil then
+				if not ComponentGetValue2(item_comp, "use_gun_script") then
+					table.insert(result, item)
+				end
+			end
+		end
+	end
+	return result
+end
+
+---Gets the items in the 4 quickbar slots on the left (wands).
+---@return entity_id[]
+function GetQuickbarWandItems()
+	local result = {}
+
+	local player = get_player()
+	if player ~= nil then
+		for _,item in ipairs(GameGetAllInventoryItems(player) or {}) do
+			local item_comp = EntityGetFirstComponentIncludingDisabled(item, "AbilityComponent")
+			if item_comp ~= nil then
+				if ComponentGetValue2(item_comp, "use_gun_script") then
+					table.insert(result, item)
+				end
+			end
+		end
+	end
+	return result
+end
+
+---Sets the currently selected quickbar item to the given entity.
+---@param item_entity entity_id
+function SelectItem(item_entity)
+	local player = get_player()
+	if player == nil then return end
+
+	local inventory_comp = EntityGetFirstComponentIncludingDisabled(player, "Inventory2Component")
+	if inventory_comp == nil then return end
+
+	local active_item = ComponentGetValue2(inventory_comp, "mActiveItem")
+	local actual_active_item = ComponentGetValue2(inventory_comp, "mActualActiveItem")
+
+	EntitySetComponentsWithTagEnabled(active_item, "enabled_in_hand", false)
+	EntitySetComponentsWithTagEnabled(actual_active_item, "enabled_in_hand", false)
+	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_world", false)
+	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_inventory", true)
+	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_hand", true)
+	ComponentSetValue2(inventory_comp, "mActiveItem", item_entity)
+	ComponentSetValue2(inventory_comp, "mActualActiveItem", 0)
+	ComponentSetValue2(inventory_comp, "mForceRefresh", true)
+	GamePlaySound("data/audio/Desktop/ui.bank", "ui/item_equipped", EntityGetTransform(player))
+end
+
+---Gets the currently selected item in the quickbar inventory.
+---@return entity_id?
+function SelectedItem()
+	local player = get_player()
+	if player == nil then return nil end
+
+	local inventory_comp = EntityGetFirstComponentIncludingDisabled(player, "Inventory2Component")
+	if inventory_comp == nil then return nil end
+
+	return ComponentGetValue2(inventory_comp, "mActiveItem")
+end
+
+---@param tbl any[]
+---@param itm any
+---@return integer
+local function find_item_index(tbl, itm)
+	for i,v in ipairs(tbl) do
+		if v == itm then return i end
+	end
+	return 1
+end
+
+---Switches the inventory item in the given direction
+---@param direction integer
+function SwitchInventoryItem(direction)
+	local player = get_player()
+	if player == nil then return nil end
+
+	local active_item = SelectedItem()
+
+	local children = GameGetAllInventoryItems(player) or {}
+	local inventory_list = {}
+	for _,child in ipairs(children) do
+		if EntityGetName(EntityGetParent(child)) == "inventory_quick" then
+			table.insert(inventory_list, child)
+		end
+	end
+	if #inventory_list == 0 then return end
+
+	local idx = find_item_index(inventory_list, active_item) - 1
+	local next_item = inventory_list[math.floor((#inventory_list + idx + direction) % #inventory_list) + 1]
+
+	SelectItem(next_item)
+end
+
 ---@param items string[]
 function add_items_to_inventory(items)
 	local player = get_player()

@@ -9,7 +9,6 @@
 
   <LuaComponent
 		script_source_file="data/archipelago/scripts/status_effects/invis_bad_start.lua"
-		execute_every_n_frame="1"
 		/>
 
 	<LuaComponent

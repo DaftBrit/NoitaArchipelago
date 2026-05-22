@@ -256,55 +256,54 @@ local archipelago_traps = {
 	{
 		id = "AP_144P",
 		ui_name = "$ap_trap_144p",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/144p.png",
 		action = function(event)
-			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_144p.xml", 1200, true)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_144p.xml", 1800, true)
 		end
 	},
 	{
 		id = "AP_FLIP_VER",
 		ui_name = "$ap_trap_flip_vertical",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/flip_vertical.png",
 		action = function(event)
-			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_flip_ver.xml", 1200, true)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_flip_ver.xml", 1800, true)
 		end
 	},
 	{
 		id = "AP_FLIP_HOR",
 		ui_name = "$ap_trap_flip_horizontal",
-		ui_icon = "data/ui_gfx/gun_actions/horizontal_arc.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/flip_horizontal.png",
 		action = function(event)
-			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_flip_hor.xml", 1200, true)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_flip_hor.xml", 1800, true)
 		end
 	},
 	{
 		id = "AP_ZOOM_IN",
 		ui_name = "$ap_trap_zoom_in",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/zoom_in.png",
 		action = function(event)
-			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_zoom_in.xml", 1200, true)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_zoom_in.xml", 1800, true)
 		end
 	},
 	{
 		id = "AP_ZOOM_OUT",
 		ui_name = "$ap_trap_zoom_out",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/zoom_out.png",
 		action = function(event)
-			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_zoom_out.xml", 1200, true)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_zoom_out.xml", 1800, true)
 		end
 	},
 	{
 		id = "AP_FISH_EYE",
 		ui_name = "$ap_trap_fisheye",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/fisheye.png",
 		action = function(event)
-			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_fisheye.xml", 1200, true)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_fisheye.xml", 1800, true)
 		end
 	},
 	{
 		id = "AP_INVERT_COLOUR",
 		ui_name = "$ap_trap_invert_colour",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_invert_colours.xml", 1800, true)
 		end
@@ -366,13 +365,14 @@ local archipelago_traps = {
 		ui_name = "$ap_trap_invisible_bad",
 		ui_icon = "data/ui_gfx/status_indicators/invisibility.png",
 		action = function(event)
+			-- From Fair Mod
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_invisible_bad.xml", 1200, true)
 		end
 	},
 	{
 		id = "AP_MANA_DRAIN",
 		ui_name = "$ap_trap_mana_drain",
-		ui_icon = "data/ui_gfx/status_indicators/mana_regeneration.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/mana_degradation.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_mana_drain.xml", 2700, true)
 		end
@@ -406,6 +406,7 @@ local archipelago_traps = {
 		-- WORK IN PROGRESS --
 		id = "AP_TARR_TRAP",
 		ui_name = "$ap_trap_tarr",
+		disabled = true,
 		action = function(event)
 			InitRandomSeed()
 			local num_spawns = Random(1, 5)
@@ -500,7 +501,6 @@ local archipelago_traps = {
 	{
 		id = "AP_CAMERA_ROTATE",
 		ui_name = "$ap_trap_camera_rotate",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_camera_rotate.xml", 1800, true)
 		end
@@ -624,7 +624,6 @@ local archipelago_traps = {
 	{
 		id = "AP_STICK_DRIFT",
 		ui_name = "$ap_trap_stick_drift",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_stick_drift.xml", 1200, true)
 		end
@@ -632,7 +631,6 @@ local archipelago_traps = {
 	{
 		id = "AP_JUMP_TRAP",
 		ui_name = "$ap_trap_jump",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_jumping.xml", 1200, true)
 		end
@@ -640,7 +638,6 @@ local archipelago_traps = {
 	{
 		id = "AP_UNDERWATER",
 		ui_name = "$ap_trap_underwater",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_underwater.xml", 1800, true)
 		end
@@ -648,7 +645,6 @@ local archipelago_traps = {
 	{
 		id = "AP_MONKEY_MASH",
 		ui_name = "$ap_trap_monkey_mash",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_monkey_mash.xml", 1800, true)
 		end
@@ -656,7 +652,7 @@ local archipelago_traps = {
 	{
 		id = "AP_LAG",
 		ui_name = "$ap_trap_lag",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/lag_player.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_lag.xml", 1200, true)
 		end
@@ -664,7 +660,6 @@ local archipelago_traps = {
 	{
 		id = "AP_WIDE",
 		ui_name = "$ap_trap_wide",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_wide.xml", 3600, true)
 		end
@@ -672,7 +667,6 @@ local archipelago_traps = {
 	{
 		id = "AP_TINY",
 		ui_name = "$ap_trap_tiny",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_tiny.xml", 3600, true)
 		end
@@ -680,7 +674,6 @@ local archipelago_traps = {
 	{
 		id = "AP_SPAWN_THWIMP",
 		ui_name = "$ap_trap_spawn_thwimp",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			local x, y = get_spawn_position()
 			local _, _, target_y = RaytracePlatforms(x, y, x, y - 100)
@@ -691,7 +684,6 @@ local archipelago_traps = {
 	{
 		id = "AP_MONOCHROME",
 		ui_name = "$ap_trap_spooky",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_monochrome.xml", 3600, true)
 
@@ -715,7 +707,6 @@ local archipelago_traps = {
 	{
 		id = "AP_ANIMAL_SPAWN",
 		ui_name = "$ap_trap_animal_spawn",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			local spawns = {
 				"data/entities/animals/duck.xml",
@@ -724,7 +715,7 @@ local archipelago_traps = {
 				"data/entities/animals/elk.xml",
 			}
 			for _ = 1,15 do
-				local x, y = GetRandomSpawnPosGround(64, 256, 8)
+				local x, y = GetRandomSpawnPosGround(0, 32, 8)
 				EntityLoad(spawns[Random(1, #spawns)], x, y)
 			end
 		end
@@ -741,7 +732,6 @@ local archipelago_traps = {
 		id = "AP_SPELLS_TO_BOMBS",
 		ui_name = "$ap_trap_spells_to_bombs",
 		ui_description = "$ap_trap_spells_to_bombs_desc",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_bombs.xml", 1600, true)
 		end
@@ -749,29 +739,83 @@ local archipelago_traps = {
 	{
 		id = "AP_EARTHQUAKE",
 		ui_name = "$ap_trap_earthquake",
-		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
 		delay_timer = 300,
 		action_delayed = function(event)
 			local x, y = get_spawn_position()
-			EntityLoad("data/entities/projectiles/deck/crumbling_earth.xml", x, y)
+			local entity = EntityLoad("data/entities/projectiles/deck/crumbling_earth.xml", x, y)
+			EntityAddTag(entity, "donotrepeat") -- don't let spells to bombs ruin this
+		end
+	},
+	{
+		id = "AP_FRACTURE",
+		ui_name = "$ap_trap_fracture",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_fracture.xml", 3600, true)
+		end
+	},
+	{
+		id = "AP_LITERATURE",
+		ui_name = "$ap_trap_literature",
+		action = function(event)
+			InitRandomSeed()
+			for _ = 1,20 do
+				local x, y = GetRandomSpawnPosNearby(50, 10)
+				local book = Random(1,4)
+				EntityLoad("data/archipelago/entities/items/pickup/ap_literature_book_" .. book .. ".xml", x, y)
+			end
+		end
+	},
+	{
+		id = "AP_EXPLOSION",
+		ui_name = "$ap_trap_explosion",
+		action = function(event)
+			local x, y = get_spawn_position()
+			EntityLoad("data/entities/misc/essences/fire_explosion.xml", x, y)
+		end
+	},
+	{
+		id = "AP_WORM_EGG",
+		ui_name = "$ap_trap_worm_egg",
+		action = function(event)
+			local eggs = {}
+			for _ = 1, 3 do
+				local x, y = GetRandomSpawnPosNearby(20, 5)
+				table.insert(eggs, EntityLoad("data/entities/items/pickup/egg_worm.xml", x, y))
+			end
+
+			local player = get_player()
+			if player ~= nil then
+				local items = GetQuickbarNonWandItems()
+				for i = 1, math.min(#eggs, 4 - #items) do
+					GamePickUpInventoryItem(player, eggs[i], true)
+				end
+			end
+		end
+	},
+	{
+		id = "AP_SWAPPER_CURSE",
+		ui_name = "$ap_trap_swapper_curse",
+		ui_icon = "data/archipelago/ui_gfx/status_effects/plagiarize_swapper.png",
+		action = function(event)
+			local x, y = get_spawn_position()
+			GamePlaySound("data/audio/Desktop/projectiles.bank", "player_projectiles/megalaser/launch", x, y)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_swapper_curse.xml", 5400, true)
 		end
 	},
 	--[[ TODO:
-		- fracture/crystal: DrugEffectComponent -> fractals_amount = 1, fractals_size = 40
 		- disable A (jump) -> disable "up" -> Grounded TI event
 		- disable B (attack) -> disable "use wand" -> Disarm -> Ceasefire TI event
 		- disable Z (crouch/hover) -> disable "throw" and "kick"? too lame?
 		- disable C up (first person, dive, play instrument) -> disable interact
 		- inverted mouse
 		- iron boots: slow and heavy
-		- Use SetTimeOut for some shader and other effects instead of relying on attached components which can be buggy
 	]]
 }
 
 for _, trap in ipairs(archipelago_traps) do
 	trap.ui_description = trap.ui_description or trap.ui_name or trap.id
 	trap.ui_author = trap.ui_author or "Archipelago"
-	trap.ui_icon = trap.ui_icon or ""
+	trap.ui_icon = trap.ui_icon or "data/archipelago/ui_gfx/status_effects/ap.png"
 	trap.weight = trap.weight or 1.0
 	trap.kind = trap.kind or STREAMING_EVENT_BAD
 
