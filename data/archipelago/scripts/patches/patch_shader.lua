@@ -30,6 +30,7 @@ local shader_vars = [[
 	uniform vec4 AP_PIXELATE;
 	uniform vec4 AP_ZOOM_IN;
 	uniform vec4 AP_ZOOM_OUT;
+	uniform vec4 AP_MONOCHROME;
 ]]
 
 shader_append("data/shaders/post_final.frag",
@@ -45,27 +46,27 @@ shader_append("data/shaders/post_final.vert",
 shader_append("data/shaders/post_final.vert",
 	"tex_coord_glow_ = gl_TexCoord[1].xy;",
 	[[
-	if(AP_FLIP_HOR.x == 1.0) {
+	if(AP_FLIP_HOR.x != 0.0) {
 		tex_coord_.x = 1.0 - tex_coord_.x;
 		tex_coord_y_inverted_.x = 1.0 - tex_coord_y_inverted_.x;
 		tex_coord_glow_.x = 1.0 - tex_coord_glow_.x;
 	}
-	if(AP_FLIP_VER.x == 1.0) {
+	if(AP_FLIP_VER.x != 0.0) {
 		tex_coord_.y = 1.0 - tex_coord_.y;
 		tex_coord_y_inverted_.y = 1.0 - tex_coord_y_inverted_.y;
 		tex_coord_glow_.y = 1.0 - tex_coord_glow_.y;
 	}
-	if(AP_ZOOM_IN.x == 1.0) {
+	if(AP_ZOOM_IN.x != 0.0) {
         tex_coord_ = (tex_coord_ - 0.5) * 0.5 + 0.5;
         tex_coord_y_inverted_ = (tex_coord_y_inverted_ - 0.5) * 0.5 + 0.5;
         tex_coord_glow_ = (tex_coord_glow_ - 0.5) * 0.5 + 0.5;
 	}
-	if (AP_ZOOM_OUT.x == 1.0) {
+	if (AP_ZOOM_OUT.x != 0.0) {
         tex_coord_ = (tex_coord_ - 0.5) * 4.0 + 0.5;
         tex_coord_y_inverted_ = (tex_coord_y_inverted_ - 0.5) * 4.0 + 0.5;
         tex_coord_glow_ = (tex_coord_glow_ - 0.5) * 4.0 + 0.5;
 	}
-	if (AP_CAMERA_ROTATE.x == 1.0) {
+	if (AP_CAMERA_ROTATE.x != 0.0) {
 		float angle = radians(45.0);
 
 		mat2 rot = mat2(
@@ -81,7 +82,7 @@ shader_append("data/shaders/post_final.vert",
 shader_append("data/shaders/post_final.frag",
 	"vec2 tex_coord_glow = tex_coord_glow_;",
 	[[
-	if(AP_144P.x == 1.0) {
+	if(AP_144P.x != 0.0) {
 		vec2 sz = vec2(192, 144);
 
 		tex_coord.x = floor(tex_coord.x * sz.x) / sz.x;
@@ -92,13 +93,13 @@ shader_append("data/shaders/post_final.frag",
 		tex_coord_y_inverted.y = floor(tex_coord_y_inverted.y * sz.y) / sz.y;
 		tex_coord_glow.y = floor(tex_coord_glow.y * sz.y) / sz.y;
 	}
-	if(AP_ZOOM_OUT.x == 1.0) {
+	if(AP_ZOOM_OUT.x != 0.0) {
 		if(tex_coord.x < 0.0 || tex_coord.x > 1.0 || tex_coord.y < 0.0 || tex_coord.y > 1.0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
             return;
 		}
 	}
-	if(AP_FISH_EYE.x == 1.0) {
+	if(AP_FISH_EYE.x != 0.0) {
 		// clanker code
         vec2 uv = tex_coord * 1.5 - 1.5 / 2;
         float r = length(uv);
@@ -122,11 +123,15 @@ shader_append("data/shaders/post_final.frag",
 shader_append("data/shaders/post_final.frag",
 	"gl_FragColor.rgb  = color;",
 	[[
-	if(AP_INVERT_COLOUR.x == 1.0) {
+	if(AP_INVERT_COLOUR.x != 0.0) {
 		color.r = 1.0 - color.r;
 		color.g = 1.0 - color.g;
 		color.b = 1.0 - color.b;
 		gl_FragColor.rgb  = color;
+	}
+	if (AP_MONOCHROME.x != 0.0) {
+		float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+		gl_FragColor.rgb = vec3(gray);
 	}
 ]]
 )

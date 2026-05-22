@@ -109,6 +109,28 @@ local function GetRandomSpawnPosNearby(distance, radius)
 	return spawn_x, spawn_y
 end
 
+---@param min_distance number maximum distance to search (rectangular)
+---@param max_distance number maximum distance to search (rectangular)
+---@param radius number distance away from wall
+---@return number x
+---@return number y
+local function GetRandomSpawnPosGround(min_distance, max_distance, radius)
+	InitRandomSeed()
+	local start_x, start_y = get_spawn_position()
+
+	-- NOTE: FindFreePositionForBody does not work
+	local x, y
+	for _ = 1,50 do
+		x = start_x + Random(min_distance, max_distance) * (Random(0, 1) * 2 - 1)
+		y = start_y + Random(min_distance, max_distance) * (Random(0, 1) * 2 - 1)
+		local _, rx, ry = RaytracePlatforms(x, y, x, y + 512)
+		if math.abs(rx - x) > 2 or math.abs(ry - y) > 2 then
+			break
+		end
+	end
+	return x, y - radius
+end
+
 ---Yeets an item in a random direction from the player based on given force.
 ---@param throw_item entity_id
 ---@param force number
@@ -666,6 +688,74 @@ local archipelago_traps = {
 			EntityLoad("data/archipelago/entities/animals/thwimp.xml", x, target_y + 10)
 		end
 	},
+	{
+		id = "AP_MONOCHROME",
+		ui_name = "$ap_trap_spooky",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_monochrome.xml", 3600, true)
+
+			-- Spawn spooky props
+			local spawns = {
+				"data/entities/props/furniture_tombstone_01.xml",
+				"data/entities/props/furniture_tombstone_02.xml",
+				"data/entities/props/furniture_tombstone_03.xml",
+				"data/entities/props/candle_1.xml",
+				"data/entities/props/candle_2.xml",
+				"data/entities/props/candle_3.xml",
+				"data/entities/animals/zombie_weak.xml",
+				"data/entities/animals/zombie.xml",
+			}
+			for _ = 1,5 do
+				local x, y = GetRandomSpawnPosGround(64, 256, 8)
+				EntityLoad(spawns[Random(1, #spawns)], x, y)
+			end
+		end
+	},
+	{
+		id = "AP_ANIMAL_SPAWN",
+		ui_name = "$ap_trap_animal_spawn",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			local spawns = {
+				"data/entities/animals/duck.xml",
+				"data/entities/animals/sheep.xml",
+				"data/entities/animals/deer.xml",
+				"data/entities/animals/elk.xml",
+			}
+			for _ = 1,15 do
+				local x, y = GetRandomSpawnPosGround(64, 256, 8)
+				EntityLoad(spawns[Random(1, #spawns)], x, y)
+			end
+		end
+	},
+	{
+		id = "AP_BLINDNESS",
+		ui_name = "$ap_trap_blindness",
+		ui_icon = "data/ui_gfx/status_indicators/blindness.png",
+		action = function(event)
+			ApplyStatusEffect(event, "BLINDNESS", 1200)
+		end
+	},
+	{
+		id = "AP_SPELLS_TO_BOMBS",
+		ui_name = "$ap_trap_spells_to_bombs",
+		ui_description = "$ap_trap_spells_to_bombs_desc",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		action = function(event)
+			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_bombs.xml", 1600, true)
+		end
+	},
+	{
+		id = "AP_EARTHQUAKE",
+		ui_name = "$ap_trap_earthquake",
+		ui_icon = "data/ui_gfx/status_indicators/confusion.png",
+		delay_timer = 300,
+		action_delayed = function(event)
+			local x, y = get_spawn_position()
+			EntityLoad("data/entities/projectiles/deck/crumbling_earth.xml", x, y)
+		end
+	},
 	--[[ TODO:
 		- fracture/crystal: DrugEffectComponent -> fractals_amount = 1, fractals_size = 40
 		- disable A (jump) -> disable "up" -> Grounded TI event
@@ -673,8 +763,8 @@ local archipelago_traps = {
 		- disable Z (crouch/hover) -> disable "throw" and "kick"? too lame?
 		- disable C up (first person, dive, play instrument) -> disable interact
 		- inverted mouse
-		- items to bombs (spells to bombs)
 		- iron boots: slow and heavy
+		- Use SetTimeOut for some shader and other effects instead of relying on attached components which can be buggy
 	]]
 }
 

@@ -22,16 +22,14 @@
 		script_source_file="data/archipelago/scripts/status_effects/dryspell_start.lua"
 		execute_every_n_frame="-1"
 		execute_on_added="1"
-		>
-	</LuaComponent>
+		/>
 
 	<!-- re-enable stains -->
 	<LuaComponent
 		script_source_file="data/archipelago/scripts/status_effects/dryspell_end.lua"
 		execute_every_n_frame="-1"
 		execute_on_removed="1"
-		>
-	</LuaComponent>
+		/>
 
 	<!-- just in case -->
 	<Entity>

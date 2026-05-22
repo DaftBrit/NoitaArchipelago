@@ -1,0 +1,14 @@
+<Entity>
+	<InheritTransformComponent only_position="1" />
+
+	<GameEffectComponent
+		effect="CUSTOM"
+		custom_effect_id="AP_SPELLS_TO_BOMBS"
+		frames="-1"
+		/>
+
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/status_effects/effect_bombs.lua"
+		execute_every_n_frame="3"
+		/>
+</Entity>
