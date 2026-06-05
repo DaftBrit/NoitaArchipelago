@@ -1,0 +1,9 @@
+<Entity name="ap_radar">
+	<InheritTransformComponent />
+
+	<!-- I'm running it each frame. There might be a better way, but idk... -->
+	<LuaComponent
+			script_source_file="data/archipelago/scripts/items/ap_radar.lua"
+			execute_every_n_frame="1"
+			execute_times="-1" />
+</Entity>
