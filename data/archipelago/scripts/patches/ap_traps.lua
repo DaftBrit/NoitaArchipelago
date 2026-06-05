@@ -88,7 +88,7 @@ local function GetRandomSpawnPosNearby(distance, radius)
 	local spawn_y = y
 	local best_dist = 0
 	for _ = 1,20 do
-		local _, hit_x, hit_y = RaytraceSurfacesAndLiquiform(x, y, x + Random(-distance, distance), y + Random(-distance, distance))
+		local _, hit_x, hit_y = RaytraceSurfaces(x, y, x + Random(-distance, distance), y + Random(-distance, distance))
 
 		local new_dist = get_distance2(x, y, hit_x, hit_y)
 		if new_dist > best_dist then
@@ -109,7 +109,7 @@ local function GetRandomSpawnPosNearby(distance, radius)
 	return spawn_x, spawn_y
 end
 
----@param min_distance number maximum distance to search (rectangular)
+---@param min_distance number minimum distance to search (rectangular)
 ---@param max_distance number maximum distance to search (rectangular)
 ---@param radius number distance away from wall
 ---@return number x
@@ -197,6 +197,14 @@ local archipelago_traps = {
 		ui_icon = "data/ui_gfx/status_indicators/poisoned.png",
 		action = function(event)
 			ApplyStatusEffect(event, "POISON", 1200)
+		end
+	},
+	{
+		id = "AP_FOOD_POISONING",
+		ui_name = "$ap_trap_food_poisoning",
+		ui_icon = "data/ui_gfx/status_indicators/food_poisoning.png",
+		action = function(event)
+			ApplyStatusEffect(event, "FOOD_POISONING", 3600)
 		end
 	},
 	{
@@ -402,7 +410,7 @@ local archipelago_traps = {
 			ApplyStatusEffect(event, "RADIOACTIVE", 1800)
 		end
 	},
-	{
+	--[[{
 		-- WORK IN PROGRESS --
 		id = "AP_TARR_TRAP",
 		ui_name = "$ap_trap_tarr",
@@ -417,7 +425,7 @@ local archipelago_traps = {
 				EntityLoad("data/archipelago/entities/animals/tarr.xml", (spawn_x + hit_x) / 2, (spawn_y + hit_y) / 2)
 			end
 		end
-	},
+	},]]
 	{
 		id = "AP_WHOOPS_TRAP",
 		ui_name = "$ap_trap_throw_selected",
@@ -802,6 +810,28 @@ local archipelago_traps = {
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_swapper_curse.xml", 5400, true)
 		end
 	},
+	{
+		id = "AP_PEA_SOUP",
+		ui_name = "$ap_trap_pea_soup",
+		action = function(event)
+			local x, y = GetRandomSpawnPosNearby(64, 32)
+			EntityLoad("data/archipelago/entities/projectiles/circle_pea_soup.xml", x, y)
+
+			local player = get_player()
+			if player == nil then return end
+			local children = EntityGetAllChildren(player) or {}
+			for _,child in ipairs(children) do
+				if EntityGetName(child) == "inventory_quick" then
+					local inventory = EntityGetAllChildren(child) or {}
+					for _,item in ipairs(inventory) do
+						if EntityGetFirstComponentIncludingDisabled(item, "MaterialInventoryComponent") ~= nil then
+							AddMaterialInventoryMaterial(item, "pea_soup", 200)
+						end
+					end
+				end
+			end
+		end
+	}
 	--[[ TODO:
 		- disable A (jump) -> disable "up" -> Grounded TI event
 		- disable B (attack) -> disable "use wand" -> Disarm -> Ceasefire TI event

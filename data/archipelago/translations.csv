@@ -122,3 +122,5 @@ ap_literature_3_desc,"Here you should see your game files and a folder called mo
 ap_trap_explosion,Explosion Trap,,,,,,,,,,,,,
 ap_trap_worm_egg,Egg Trap,,,,,,,,,,,,,
 ap_trap_swapper_curse,Swapper Curse,,,,,,,,,,,,,
+ap_trap_food_poisoning,Food Poisoning,пищево́е отравле́ние,,intoxicación alimentaria,Lebensmittelvergiftung,Intoxication Alimentaire,,zatrucie pokarmowe,食物中毒,食中毒,식중독,,,
+ap_trap_pea_soup,Pea Soup Trap,,,,,,,,,,,,,

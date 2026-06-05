@@ -117,6 +117,12 @@ local traplink_aliases_recv = {
 	["EXPLOSION TRAP"] = "AP_EXPLOSION",
 	["EGG TRAP"] = "AP_WORM_EGG",
 	["SWAP TRAP"] = "AP_SWAPPER_CURSE",
+	["TOXIN TRAP"] = "AP_RADIOACTIVE",
+	["STINKY TRAP"] = "PLAYER_GAS",
+	["HEY! TRAP"] = "AP_SHEEP_SFX",
+	["FOOD POISONING TRAP"] = "AP_FOOD_POISONING",
+	["GUEST VOMITING TRAP"] = "AP_FOOD_POISONING",
+	["PEA SOUP TRAP"] = "AP_PEA_SOUP",
 }
 
 local traplink_aliases_send = {
@@ -205,6 +211,10 @@ local traplink_aliases_send = {
 	AP_EXPLOSION = "Explosion Trap",
 	AP_WORM_EGG = "Egg Trap",
 	AP_SWAPPER_CURSE = "Swap Trap",
+	TWITCH_EXTENDED_FART = "Gas Trap",
+	TWITCH_EXTENDED_THUNDERSTORM = "Weather Stormy Trap",
+	AP_FOOD_POISONING = "Food poisoning Trap",
+	AP_PEA_SOUP = "Pea Soup Trap",
 }
 
 local ap_streaming_initialized = false
