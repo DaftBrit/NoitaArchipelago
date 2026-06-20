@@ -1,0 +1,22 @@
+<Entity>
+  <SpriteComponent
+    image_file="data/archipelago/entities/bananapeel/bananapeel.png"
+    offset_x="4"
+    offset_y="5"
+  />
+
+  <SimplePhysicsComponent/>
+  <VelocityComponent/>
+
+  <CollisionTriggerComponent
+    width="9"
+    height="10"
+    radius="7"
+    required_tag="player_unit"
+  />
+
+  <LuaComponent
+    script_collision_trigger_hit="data/archipelago/entities/bananapeel/bananapeel_collision_trigger_hit.lua"
+    execute_every_n_frame="-1"
+  />
+</Entity>

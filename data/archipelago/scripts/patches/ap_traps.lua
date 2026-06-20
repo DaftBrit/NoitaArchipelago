@@ -831,7 +831,20 @@ local archipelago_traps = {
 				end
 			end
 		end
-	}
+	},
+	{
+		id = "AP_BANANA_PEELS",
+		ui_name = "$ap_trap_banana",
+		action = function(event)
+			for _ = 1,15 do
+				local x, y = GetRandomSpawnPosGround(64, 256, 6)
+				EntityLoad("data/archipelago/entities/bananapeel/bananapeel.xml", x, y)
+			end
+
+			local x, y = get_spawn_position();
+			EntityLoad("data/archipelago/entities/bananapeel/bananapeel.xml", x, y)
+		end
+	},
 	--[[ TODO:
 		- disable A (jump) -> disable "up" -> Grounded TI event
 		- disable B (attack) -> disable "use wand" -> Disarm -> Ceasefire TI event
