@@ -123,6 +123,9 @@ local traplink_aliases_recv = {
 	["FOOD POISONING TRAP"] = "AP_FOOD_POISONING",
 	["GUEST VOMITING TRAP"] = "AP_FOOD_POISONING",
 	["PEA SOUP TRAP"] = "AP_PEA_SOUP",
+	["BANANA TRAP"] = "AP_BANANA_PEELS",
+	["BANANA PEEL TRAP"] = "AP_BANANA_PEELS",
+	["SLIP TRAP"] = "AP_BANANA_PEELS",
 }
 
 local traplink_aliases_send = {
@@ -215,6 +218,7 @@ local traplink_aliases_send = {
 	TWITCH_EXTENDED_THUNDERSTORM = "Weather Stormy Trap",
 	AP_FOOD_POISONING = "Food poisoning Trap",
 	AP_PEA_SOUP = "Pea Soup Trap",
+	AP_BANANA_PEELS = "Banana Trap",
 }
 
 local ap_streaming_initialized = false
