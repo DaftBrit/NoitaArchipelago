@@ -522,6 +522,10 @@ function RECV_MSG.Connected()
 	-- Enable deathlink if the setting on the server and the mod setting said to
 	InitLocalSettings()
 	UpdateConnectionTags()
+
+	local hints_key = "_read_hints_" .. ap:get_team_number() .. "_" .. ap:get_player_number()
+	ap:SetNotify({hints_key})
+	ap:Get({hints_key})
 end
 
 ---@param location integer
@@ -639,6 +643,8 @@ local function ShouldPrintMessage(msg_str)
 end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#PrintJSON
+---@param msg {[string]: any}
+---@param extra {[string]: any}
 function RECV_MSG.PrintJSON(msg, extra)
 	local msg_str = ParseMessage(msg)
 
@@ -734,6 +740,7 @@ local function RecvDeathLink(source, cause)
 end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
+---@param msg {[string]: any}
 function RECV_MSG.Bounced(msg)
 	local tags = msg["tags"]
 	local data = msg["data"]
@@ -753,6 +760,7 @@ end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#LocationInfo
 -- This is the reply to the LocationScouts request
+---@param items NetworkItem[]
 function RECV_MSG.LocationInfo(items)
 	if not Cache.LocationInfo:is_empty() and #items <= 10 then
 		-- Don't replace our big item cache with shop hints (which breaks everything).
@@ -776,6 +784,17 @@ function RECV_MSG.LocationInfo(items)
 	end
 	Cache.LocationInfo:write()
 	ShareLocationScouts()
+end
+
+
+---@param data {[string]: any}
+function RECV_MSG.SetReply(data)
+	local hints_key = "_read_hints_" .. ap:get_team_number() .. "_" .. ap:get_player_number()
+	for k, v in pairs(data) do
+		if k == hints_key then
+			LogWindow:setHints(v)
+		end
+	end
 end
 
 
@@ -858,12 +877,13 @@ local function connect()
 		Log.Info("Socket connected")
 	end
 
-	local function on_socket_error(msg)
-		if msg:find("actively refused") then
+	---@param reason string
+	local function on_socket_error(reason)
+		if reason:find("actively refused") then
 			-- Don't keep reconnecting if there's no chance it will work
-			ForceDisconnect(msg)
+			ForceDisconnect(reason)
 		else
-			ConnectionError(msg)
+			ConnectionError(reason)
 		end
 	end
 
@@ -897,26 +917,31 @@ local function connect()
 		Log.Warn("Release perm: " .. tostring(ap:get_permission("release")))
 	end
 
+	---@param slot_data {[string]: any}
 	local function on_slot_connected(slot_data)
 		Log.Info("on_slot_connected: " .. JSON:encode(slot_data))
 		slot_options = slot_data
 		RECV_MSG.Connected()
 	end
 
+	---@param reasons string[]
 	local function on_slot_refused(reasons)
 		ForceDisconnect("Slot refused: " .. table.concat(reasons, ", "))
 	end
 
+	---@param items NetworkItem[]
 	local function on_items_received(items)
 		Log.Info("on_items_received: " .. JSON:encode(items))
 		RECV_MSG.ReceivedItems(items)
 	end
 
+	---@param items NetworkItem[]
 	local function on_location_info(items)
 		Log.Info("on_location_info: " .. JSON:encode(items))
 		RECV_MSG.LocationInfo(items)
 	end
 
+	---@param locations integer[]
 	local function on_location_checked(locations)
 		Log.Info("on_location_checked: " .. JSON:encode(locations))
 		for _, location_id in pairs(locations) do
@@ -927,13 +952,28 @@ local function connect()
 		end
 	end
 
-	local function on_print_json(msg, extra)
-		RECV_MSG.PrintJSON(msg, extra)
+	---@param data {[string]: any}
+	---@param command {[string]: any}
+	local function on_print_json(data, command)
+		RECV_MSG.PrintJSON(data, command)
 	end
 
-	local function on_bounced(bounce)
-		Log.Info("on_bounced: " .. JSON:encode(bounce))
-		RECV_MSG.Bounced(bounce)
+	---@param command {[string]: any}
+	local function on_bounced(command)
+		Log.Info("on_bounced: " .. JSON:encode(command))
+		RECV_MSG.Bounced(command)
+	end
+
+	---@param data {[string]: any}
+	---@param keys string[]
+	---@param command {[string]: any}
+	local function on_set_retrieved(data, keys, command)
+		RECV_MSG.SetReply(data)
+	end
+
+	---@param command {[string]:any}
+	local function on_set_reply(command)
+		RECV_MSG.SetReply({ [command.key] = command.value })
 	end
 
 	hostname = tostring(host) .. ":" .. tostring(port)
@@ -952,6 +992,8 @@ local function connect()
 	ap:set_location_checked_handler(on_location_checked)
 	ap:set_print_json_handler(on_print_json)
 	ap:set_bounced_handler(on_bounced)
+	ap:set_retrieved_handler(on_set_retrieved)
+	ap:set_set_reply_handler(on_set_reply)
 end
 
 local function UpdateUI()

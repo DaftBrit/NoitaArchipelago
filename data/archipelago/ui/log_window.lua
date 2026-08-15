@@ -55,6 +55,9 @@ function LogWindow:create()
 	self.shift_up_amt = 0 -- for when oldest items get deleted and we don't want to lose what we're looking at
 
 	self.message_log = Globals.LogHistory:get_table() or {}
+	self.hints = {}
+	self.hint_sorted_col = 0
+	self.hint_sorted_descending = false
 	self.total_log_height = 0
 	for _, msg in ipairs(self.message_log) do
 		self.total_log_height = self.total_log_height + msg.height
@@ -68,6 +71,7 @@ function LogWindow:create()
 	self.draw_mode = true
 
 	self.log_limit = ModSettingGet("archipelago.log_limit") or 1000
+	self.tab_idx = 1
 end
 
 ---@param ap APClient
@@ -78,10 +82,22 @@ end
 function LogWindow:updateDimensionsAndCalc()
 	self:UpdateDimensions()
 
-	self.box_x = self.dim.x / 10
-	self.box_y = self.dim.y / 10
+	self.box_x = self.dim.x / 12
+	-- guess to not overlap the quickbar, to prevent accidental clicks
+	self.box_y = MagicNumbersGetValue("UI_BARS_POS_Y") + MagicNumbersGetValue("UI_QUICKBAR_OFFSET_Y") + 22
 	self.box_width = self.dim.x - self.box_x * 2
-	self.box_height = self.dim.y - self.box_y * 2
+	self.box_height = self.dim.y - self.box_y * 1.5
+
+	self.scrollbox_width = self.box_width - 8 * 2
+	self.textarea_end_x = self.scrollbox_width
+	self.textarea_start_x = 0
+	self.scrollbox_height = self.box_height - 16 - 8 - 4
+
+	local _, text_height = self:GetTextDimension("Test")
+	self.text_line_height = text_height
+	self.hint_scrollbox_height = self.scrollbox_height - text_height
+
+	self.hint_cell_width = self.scrollbox_width / 6
 end
 
 ---Toggles the visibility of the log window.
@@ -107,7 +123,7 @@ end
 
 ---Place the printing cursor on the next line.
 function LogWindow:nextLine()
-	self.printer.x = 0
+	self.printer.x = self.textarea_start_x
 	self.printer.y = self.printer.y + self.last_checked_height - 1
 end
 
@@ -120,10 +136,10 @@ end
 ---@param width integer
 ---@return boolean
 function LogWindow:isOverdraw(width)
-	return self.printer.x + width > self.box_width
+	return self.printer.x + width > self.textarea_end_x
 end
 
----Checks if the next word will be overdrawn and move to the printing cursor next line.
+---Checks if the next word will be overdrawn and move the printing cursor to the next line.
 ---@param word string
 function LogWindow:checkOverdraw(word)
 	local word_width, word_height = self:GetTextDimension(word)
@@ -153,9 +169,9 @@ end
 
 ---Prints a sentence to the log scrollbox, with word wrapping.
 ---@param text string
-function LogWindow:printText(text)
+function LogWindow:printText(text, tooltip)
 	for word in text:gmatch("[ \t]*[^ \t]+[ \t]*") do
-		self:printWord(word)
+		self:printWord(word, tooltip)
 	end
 end
 
@@ -191,12 +207,12 @@ end
 ---Prints an item token by looking up the item name and tooltipping the game it comes from.
 ---@param token table
 function LogWindow:printItemId(token)
-	local item_id = tonumber(token.text)
+	local item_id = tointeger(token.text)
 	local player_id = tointeger(token.player)
 	if item_id == nil or player_id == nil then return end
 
 	if self.draw_mode then
-		local item_flags = tonumber(token.flags)
+		local item_flags = tointeger(token.flags)
 		if item_flags == nil then item_flags = 0 end
 
 		if bit.band(item_flags, APLIB.ItemFlags.FLAG_ADVANCEMENT) then
@@ -212,7 +228,7 @@ function LogWindow:printItemId(token)
 
 	local game = self.ap:get_player_game(player_id)
 	local name = self.ap:get_item_name(item_id, game)
-	self:printWord(name, game)
+	self:printText(name, game)
 end
 
 ---Prints a location token by looking up the location name and tooltipping the game it comes from.
@@ -228,7 +244,24 @@ function LogWindow:printLocationId(token)
 
 	local game = self.ap:get_player_game(player_id)
 	local name = self.ap:get_location_name(location_id, game)
-	self:printWord(name, game)
+	self:printText(name, game)
+end
+
+---@param hint_status integer
+---@return string
+function LogWindow:getHintStatusStr(hint_status)
+	if hint_status == 0 then -- HINT_UNSPECIFIED
+		return GameTextGetTranslatedOrNot("$ap_hint_status_unspecified")
+	elseif hint_status == 10 then -- HINT_NO_PRIORITY
+		return GameTextGetTranslatedOrNot("$ap_hint_status_no_priority")
+	elseif hint_status == 20 then -- HINT_AVOID
+		return GameTextGetTranslatedOrNot("$ap_hint_status_avoid")
+	elseif hint_status == 30 then -- HINT_PRIORITY
+		return GameTextGetTranslatedOrNot("$ap_hint_status_priority")
+	elseif hint_status == 40 then -- HINT_FOUND
+		return GameTextGetTranslatedOrNot("$ap_hint_status_found")
+	end
+	return ""
 end
 
 ---Prints a hint status token.
@@ -303,7 +336,7 @@ function LogWindow:drawMessageList()
 	self.printer.y = 0 - self.scroll.y
 
 	for _, log in ipairs(self.message_log) do
-		if self.printer.y >= 0 - log.height and self.printer.y <= self.box_height then
+		if self.printer.y >= 0 - log.height and self.printer.y <= self.scrollbox_height then
 			self:drawMessage(log.msg)
 			self:newLogLine()
 		else
@@ -313,35 +346,146 @@ function LogWindow:drawMessageList()
 	end
 end
 
---[[
--- Future stuff for hinting and other stuff in-game
-function LogWindow:button(x, y, z, text)
-	if self.button_hovered[text] then
+function LogWindow:sortHints()
+	local SortKeys = {
+		function(hint) return self.ap:get_player_alias(hint.receiving_player) end,
+		function(hint) return self.ap:get_item_name(hint.item, self.ap:get_player_game(hint.receiving_player)) end,
+		function(hint) return self.ap:get_player_alias(hint.finding_player) end,
+		function(hint) return self.ap:get_location_name(hint.location, self.ap:get_player_game(hint.finding_player)) end,
+		function(hint) return hint.entrance end,
+		function(hint) return self:getHintStatusStr(hint.status) end,
+	}
+
+	if self.hint_sorted_col > 0 then
+		if self.hint_sorted_descending then
+			table.sort(self.hints, function(a, b)
+				return SortKeys[self.hint_sorted_col](a) > SortKeys[self.hint_sorted_col](b)
+			end)
+		else
+			table.sort(self.hints, function(a, b)
+				return SortKeys[self.hint_sorted_col](a) < SortKeys[self.hint_sorted_col](b)
+			end)
+		end
+	end
+end
+
+function LogWindow:hintsHeaderClicked(col_num)
+	if self.hint_sorted_col == col_num then
+		self.hint_sorted_descending = not self.hint_sorted_descending
+	else
+		self.hint_sorted_col = col_num
+		self.hint_sorted_descending = false
+	end
+	self:sortHints()
+end
+
+function LogWindow:drawHintList()
+	local DrawKeys = {
+		function(hint) self:printPlayerId({ text = hint.receiving_player }) end,
+		function(hint) self:printItemId({ text = hint.item, player = hint.receiving_player }) end,
+		function(hint) self:printPlayerId({ text = hint.finding_player }) end,
+		function(hint) self:printLocationId({ text = hint.location, player = hint.finding_player }) end,
+		function(hint) self:printText(hint.entrance) end,
+		function(hint) self:printHintStatus({ text = self:getHintStatusStr(hint.status), hint_status = hint.status }) end,
+	}
+
+	GuiZSet(self.gui, -5002)
+	self:resetPrinter()
+	self.printer.y = 0 - self.scroll.y
+
+	for _, hint in ipairs(self.hints) do
+		local last_printer_y = self.printer.y
+
+		-- Optimization: don't draw stuff that isn't being rendered
+		if self.printer.y >= 0 - hint.height and self.printer.y <= self.hint_scrollbox_height then
+			for i=1,6 do
+				self.textarea_start_x = (i - 1) * self.hint_cell_width + 1
+				self.textarea_end_x = i * self.hint_cell_width - 1
+				self:resetPrinter()
+				self.printer.x = self.textarea_start_x
+				self.printer.y = last_printer_y
+
+				DrawKeys[i](hint)
+			end
+		end
+		self.printer.y = last_printer_y + hint.height
+	end
+end
+
+---@param x number
+---@param y number
+---@param z number
+---@param width number
+---@param height number
+---@param text string
+---@return boolean
+function LogWindow:tabButton(x, y, z, width, height, text, selected)
+	if self.button_hovered[text] or selected then
 		self:Color(unpack(color_map["white"]))
 	else
 		self:ColorGray()
 	end
 
 	self:SetZ(z - 1)
-	GuiText(self.gui, x, y, text)
+	local txt_wid, txt_hgt = self:GetTextDimension(text)
+	GuiText(self.gui, x + (width - txt_wid) / 2, y + (height - txt_hgt) / 2, text)
 	--self:AddOptionForNext(self.c.options.ForceFocusable) -- annoying brrrr sound
-	local wid, hgt = self:GetTextDimension(text)
 	local sprite = self.buttons.img
-	if self.button_hovered[text] then
+	if self.button_hovered[text] or selected then
 		sprite = self.buttons.img_hl
 	end
-	self:Draw9Piece(x, y, z, wid, hgt, sprite, sprite)
+	self:Draw9Piece(x, y, z, width, height, sprite, sprite)
 
 	local hovered = self:IsHovered()
 	self.button_hovered[text] = hovered
 
 	return hovered and self:IsMouseClicked()
 end
-]]
+
+function LogWindow:drawTabBar(x, y, tabs)
+	local z = -5005
+	for i, name in ipairs(tabs) do
+		if self:tabButton(x, y, z, 50, 16, name, i == self.tab_idx) then
+			self.tab_idx = i
+		end
+		x = x + 50 + 3
+		z = z - 5
+	end
+end
+
+function LogWindow:drawHintsHeader()
+	local header = {
+		GameTextGetTranslatedOrNot("$ap_hint_col_receiver"),
+		GameTextGetTranslatedOrNot("$ap_hint_col_item"),
+		GameTextGetTranslatedOrNot("$ap_hint_col_finder"),
+		GameTextGetTranslatedOrNot("$ap_hint_col_location"),
+		GameTextGetTranslatedOrNot("$ap_hint_col_entrance"),
+		GameTextGetTranslatedOrNot("$ap_hint_col_status"),
+	}
+
+	local x = self.box_x + 8
+	local y = self.box_y + 16 + 7
+	for i,name in ipairs(header) do
+		if self.button_hovered[name] then
+			self:Color(unpack(color_map["white"]))
+		else
+			self:ColorGray()
+		end
+
+		self:TextCentered(x, y, name, self.hint_cell_width)
+		local hovered = self:IsHovered()
+		self.button_hovered[name] = hovered
+		if hovered and self:IsMouseClicked() then
+			print_error("Clicked " .. name)
+			self:hintsHeaderClicked(i)
+		end
+		x = x + self.hint_cell_width
+	end
+end
 
 function LogWindow:drawWindow()
 	GuiSetNextNinePieceAlpha(0.5)
-	self:Draw9Piece(self.box_x - 8, self.box_y - 11 - 4, -4000, self.box_width + 16, self.box_height + 11 + 12)
+	self:Draw9Piece(self.box_x, self.box_y, -4000, self.box_width, self.box_height)
 	if self:IsHovered() then
 		-- Prevent shooting wand and whatever when interacting
 		self:BlockInput()
@@ -350,23 +494,39 @@ function LogWindow:drawWindow()
 		self:close()
 	end
 
-	GuiSetNextNinePieceAlpha(0.8)
-	-- Not sure where this extra +40 is coming from but it's needed or the last part of the logs will be hidden
-	self:ScrollBoxFixed(self.box_x, self.box_y, -5000, self.box_width, self.box_height, math.max(self.box_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawMessageList)
-	self.tailing_log = self.scroll.y >= self.tailing_y - 1
-	self.tailing_y = math.max(self.tailing_y, self.scroll.y)
+	self:drawTabBar(self.box_x + 8, self.box_y + 4, { "Archipelago", "Hints" })
 
-	-- TODO do something with self.shift_up_amt here so that deleted messages don't scroll everything up out of place
+	if self.tab_idx == 1 then
+		self.textarea_start_x = 0
+		self.textarea_end_x = self.scrollbox_width
 
-	if self.jump_to_end then
-		self.jump_to_end = false
-		self:ScrollToEnd()
-		self.tailing_log = true
+		GuiSetNextNinePieceAlpha(0.8)
+		self:ScrollBoxFixed(self.box_x + 8, self.box_y + 16 + 7, -5000, self.scrollbox_width, self.scrollbox_height, math.max(self.scrollbox_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawMessageList)
+		self.tailing_log = self.scroll.y >= self.tailing_y - 1
+		self.tailing_y = math.max(self.tailing_y, self.scroll.y)
+
+		-- TODO do something with self.shift_up_amt here so that deleted messages don't scroll everything up out of place
+
+		if self.jump_to_end then
+			self.jump_to_end = false
+			self:ScrollToEnd()
+			self.tailing_log = true
+		end
+	elseif self.tab_idx == 2 then
+		self.textarea_start_x = 0
+		self:drawHintsHeader()
+
+		local y = self.box_y + 16 + 7
+		GuiSetNextNinePieceAlpha(0.8)
+		self:ScrollBoxFixed(self.box_x + 8, y + self.text_line_height, -5000, self.scrollbox_width, self.hint_scrollbox_height, math.max(self.hint_scrollbox_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawHintList)
 	end
 end
 
 function LogWindow:addLogMessage(msg)
 	if msg ~= nil and #msg > 0 then
+		self.textarea_start_x = 0
+		self.textarea_end_x = self.scrollbox_width
+
 		local log_msg = {
 			height = self:calcMessageHeight(msg),
 			msg = msg
@@ -390,6 +550,22 @@ function LogWindow:addLogMessage(msg)
 			self.jump_to_end = true
 		end
 	end
+end
+
+function LogWindow:setHints(hints)
+	self.hints = hints
+
+	-- Compute max heights based on cell width
+	self.textarea_start_x = 1
+	self.textarea_end_x = self.hint_cell_width - 1
+	for _,hint in ipairs(self.hints) do
+		hint.height = math.max(
+			self:calcMessageHeight({{ text = hint.entrance or "" }}),
+			self:calcMessageHeight({{ type = "item_id", text = hint.item, player = hint.receiving_player }}),
+			self:calcMessageHeight({{ type = "location_id", text = hint.location, player = hint.finding_player }})
+		)
+	end
+	self:sortHints()
 end
 
 function LogWindow:update()
