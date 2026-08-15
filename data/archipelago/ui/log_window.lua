@@ -36,6 +36,14 @@ function GuiSetNextNinePieceAlpha(alpha)
 	ninePieceAlphaOverride = alpha
 end
 
+---@param value any
+---@return integer?
+local function tointeger(value)
+	local num = tonumber(value)
+	if num == nil then return nil end
+	return math.floor(num)
+end
+
 ---Initializes the log window.
 function LogWindow:create()
 	self:New()
@@ -164,7 +172,8 @@ end
 ---Prints a player token by looking up their player name and tooltipping the game they are playing.
 ---@param token table
 function LogWindow:printPlayerId(token)
-	local player_id = tonumber(token.text)
+	local player_id = tointeger(token.text)
+	if player_id == nil then return end
 
 	if self.draw_mode then
 		if player_id == self.ap:get_player_number() then
@@ -183,6 +192,8 @@ end
 ---@param token table
 function LogWindow:printItemId(token)
 	local item_id = tonumber(token.text)
+	local player_id = tointeger(token.player)
+	if item_id == nil or player_id == nil then return end
 
 	if self.draw_mode then
 		local item_flags = tonumber(token.flags)
@@ -199,7 +210,7 @@ function LogWindow:printItemId(token)
 		end
 	end
 
-	local game = self.ap:get_player_game(tonumber(token.player))
+	local game = self.ap:get_player_game(player_id)
 	local name = self.ap:get_item_name(item_id, game)
 	self:printWord(name, game)
 end
@@ -207,13 +218,15 @@ end
 ---Prints a location token by looking up the location name and tooltipping the game it comes from.
 ---@param token table
 function LogWindow:printLocationId(token)
-	local location_id = tonumber(token.text)
+	local location_id = tointeger(token.text)
+	local player_id = tointeger(token.player)
+	if location_id == nil or player_id == nil then return end
 
 	if self.draw_mode then
 		self:setColor("blue")
 	end
 
-	local game = self.ap:get_player_game(tonumber(token.player))
+	local game = self.ap:get_player_game(player_id)
 	local name = self.ap:get_location_name(location_id, game)
 	self:printWord(name, game)
 end
@@ -339,7 +352,7 @@ function LogWindow:drawWindow()
 
 	GuiSetNextNinePieceAlpha(0.8)
 	-- Not sure where this extra +40 is coming from but it's needed or the last part of the logs will be hidden
-	self:ScrollBoxFixed(self.box_x, self.box_y, -5000, self.box_width, self.box_height, self.total_log_height + 40, "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawMessageList)
+	self:ScrollBoxFixed(self.box_x, self.box_y, -5000, self.box_width, self.box_height, math.max(self.box_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawMessageList)
 	self.tailing_log = self.scroll.y >= self.tailing_y - 1
 	self.tailing_y = math.max(self.tailing_y, self.scroll.y)
 

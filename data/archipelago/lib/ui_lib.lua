@@ -706,7 +706,7 @@ function ui_class:ScrollBoxFixed(x, y, z, width, height_max, height_inside, spri
 	local id = self:id()
 	local scroll = self:get_scrollbox(tostring(draw_fn))
 	self.last_scrollbox = scroll
-	scroll.max_y = height_inside - y
+	scroll.max_y = height_inside
 	scroll.height = math.min(scroll.max_y, height_max)
 
 	scroll.sprite_dim = GuiGetImageDimensions(self.gui, sprite, 1)
