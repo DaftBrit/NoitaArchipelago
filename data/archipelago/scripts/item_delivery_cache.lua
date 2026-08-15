@@ -1,5 +1,6 @@
-local SeedCache = dofile("data/archipelago/scripts/seeded_cache.lua")
+local SeedCache = dofile("data/archipelago/scripts/seeded_cache.lua") ---@type SeededCache
 
+---@class ItemCache : SeededCache
 local ItemCache = SeedCache:extend()
 
 function ItemCache:new(cache_name)

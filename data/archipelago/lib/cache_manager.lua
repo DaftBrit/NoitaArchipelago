@@ -6,6 +6,10 @@ local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 --	1. We don't have write access or some other program took hold of the file
 --	2. The file gets corrupted or the game crashes mid-write (for this we can maybe solve it with backups)
 
+--- @class Cache : Object
+--- @field cache_name string
+--- @field cache_id string
+--- @field dirty_id string
 local Cache = Object:extend()
 
 function Cache:new(cache_name)

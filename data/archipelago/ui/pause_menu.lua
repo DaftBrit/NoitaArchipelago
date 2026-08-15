@@ -7,8 +7,9 @@ local PauseMenu = {
 
 ---@param mod_version string
 ---@param slot_options SlotOpts?
----@param deathlink number
-function PauseMenu:update(mod_version, slot_options, deathlink)
+---@param deathlink string
+---@param traplink string
+function PauseMenu:update(mod_version, slot_options, deathlink, traplink)
 	local win_condition = ""
 	local shop_price_multiplier = 1
 	local hm_portals = ""
@@ -23,7 +24,8 @@ function PauseMenu:update(mod_version, slot_options, deathlink)
 	local status = {
 		"Archipelago Version: " .. mod_version,
 		"Win Condition: " .. win_condition,
-		"Deathlink: " .. ({"Off", "On", "Traps"})[deathlink + 1],
+		"Deathlink: " .. deathlink,
+		"Traplink: " .. traplink,
 		"Shop Price Multiplier: x" .. tostring(shop_price_multiplier),
 		"Holy Mountain Portals: " .. hm_portals,
 	}

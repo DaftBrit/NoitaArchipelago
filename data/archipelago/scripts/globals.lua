@@ -1,5 +1,6 @@
 local Global = dofile("data/archipelago/lib/globals_manager.lua") --- @type Global
 local GlobalComplex = dofile("data/archipelago/lib/global_complex.lua") --- @type GlobalComplex
+local GlobalOption = dofile("data/archipelago/lib/cross_script_opt.lua") --- @type GlobalOption
 
 --- @class Globals
 local Globals = {
@@ -18,6 +19,9 @@ local Globals = {
 
 	LogHistory = GlobalComplex("AP_LOG_HISTORY"), --- @type GlobalComplex
 	TrapLinkQueue = GlobalComplex("AP_TRAP_LINK_QUEUE"), --- @type GlobalComplex
+
+	DeathLinkSetting = GlobalOption("AP_DEATHLINK"), --- @type GlobalOption
+	TrapLinkSetting = GlobalOption("AP_TRAPLINK"), --- @type GlobalOption
 }
 
 return Globals

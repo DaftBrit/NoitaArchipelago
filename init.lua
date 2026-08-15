@@ -47,6 +47,7 @@ local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 ---@class SlotOpts
 ---@field victory_condition integer?
 ---@field death_link integer?
+---@field trap_link integer?
 ---@field path_option integer?
 ---@field orbs_as_checks integer?
 ---@field shop_price number?
@@ -61,11 +62,9 @@ local connect_tags = {
 }
 
 local last_death_time = 0
-local last_trap_time = 0
 local current_player_slot = -1
 local game_is_paused = false
 local is_player_spawned = false
-local death_link_status = false
 local messages_setting = "all"
 local forced_disconnect = false
 local req_restart = false
@@ -99,33 +98,6 @@ local function UpdateConnectionTags()
 	ap:ConnectUpdate(nil, new_conn_tags)
 end
 
---- Toggles DeathLink, requires calling UpdateConnectionTags() separately afterwards
----@param enabled boolean
-local function SetDeathLinkEnabled(enabled)
-	if enabled then
-		if death_link_status == true then
-			-- it's already enabled, so no need to continue here
-			return
-		end
-		connect_tags["DeathLink"] = 1
-	else
-		if death_link_status == false then
-			return
-		end
-		connect_tags["DeathLink"] = nil
-		death_link_status = false
-	end
-end
-
----@param enabled boolean
-local function SetTrapLinkEnabled(enabled)
-	if enabled then
-		connect_tags["TrapLink"] = 1
-	else
-		connect_tags["TrapLink"] = nil
-	end
-end
-
 -- Updates a death timer to prevent immediate re-sends of deaths that have been received.
 local function UpdateDeathTime()
 	local curr_death_time = ap:get_server_time()
@@ -134,31 +106,86 @@ local function UpdateDeathTime()
 	return result
 end
 
----@return integer state 0 = off, 1 = on, 2 = traps
-local function IsDeathLinkEnabled()
-	if slot_options == nil then
-		return 0
+local function GetDeathLink()
+	local opt = Cache.Options:get("deathlink", "yaml")
+	if opt == "yaml" then
+		if slot_options.death_link == 1 then
+			opt = "on"
+		elseif slot_options.death_link == 2 then
+			opt = "traps"
+		else
+			opt = "off"
+		end
+	end
+	return opt
+end
+
+local function GetTrapLink()
+	local opt = Cache.Options:get("traplink", "yaml")
+	if opt == "yaml" then
+		if slot_options.trap_link == 1 then
+			opt = "on"
+		else
+			opt = "off"
+		end
+	end
+	return opt
+end
+
+--- Updates DeathLink, requires calling UpdateConnectionTags() separately afterwards
+local function SyncDeathLink()
+	local opt = Cache.Options:get("deathlink", "yaml")
+
+	local enabled = false
+	if opt == "yaml" then
+		enabled = (slot_options.death_link or 0) ~= 0
+	elseif opt ~= "off" then
+		enabled = true
 	end
 
-	local death_link_setting = tostring(ModSettingGet("archipelago.death_link"))
-	if slot_options.death_link == 0 or death_link_setting == "off" then
-		return 0
-	elseif death_link_setting == "on" then
-		return 1
-	elseif death_link_setting == "traps" then
-		return 2
+	if enabled then
+		connect_tags["DeathLink"] = 1
 	else
-		Log.Error("Error in IsDeathLinkEnabled: " .. death_link_setting)
-		return 0
+		connect_tags["DeathLink"] = nil
 	end
 end
 
----@return boolean
-local function IsTrapLinkEnabled()
-	if slot_options == nil then
-		return false
+--- Updates TrapLink, requires calling UpdateConnectionTags() separately afterwards
+local function SyncTrapLink()
+	local opt = Cache.Options:get("traplink", "yaml")
+
+	local enabled = false
+	if opt == "yaml" then
+		enabled = (slot_options.trap_link or 0) ~= 0
+	elseif opt ~= "off" then
+		enabled = true
 	end
-	return ModSettingGet("archipelago.trap_link") == true
+
+	if enabled then
+		connect_tags["TrapLink"] = 1
+	else
+		connect_tags["TrapLink"] = nil
+	end
+end
+
+local function UpdateLocalSettings()
+	Cache.Options:set("deathlink", Globals.DeathLinkSetting:get())
+	if Globals.DeathLinkSetting:hasChanged() then
+		Globals.DeathLinkSetting:clearChanged()
+		SyncDeathLink()
+	end
+
+	Cache.Options:set("traplink", Globals.TrapLinkSetting:get())
+	if Globals.TrapLinkSetting:hasChanged() then
+		Globals.TrapLinkSetting:clearChanged()
+		SyncTrapLink()
+	end
+end
+
+local function InitLocalSettings()
+	Globals.DeathLinkSetting:set(Cache.Options:get("deathlink", "yaml"))
+	Globals.TrapLinkSetting:set(Cache.Options:get("traplink", "yaml"))
+	UpdateLocalSettings()
 end
 
 local function CheckTrapLinkQueue()
@@ -493,8 +520,7 @@ function RECV_MSG.Connected()
 
 	SetupLocationScouts()
 	-- Enable deathlink if the setting on the server and the mod setting said to
-	SetDeathLinkEnabled(IsDeathLinkEnabled() > 0)
-	SetTrapLinkEnabled(IsTrapLinkEnabled())
+	InitLocalSettings()
 	UpdateConnectionTags()
 end
 
@@ -667,8 +693,8 @@ end
 ---@param source string?
 ---@param cause string?
 local function RecvDeathLink(source, cause)
-	local death_link_option = IsDeathLinkEnabled()
-	if death_link_option == 0 then
+	local death_link_option = GetDeathLink()
+	if death_link_option == "off" then
 		Log.Info("Rejecting DeathLink: death_link_option = " .. tostring(death_link_option))
 		return
 	end
@@ -680,7 +706,7 @@ local function RecvDeathLink(source, cause)
 	end
 
 	if cause == nil or cause == "" then
-		local message = GameTextGet(death_link_option == 1 and "$ap_died" or "$ap_died_traps", tostring(source))
+		local message = GameTextGet(death_link_option == "on" and "$ap_died" or "$ap_died_traps", tostring(source))
 		GamePrintImportant(message, "$ap_deathlink_triggered")
 	else
 		GamePrintImportant(cause, "$ap_deathlink_triggered")
@@ -690,7 +716,7 @@ local function RecvDeathLink(source, cause)
 	-- Don't try anything if the player doesn't exist (gj you dodged it)
 	if player == nil then return end
 
-	if death_link_option == 1 then
+	if death_link_option == "on" then
 		if not DecreaseExtraLife(player) then
 			local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
 			if gsc_id ~= nil then
@@ -1053,16 +1079,7 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	-- However we know they have to pause the game (menu) to start a new game.
 	game_is_paused = is_paused and not is_inventory_pause
 
-	if IsDeathLinkEnabled() > 0 and death_link_status == false then
-		SetDeathLinkEnabled(true)
-		death_link_status = true
-	end
-	if IsDeathLinkEnabled() == 0 and death_link_status == true then
-		SetDeathLinkEnabled(false)
-		death_link_status = false
-	end
-
-	SetTrapLinkEnabled(IsTrapLinkEnabled())
+	UpdateLocalSettings()
 
 	-- Disable/enable text messages if settings change
 	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
@@ -1087,7 +1104,7 @@ end
 
 -- Called while the game is paused
 function OnPausePreUpdate()
-	PauseMenu:update(MOD_VERSION, slot_options, IsDeathLinkEnabled())
+	PauseMenu:update(MOD_VERSION, slot_options, GetDeathLink(), GetTrapLink())
 	UpdateUI()
 
 	-- Stay connected while the game is paused
@@ -1101,7 +1118,7 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-	if slot_options == nil or IsDeathLinkEnabled() == 0 or game_is_paused then return end
+	if slot_options == nil or GetDeathLink() == "off" or game_is_paused then return end
 	if not UpdateDeathTime() then return end
 
 	local death_msg = GetCauseOfDeath() or "skill issue"

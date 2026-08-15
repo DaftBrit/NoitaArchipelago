@@ -1,6 +1,7 @@
 dofile("data/scripts/lib/mod_settings.lua") -- see this file for documentation on some of the features.
 dofile("data/scripts/lib/utilities.lua") -- for GUI_OPTION
 
+
 local MOD_VERSION = "1.6.0"
 local mod_id = "archipelago" -- This should match the name of your mod's folder.
 mod_settings_version = 1 -- This is a magic global that can be used to migrate settings to new mod versions. call mod_settings_get_version() before mod_settings_update() to get the old value.
@@ -28,7 +29,7 @@ local translations = {
 		en="Integrations"
 	},
 	["$ap_menu_integration_settings_desc"] = {
-		en="Archipelago integration settings"
+		en="Archipelago integration settings.\nCan be changed when connected to a room, the settings will be specific to that room."
 	},
 	["$ap_menu_server_settings_address_name"] = {
 		en="Server"
@@ -70,13 +71,13 @@ local translations = {
 		en="Allow Death Link"
 	},
 	["$ap_death_link_settings_desc"] = {
-		en="When set to On, the death link setting in your Archipelago YAML will be used.\nWhen set to Off, this will override your YAML and disable death link.\nWhen set to Traps, it will act as On if death link was enabled in your YAML,\nexcept it will trigger a random trap effect when a death link is received.\nBoth On and Traps will still send death links when you die."
+		en="Off = Death Link is always off.\nOn = Death Link is always on.\nTraps = When receiving a Death Link, trigger a random\ntrap instead. Death Links are still sent."
 	},
 	["$ap_trap_link_settings_name"] = {
 		en="Trap Link"
 	},
 	["$ap_trap_link_settings_desc"] = {
-		en="When any client with Trap Link on receives a trap item, all clients with Trap Link receive the same trap."
+		en="When any client with Trap Link on receives a trap,\nall clients with Trap Link receive the same trap."
 	},
 	["$ap_collect_items"] = {
 		en="> Collect Items"
@@ -156,6 +157,12 @@ local translations = {
 	["$ap_kills_in_fog_settings_desc"] = {
 		en = "Unexplainable deaths in fogged areas count as kills."
 	},
+	["$ap_option_traps"] = {
+		en = "Traps"
+	},
+	["$ap_option_yaml"] = {
+		en = "YAML (Room Settings)"
+	},
 }
 
 local lang_id = "en"
@@ -182,6 +189,11 @@ GuiTextInput = function(gui, id, x, y, text, width, max_length, allowed_characte
 	return value
 end
 
+---@param gui gui
+---@param name string
+---@param disabled boolean
+---@param perm integer
+---@return boolean
 local function APOptionButton(gui, name, disabled, perm)
 	GuiIdPushString(gui, name)
 
@@ -208,6 +220,9 @@ local function APOptionButton(gui, name, disabled, perm)
 	return result and not disabled
 end
 
+---@param name_prefix string
+---@param gui gui
+---@param in_main_menu boolean
 local function APItemPermButton(name_prefix, gui, in_main_menu)
 	local perm = -1
 	if not in_main_menu then
@@ -226,6 +241,88 @@ end
 
 local function APReleaseItemsButton(mod_id, gui, in_main_menu, im_id, setting)
 	APItemPermButton("ap_release", gui, in_main_menu)
+end
+
+---@param opt_value string
+---@param opt_list table[]
+---@return integer
+local function GetOptionIndex(opt_value, opt_list)
+	for i, opt in ipairs(opt_list) do
+		if opt[1] == opt_value then
+			return i
+		end
+	end
+	return 1
+end
+
+---@param opt_global_id string
+---@param default string
+---@return string
+local function GetSharedValue(opt_global_id, default)
+	local result = GlobalsGetValue("AP_OPT_" .. opt_global_id)
+	if result == nil or result == "" then
+		return default
+	end
+	return tostring(result)
+end
+
+---@param opt_global_id string
+---@param value string
+local function SetSharedValue(opt_global_id, value)
+	GlobalsSetValue("AP_OPT_" .. opt_global_id, value)
+	GameAddFlagRun("AP_CHANGED_OPT_" .. opt_global_id)
+end
+
+---@param gui gui
+---@param disabled boolean
+---@param opt_global_id string
+---@param opt_name string
+---@param opt_list table[]
+local function APRoomOption(gui, disabled, opt_global_id, opt_name, opt_desc, opt_list)
+	GuiIdPushString(gui, opt_global_id)
+
+	local opt_id = 1	-- default (YAML)
+	if disabled then
+		GuiOptionsAddForNextWidget(gui, GUI_OPTION.Disabled)
+	else
+		opt_id = GetOptionIndex(GetSharedValue(opt_global_id, "yaml"), opt_list)
+	end
+
+	local clicked, rclick = GuiButton(gui, 1, 0, 0, opt_name .. ": " .. opt_list[opt_id][2])
+	GuiTooltip(gui, opt_desc, "")
+
+	if not disabled then
+		if rclick then
+			opt_id = 1
+		elseif clicked then
+			opt_id = opt_id + 1
+			if opt_id > #opt_list then
+				opt_id = 1
+			end
+		end
+		SetSharedValue(opt_global_id, opt_list[opt_id][1])
+	end
+
+	GuiIdPop(gui)
+end
+
+local DeathLinkOpts = {
+	{ "yaml", T("$ap_option_yaml") },
+	{ "off", T("$option_off") },
+	{ "on", T("$option_on") },
+	{ "traps", T("$ap_option_traps") },
+}
+local function APDeathLinkOption(mod_id, gui, in_main_menu, im_id, setting)
+	APRoomOption(gui, in_main_menu, "AP_DEATHLINK", T("$ap_death_link_settings_name"), T("$ap_death_link_settings_desc"), DeathLinkOpts)
+end
+
+local TrapLinkOpts = {
+	{ "yaml", T("$ap_option_yaml") },
+	{ "off", T("$option_off") },
+	{ "on", T("$option_on") },
+}
+local function APTrapLinkOption(mod_id, gui, in_main_menu, im_id, setting)
+	APRoomOption(gui, in_main_menu, "AP_TRAPLINK", T("$ap_trap_link_settings_name"), T("$ap_trap_link_settings_desc"), TrapLinkOpts)
 end
 
 local mod_settings =
@@ -305,23 +402,10 @@ local mod_settings =
 		ui_description = T("$ap_menu_integration_settings_desc"),
 		settings = {
 			{
-				id = "death_link",
-				ui_name = T("$ap_death_link_settings_name"),
-				ui_description = T("$ap_death_link_settings_desc"),
-				value_default = "on",
-				values = {
-					{"off", T("$option_off")},
-					{"on", T("$option_on")},
-					{"traps", "Traps"}
-				},
-				scope = MOD_SETTING_SCOPE_RUNTIME,
+				ui_fn = APDeathLinkOption,
 			},
 			{
-				id = "trap_link",
-				ui_name = T("$ap_trap_link_settings_name"),
-				ui_description = T("$ap_trap_link_settings_desc"),
-				value_default = true,
-				scope = MOD_SETTING_SCOPE_RUNTIME,
+				ui_fn = APTrapLinkOption,
 			},
 		},
 	},

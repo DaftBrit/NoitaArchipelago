@@ -129,6 +129,7 @@ local traplink_aliases_recv = {
 	["BANANA TRAP"] = "AP_BANANA_PEELS",
 	["BANANA PEEL TRAP"] = "AP_BANANA_PEELS",
 	["SLIP TRAP"] = "AP_BANANA_PEELS",
+	["MATH QUIZ TRAP"] = "CONGATWITCH_POPQUIZ",
 }
 
 local traplink_aliases_send = {
