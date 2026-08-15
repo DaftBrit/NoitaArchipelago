@@ -38,7 +38,7 @@ local Cache = dofile("data/archipelago/scripts/caches.lua")
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua") --- @type ConnIcon
 local LogWindow = dofile("data/archipelago/ui/log_window.lua") --- @type LogWindow
 local PauseMenu = dofile("data/archipelago/ui/pause_menu.lua") --- @type PauseMenu
-local TrapMenu = dofile("data/archipelago/ui/trap_menu.lua") --- @type TrapMenu
+--local TrapMenu = dofile("data/archipelago/ui/trap_menu.lua") --- @type TrapMenu
 local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 
 -- See Options.py on the AP-side
@@ -164,12 +164,14 @@ end
 local function CheckTrapLinkQueue()
 	local traps = Globals.TrapLinkQueue:get_table()
 	for _,trap in ipairs(traps) do
-		ap:Bounce({
+		local pkt = {
 			time = ap:get_server_time(),
 			trap_name = trap.trap_name,
 			source = ap:get_slot(),
 			noita_id = trap.noita_id,
-		}, nil, nil, {"TrapLink"})
+		}
+		Log.Info("Sending TrapLink: " .. JSON:encode(pkt))
+		ap:Bounce(pkt, nil, nil, {"TrapLink"})
 	end
 	Globals.TrapLinkQueue:reset()
 end
@@ -1040,7 +1042,7 @@ function OnWorldPostUpdate()
 		CheckGlobalsAndFlags()
 		UpdatePlayerPoptrackerPosition()
 	end
-	TrapMenu:update()
+	--TrapMenu:update()
 end
 
 

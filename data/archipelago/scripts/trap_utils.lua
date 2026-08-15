@@ -69,6 +69,7 @@ local traplink_aliases_recv = {
 	["INSTANT DEATH TRAP"] = "AP_INSTANT_DEATH",
 	["BLUE BALLS CURSE"] = "AP_ONE_HP",
 	["ONE HIT KO"] = "AP_ONE_HP",
+	["ONE HIT TRAP"] = "AP_ONE_HP",
 	["INVISIBLE TRAP"] = "AP_INVIS_BAD",
 	["INVISIBILITY TRAP"] = "AP_INVIS_BAD",
 	["INVISIBALL TRAP"] = "AP_INVIS_BAD",
@@ -95,10 +96,12 @@ local traplink_aliases_recv = {
 	["CONTROLLER DRIFT TRAP"] = "AP_STICK_DRIFT",
 	["JUMP TRAP"] = "AP_JUMP_TRAP",
 	["JUMPING JACKS TRAP"] = "AP_JUMP_TRAP",
+	["LEAPING TRAP"] = "AP_JUMP_TRAP",
 	["UNDERWATER TRAP"] = "AP_UNDERWATER",
 	["MONKEY MASH TRAP"] = "AP_MONKEY_MASH",
 	["W I D E TRAP"] = "AP_WIDE",
 	["TINY TRAP"] = "AP_TINY",
+	["SHRINK TRAP"] = "AP_TINY",
 	["THWIMP TRAP"] = "AP_SPAWN_THWIMP",
 	["MY TURN! TRAP"] = "AP_MONKEY_MASH",
 	["SPOOKY TIME"] = "AP_MONOCHROME",
@@ -306,8 +309,9 @@ function RecvTrapLink(source, trap_name, noita_trap_name)
 		return
 	end
 
-	local message = GameTextGet("$ap_trap_triggered", source or "Unknown", trap_name)
-	GamePrintImportant(message, "$ap_trap_triggered_desc")
+	local desc = GameTextGet("$ap_trap_triggered_desc", source or "Unknown")
+	GamePrintImportant(trap_name, desc)
+	GamePrint(GameTextGet("$ap_trap_triggered", trap_name, source or "Unknown"))
 	RunStreamingEvent(noita_trap_name)
 end
 
@@ -317,7 +321,7 @@ function BadTimes(notraplink)
 	InitStreamingTraps()
 	local noita_id = RandomStreamingEventTrap()
 
-	if not notraplink then
+	if notraplink == nil or not notraplink then
 		local traplink_name = traplink_aliases_send[noita_id]
 		if traplink_name ~= nil then
 			-- TODO also pass original trap ID for matching between Noita games
