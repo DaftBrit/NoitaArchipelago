@@ -42,7 +42,7 @@ function TrapMenu:update()
 	GuiStartFrame(self.gui)
 	GuiLayoutBeginVertical(self.gui, 12.5, 50, true)
 	if GuiButton(self.gui, 0, 0, 0, "Random") then
-		BadTimes(true)
+		BadTimes()
 	end
 
 	local width, height = GuiGetScreenDimensions(self.gui)
