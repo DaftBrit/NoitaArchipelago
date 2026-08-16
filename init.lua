@@ -1275,7 +1275,10 @@ function OnPlayerSpawned(player_entity)
 	is_player_spawned = true
 	GlobalsSetValue("ap_random_hax", "23")
 
-	EntityAddComponent2(player_entity, "LuaComponent", {
-		script_damage_received = "data/archipelago/scripts/damagelink_script.lua"
-	})
+	if not EntityGetFirstComponent(player_entity, "LuaComponent", "ap_damagelink") then
+		EntityAddComponent2(player_entity, "LuaComponent", {
+			_tags = "ap_damagelink",
+			script_damage_received = "data/archipelago/scripts/damagelink_script.lua"
+		})
+	end
 end
