@@ -85,18 +85,6 @@ local translations = {
 	["$ap_damage_link_settings_desc"] = {
 		en="When any client with Damage Link receives damage,\nall clients with Damage Link receive damage."
 	},
-	["$ap_collect_items"] = {
-		en="> Collect Items"
-	},
-	["$ap_collect_items_tooltip"] = {
-		en="Grants you all the remaining items for your world by collecting them from all games."
-	},
-	["$ap_release_items"] = {
-		en="> Release Items"
-	},
-	["$ap_release_items_tooltip"] = {
-		en="Releases all items contained in your world to other worlds."
-	},
 	["$ap_menu_game_settings_name"] = {
 		en="Game"
 	},
@@ -120,24 +108,6 @@ local translations = {
 	},
 	["$ap_menu_commands_desc"] = {
 		en="Commands that can be used for the current Archipelago session."
-	},
-	["$ap_perms_tooltip_-1"] = {
-		en="Room setting: Permissions for this option are currently unknown."
-	},
-	["$ap_perms_tooltip_0"] = {
-		en="Room setting: Disabled."
-	},
-	["$ap_perms_tooltip_1"] = {
-		en="Room setting: Can be used at any time."
-	},
-	["$ap_perms_tooltip_2"] = {
-		en="Room setting: Only usable after goal completion."
-	},
-	["$ap_perms_tooltip_6"] = {
-		en="Room setting: Automatically used after goal completion (no manual usage)."
-	},
-	["$ap_perms_tooltip_7"] = {
-		en="Room setting: Automatically used after goal completion, or used manually at any time."
 	},
 	["$ap_messages_settings_name"] = {
 		en = "Text Messages"
@@ -193,60 +163,6 @@ GuiTextInput = function(gui, id, x, y, text, width, max_length, allowed_characte
 		return ""
 	end
 	return value
-end
-
----@param gui gui
----@param name string
----@param disabled boolean
----@param perm integer
----@return boolean
-local function APOptionButton(gui, name, disabled, perm)
-	GuiIdPushString(gui, name)
-
-	if disabled then
-		GuiOptionsAddForNextWidget(gui, GUI_OPTION.Disabled)
-	end
-
-	if perm == 0 then
-		GuiColorSetForNextWidget(gui, 1, 0, 0, 1)
-	elseif perm == 6 or perm == 7 then
-		GuiColorSetForNextWidget(gui, 0, 1, 0, 1)
-	end
-
-	local result = GuiButton(gui, 1, 0, 0, T(name))
-	local tooltip_str = T(name .. "_tooltip")
-
-	local perm_tooltip_str = "$ap_perms_tooltip_" .. tostring(perm)
-	if translations[perm_tooltip_str] ~= nil then
-		tooltip_str = tooltip_str .. "\n" .. T(perm_tooltip_str)
-	end
-	GuiTooltip(gui, tooltip_str, "")
-
-	GuiIdPop(gui)
-	return result and not disabled
-end
-
----@param name_prefix string
----@param gui gui
----@param in_main_menu boolean
-local function APItemPermButton(name_prefix, gui, in_main_menu)
-	local perm = -1
-	if not in_main_menu then
-		perm = tonumber(GlobalsGetValue(name_prefix .. "_permission", "-1")) or -1
-	end
-
-	local disabled = in_main_menu or perm == 0 or perm == 6
-	if APOptionButton(gui, "$" .. name_prefix .. "_items", disabled, perm) then
-		GameAddFlagRun(name_prefix .. "_items_used")
-	end
-end
-
-local function APCollectItemsButton(mod_id, gui, in_main_menu, im_id, setting)
-	APItemPermButton("ap_collect", gui, in_main_menu)
-end
-
-local function APReleaseItemsButton(mod_id, gui, in_main_menu, im_id, setting)
-	APItemPermButton("ap_release", gui, in_main_menu)
 end
 
 ---@param opt_value string
@@ -492,19 +408,6 @@ local mod_settings =
 					{"yes", "Included"},
 				},
 				scope = MOD_SETTING_SCOPE_RUNTIME,
-			},
-		},
-	},
-	{
-		category_id = "ap_commands",
-		ui_name = T("$ap_menu_commands_name"),
-		ui_description = T("$ap_menu_commands_desc"),
-		settings = {
-			{
-				ui_fn = APCollectItemsButton,
-			},
-			{
-				ui_fn = APReleaseItemsButton,
 			},
 		},
 	},

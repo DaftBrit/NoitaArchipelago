@@ -896,24 +896,6 @@ local function CheckLocationFlags()
 	end
 end
 
-local function CheckCommandFlags()
-	if slot_options ~= nil then
-		if GameHasFlagRun("ap_collect_items_used") then
-			Log.Info("AP: Collecting items...")
-			ap:Say("!collect")
-		end
-
-		if GameHasFlagRun("ap_release_items_used") then
-			Log.Info("AP: Releasing items...")
-			ap:Say("!release")
-		end
-	end
-
-	-- Always remove the flags to avoid edge cases where we weren't connected and a flag gets checked in the future
-	GameRemoveFlagRun("ap_collect_items_used")
-	GameRemoveFlagRun("ap_release_items_used")
-end
-
 -- Checks data toggled by external lua scripts that init.lua doesn't have access to
 local check_timer_1s = 0
 local check_timer_10f = 0
@@ -943,9 +925,6 @@ local function CheckGlobalsAndFlags()
 			CheckRedeliveryQueue()
 		end
 	end
-
-	-- has logic to check slot_options
-	CheckCommandFlags()
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -997,11 +976,6 @@ local function connect()
 		local connection_tags = GetConnectionTags()
 		prev_connect_tags_str = table.concat(connection_tags, ",")
 		ap:ConnectSlot(slot_name, password, ITEMS_HANDLING, connection_tags, { 0, 6, 2 })
-
-		GlobalsSetValue("ap_collect_permission", tostring(ap:get_permission("collect") or APLIB.Permission.GOAL))
-		GlobalsSetValue("ap_release_permission", tostring(ap:get_permission("release") or APLIB.Permission.GOAL))
-		Log.Warn("Collect perm: " .. tostring(ap:get_permission("collect")))
-		Log.Warn("Release perm: " .. tostring(ap:get_permission("release")))
 	end
 
 	---@param slot_data {[string]: any}
@@ -1240,8 +1214,6 @@ function OnPausePreUpdate()
 	if is_player_spawned and not forced_disconnect then
 		ap:poll()
 	end
-
-	CheckCommandFlags()
 end
 
 -- Called when the player dies
