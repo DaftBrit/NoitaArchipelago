@@ -9,7 +9,8 @@ local PauseMenu = {
 ---@param slot_options SlotOpts?
 ---@param deathlink string
 ---@param traplink string
-function PauseMenu:update(mod_version, slot_options, deathlink, traplink)
+---@param damagelink string
+function PauseMenu:update(mod_version, slot_options, deathlink, traplink, damagelink)
 	local win_condition = ""
 	local shop_price_multiplier = 1
 	local hm_portals = ""
@@ -26,6 +27,7 @@ function PauseMenu:update(mod_version, slot_options, deathlink, traplink)
 		"Win Condition: " .. win_condition,
 		"Deathlink: " .. deathlink,
 		"Traplink: " .. traplink,
+		"Damagelink: " .. damagelink,
 		"Shop Price Multiplier: x" .. tostring(shop_price_multiplier),
 		"Holy Mountain Portals: " .. hm_portals,
 	}

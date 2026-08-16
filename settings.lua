@@ -79,6 +79,12 @@ local translations = {
 	["$ap_trap_link_settings_desc"] = {
 		en="When any client with Trap Link on receives a trap,\nall clients with Trap Link receive the same trap."
 	},
+	["$ap_damage_link_settings_name"] = {
+		en="Damage Link"
+	},
+	["$ap_damage_link_settings_desc"] = {
+		en="When any client with Damage Link receives damage,\nall clients with Damage Link receive damage."
+	},
 	["$ap_collect_items"] = {
 		en="> Collect Items"
 	},
@@ -325,6 +331,15 @@ local function APTrapLinkOption(mod_id, gui, in_main_menu, im_id, setting)
 	APRoomOption(gui, in_main_menu, "AP_TRAPLINK", T("$ap_trap_link_settings_name"), T("$ap_trap_link_settings_desc"), TrapLinkOpts)
 end
 
+local DamageLinkOpts = {
+	{ "yaml", T("$ap_option_yaml") },
+	{ "off", T("$option_off") },
+	{ "on", T("$option_on") },
+}
+local function APDamageLinkOption(mod_id, gui, in_main_menu, im_id, setting)
+	APRoomOption(gui, in_main_menu, "AP_DAMAGELINK", T("$ap_damage_link_settings_name"), T("$ap_damage_link_settings_desc"), DamageLinkOpts)
+end
+
 local mod_settings =
 {
 	{
@@ -406,6 +421,9 @@ local mod_settings =
 			},
 			{
 				ui_fn = APTrapLinkOption,
+			},
+			{
+				ui_fn = APDamageLinkOption,
 			},
 		},
 	},

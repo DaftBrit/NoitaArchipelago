@@ -19,9 +19,11 @@ local Globals = {
 
 	LogHistory = GlobalComplex("AP_LOG_HISTORY"), --- @type GlobalComplex
 	TrapLinkQueue = GlobalComplex("AP_TRAP_LINK_QUEUE"), --- @type GlobalComplex
+	DamageLinkQueue = GlobalComplex("AP_DAMAGE_LINK_QUEUE"), --- @type GlobalComplex
 
 	DeathLinkSetting = GlobalOption("AP_DEATHLINK"), --- @type GlobalOption
 	TrapLinkSetting = GlobalOption("AP_TRAPLINK"), --- @type GlobalOption
+	DamageLinkSetting = GlobalOption("AP_DAMAGELINK"), --- @type GlobalOption
 }
 
 return Globals
