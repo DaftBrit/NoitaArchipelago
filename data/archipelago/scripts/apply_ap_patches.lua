@@ -1,3 +1,4 @@
+local Img = dofile("data/archipelago/lib/image_util.lua") ---@type ImageUtil
 
 -- TRANSLATIONS
 local TRANSLATIONS_FILE = "data/translations/common.csv"
@@ -6,7 +7,9 @@ ModTextFileSetContent(TRANSLATIONS_FILE, translations)
 
 -- SCRIPT EXTENSIONS
 ModLuaFileAppend("data/scripts/biomes/temple_altar.lua", "data/archipelago/scripts/patches/extend_temple_altar.lua")
+ModLuaFileAppend("data/scripts/biomes/temple_altar_left.lua", "data/archipelago/scripts/patches/extend_temple_altar_left.lua")
 ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "data/archipelago/scripts/patches/extend_temple_altar.lua")
+ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "data/archipelago/scripts/patches/extend_temple_altar_left.lua")
 ModLuaFileAppend("data/scripts/biomes/snowcastle_cavern.lua", "data/archipelago/scripts/patches/extend_snowcastle_cavern.lua")
 ModLuaFileAppend("data/scripts/perks/perk_list.lua", "data/archipelago/scripts/patches/ap_extend_perk_list.lua")
 ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "data/archipelago/scripts/patches/ap_extend_ending.lua")
@@ -41,6 +44,9 @@ ModLuaFileAppend("data/scripts/biomes/tower.lua", "data/archipelago/scripts/patc
 ModLuaFileAppend("data/scripts/buildings/forge_item_convert.lua", "data/archipelago/scripts/patches/extend_forge_item_convert.lua")
 ModLuaFileAppend("data/scripts/streaming_integration/event_list.lua", "data/archipelago/scripts/patches/ap_traps.lua")
 ModLuaFileAppend("data/scripts/status_effects/status_list.lua", "data/archipelago/scripts/patches/ap_status_list.lua")
+
+-- IMAGE MODIFICATIONS
+Img.OverwriteBiomeImplPartial("data/biome_impl/temple/altar_left", "data/archipelago/biome_impl/ap_altar_left")
 
 -- ADDITIONAL SCRIPTS
 dofile_once("data/archipelago/scripts/patches/patch_pixel_scenes.lua")
