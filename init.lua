@@ -1116,11 +1116,19 @@ local function PrintActiveModInfo()
 	end
 end
 
+local HIDDEN_FIELDS = {"password", "passwd", "pwd", "server", "account", "acct"}
+local function IsHiddenEntry(name)
+	for _, hidden in ipairs(HIDDEN_FIELDS) do
+		if name:find(hidden, 1, true) then return true end
+	end
+	return false
+end
+
 local function GetPrintableSettingStr(name, value, value_next)
 	local value_str = tostring(value)
 	local value_next_str = tostring(value_next)
 
-	if name:find("password", 1, true) or name:find("passwd", 1, true) or name:find("pwd", 1, true) then
+	if IsHiddenEntry(name) then
 		value_str = "<HIDDEN>"
 		value_next_str = "<HIDDEN>"
 	end
