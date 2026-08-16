@@ -654,7 +654,7 @@ end
 function LogWindow:syncLogger()
 	if self.tab_idx ~= 2 then return end
 
-	if self.logger_update_timer < 20 then
+	if self.total_logger_height ~= 0 and self.logger_update_timer < 20 then
 		self.logger_update_timer = self.logger_update_timer + 1
 		return
 	end
