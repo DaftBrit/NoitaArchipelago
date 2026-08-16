@@ -295,7 +295,6 @@ local mod_settings =
 				ui_description = T("$ap_menu_server_settings_slot_desc"),
 				value_default = "",
 				text_max_length = 120,
-				allowed_characters = " !#$%&'()+,-.0123456789;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~",
 				scope = MOD_SETTING_SCOPE_NEW_GAME,
 			},
 			{
