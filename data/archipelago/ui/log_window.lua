@@ -1,6 +1,7 @@
 local APLIB = require(ModPath():gsub("/", ".") .. "bin.lua-apclientpp") ---@type APClient
 local LogWindow = dofile("data/archipelago/lib/ui_lib.lua") ---@class LogWindow : UI_class
 local Globals = dofile("data/archipelago/scripts/globals.lua") ---@type Globals
+dofile_once("data/scripts/debug/keycodes.lua")
 
 local color_map = {
 	-- Archipelago supported ANSI colours
@@ -72,6 +73,10 @@ function LogWindow:create()
 
 	self.log_limit = ModSettingGet("archipelago.log_limit") or 1000
 	self.tab_idx = 1
+
+	self.input_str = ""
+	self.gui_input = GuiCreate()
+	self.key_repeat_timer = 0
 end
 
 ---@param ap APClient
@@ -91,11 +96,11 @@ function LogWindow:updateDimensionsAndCalc()
 	self.scrollbox_width = self.box_width - 8 * 2
 	self.textarea_end_x = self.scrollbox_width
 	self.textarea_start_x = 0
-	self.scrollbox_height = self.box_height - 16 - 8 - 4
+	self.scrollbox_height = self.box_height - 16 - 8 - 4 - 12
 
 	local _, text_height = self:GetTextDimension("Test")
 	self.text_line_height = text_height
-	self.hint_scrollbox_height = self.scrollbox_height - text_height
+	self.hint_scrollbox_height = self.box_height - 16 - 8 - 4 - text_height
 
 	self.hint_cell_width = self.scrollbox_width / 6
 end
@@ -113,6 +118,7 @@ end
 function LogWindow:close()
 	self.visible = false
 	self.just_closed = true
+	self.input_str = ""
 end
 
 ---Resets the printing cursor to 0,0
@@ -483,6 +489,35 @@ function LogWindow:drawHintsHeader()
 	end
 end
 
+---@param x number
+---@param y number
+function LogWindow:drawTextInput(x, y)
+	GuiZSet(self.gui_input, -8000)
+	GuiOptionsAddForNextWidget(self.gui_input, self.c.options.ForceFocusable)
+	self.input_str = GuiTextInput(self.gui_input, 67, x, y, self.input_str, self.scrollbox_width, 256)
+	local clicked, rclicked, hovered = GuiGetPreviousWidgetInfo(self.gui_input)
+
+	if rclicked then
+		self.input_str = ""
+	end
+
+	if hovered then
+		-- holding backspace deletes more than one character
+		if not InputIsKeyJustDown(Key_BACKSPACE) and InputIsKeyDown(Key_BACKSPACE) then
+			self.key_repeat_timer = self.key_repeat_timer + 1
+			if self.key_repeat_timer > 4 then
+				self.key_repeat_timer = 0
+				self.input_str = self.input_str:sub(1, -2)
+			end
+		end
+
+		if InputIsKeyJustDown(Key_RETURN) and self.input_str:len() > 0 then
+			self.ap:Say(self.input_str)
+			self.input_str = ""
+		end
+	end
+end
+
 function LogWindow:drawWindow()
 	GuiSetNextNinePieceAlpha(0.5)
 	self:Draw9Piece(self.box_x, self.box_y, -4000, self.box_width, self.box_height)
@@ -494,14 +529,16 @@ function LogWindow:drawWindow()
 		self:close()
 	end
 
-	self:drawTabBar(self.box_x + 8, self.box_y + 4, { "Archipelago", "Hints" })
+	local scroller_x = self.box_x + 8
+	local scroller_y = self.box_y + 16 + 7
+	self:drawTabBar(scroller_x, self.box_y + 4, { "Archipelago", "Hints" })
 
 	if self.tab_idx == 1 then
 		self.textarea_start_x = 0
 		self.textarea_end_x = self.scrollbox_width
 
 		GuiSetNextNinePieceAlpha(0.8)
-		self:ScrollBoxFixed(self.box_x + 8, self.box_y + 16 + 7, -5000, self.scrollbox_width, self.scrollbox_height, math.max(self.scrollbox_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawMessageList)
+		self:ScrollBoxFixed(scroller_x, scroller_y, -5000, self.scrollbox_width, self.scrollbox_height, math.max(self.scrollbox_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawMessageList)
 		self.tailing_log = self.scroll.y >= self.tailing_y - 1
 		self.tailing_y = math.max(self.tailing_y, self.scroll.y)
 
@@ -512,13 +549,14 @@ function LogWindow:drawWindow()
 			self:ScrollToEnd()
 			self.tailing_log = true
 		end
+
+		self:drawTextInput(scroller_x, scroller_y + self.scrollbox_height + 4)
 	elseif self.tab_idx == 2 then
 		self.textarea_start_x = 0
 		self:drawHintsHeader()
 
-		local y = self.box_y + 16 + 7
 		GuiSetNextNinePieceAlpha(0.8)
-		self:ScrollBoxFixed(self.box_x + 8, y + self.text_line_height, -5000, self.scrollbox_width, self.hint_scrollbox_height, math.max(self.hint_scrollbox_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawHintList)
+		self:ScrollBoxFixed(scroller_x, scroller_y + self.text_line_height, -5000, self.scrollbox_width, self.hint_scrollbox_height, math.max(self.hint_scrollbox_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawHintList)
 	end
 end
 
@@ -577,6 +615,7 @@ function LogWindow:update()
 	self:updateDimensionsAndCalc()
 
 	if not self.visible then return end
+	GuiStartFrame(self.gui_input)
 	self:StartFrame()
 	self:drawWindow()
 end
