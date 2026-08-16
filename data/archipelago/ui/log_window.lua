@@ -59,6 +59,8 @@ function LogWindow:create()
 	self.hints = {}
 	self.hint_sorted_col = 0
 	self.hint_sorted_descending = false
+
+	self.total_hint_height = 0
 	self.total_log_height = 0
 	for _, msg in ipairs(self.message_log) do
 		self.total_log_height = self.total_log_height + msg.height
@@ -556,7 +558,7 @@ function LogWindow:drawWindow()
 		self:drawHintsHeader()
 
 		GuiSetNextNinePieceAlpha(0.8)
-		self:ScrollBoxFixed(scroller_x, scroller_y + self.text_line_height, -5000, self.scrollbox_width, self.hint_scrollbox_height, math.max(self.hint_scrollbox_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawHintList)
+		self:ScrollBoxFixed(scroller_x, scroller_y + self.text_line_height, -5000, self.scrollbox_width, self.hint_scrollbox_height, math.max(self.hint_scrollbox_height, self.total_hint_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawHintList)
 	end
 end
 
@@ -596,12 +598,14 @@ function LogWindow:setHints(hints)
 	-- Compute max heights based on cell width
 	self.textarea_start_x = 1
 	self.textarea_end_x = self.hint_cell_width - 1
+	self.total_hint_height = 0
 	for _,hint in ipairs(self.hints) do
 		hint.height = math.max(
 			self:calcMessageHeight({{ text = hint.entrance or "" }}),
 			self:calcMessageHeight({{ type = "item_id", text = hint.item, player = hint.receiving_player }}),
 			self:calcMessageHeight({{ type = "location_id", text = hint.location, player = hint.finding_player }})
 		)
+		self.total_hint_height = self.total_hint_height + hint.height
 	end
 	self:sortHints()
 end
