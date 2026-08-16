@@ -56,6 +56,12 @@ function LogWindow:create()
 	self.shift_up_amt = 0 -- for when oldest items get deleted and we don't want to lose what we're looking at
 
 	self.message_log = Globals.LogHistory:get_table() or {}
+
+	self.logger_log = {}
+	self.logger_update_timer = 0
+	self.logger_file_pos = 0
+	self.total_logger_height = 0
+
 	self.hints = {}
 	self.hint_sorted_col = 0
 	self.hint_sorted_descending = false
@@ -354,6 +360,24 @@ function LogWindow:drawMessageList()
 	end
 end
 
+function LogWindow:drawLoggerList()
+	GuiZSet(self.gui, -5002)
+	self:resetPrinter()
+	self.printer.y = 0 - self.scroll.y
+
+	self:setColor("white")
+
+	for _, log in ipairs(self.logger_log) do
+		if self.printer.y >= 0 - log.height and self.printer.y <= self.scrollbox_height + 12 then
+			self:printText(log.msg)
+			self:newLogLine()
+		else
+			-- Optimization: don't draw stuff that isn't being rendered
+			self.printer.y = self.printer.y + log.height
+		end
+	end
+end
+
 function LogWindow:sortHints()
 	local SortKeys = {
 		function(hint) return self.ap:get_player_alias(hint.receiving_player) end,
@@ -484,7 +508,6 @@ function LogWindow:drawHintsHeader()
 		local hovered = self:IsHovered()
 		self.button_hovered[name] = hovered
 		if hovered and self:IsMouseClicked() then
-			print_error("Clicked " .. name)
 			self:hintsHeaderClicked(i)
 		end
 		x = x + self.hint_cell_width
@@ -533,7 +556,7 @@ function LogWindow:drawWindow()
 
 	local scroller_x = self.box_x + 8
 	local scroller_y = self.box_y + 16 + 7
-	self:drawTabBar(scroller_x, self.box_y + 4, { "Archipelago", "Hints" })
+	self:drawTabBar(scroller_x, self.box_y + 4, { "Archipelago", "Logger", "Hints" })
 
 	if self.tab_idx == 1 then
 		self.textarea_start_x = 0
@@ -554,6 +577,24 @@ function LogWindow:drawWindow()
 
 		self:drawTextInput(scroller_x, scroller_y + self.scrollbox_height + 4)
 	elseif self.tab_idx == 2 then
+		self.textarea_start_x = 0
+		self.textarea_end_x = self.scrollbox_width
+
+		GuiSetNextNinePieceAlpha(0.8)
+		local height = self.scrollbox_height + 12
+		self:ScrollBoxFixed(scroller_x, scroller_y, -5000, self.scrollbox_width, height, math.max(height, self.total_logger_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawLoggerList)
+		self.tailing_log = self.scroll.y >= self.tailing_y - 1
+		self.tailing_y = math.max(self.tailing_y, self.scroll.y)
+
+		-- TODO do something with self.shift_up_amt here so that deleted messages don't scroll everything up out of place
+
+		if self.jump_to_end then
+			self.jump_to_end = false
+			self:ScrollToEnd()
+			self.tailing_log = true
+		end
+
+	elseif self.tab_idx == 3 then
 		self.textarea_start_x = 0
 		self:drawHintsHeader()
 
@@ -610,6 +651,49 @@ function LogWindow:setHints(hints)
 	self:sortHints()
 end
 
+function LogWindow:syncLogger()
+	if self.tab_idx ~= 2 then return end
+
+	if self.logger_update_timer < 20 then
+		self.logger_update_timer = self.logger_update_timer + 1
+		return
+	end
+	self.logger_update_timer = 0
+
+	self.textarea_start_x = 0
+	self.textarea_end_x = self.scrollbox_width
+
+	local f = io.open("logger.txt", "r")
+	if f == nil then
+		return
+	end
+
+	f:seek("set", self.logger_file_pos)
+	for line in f:lines("*l") do
+		local log_msg = {
+			height = self:calcMessageHeight({{ text = line }}),
+			msg = line,
+		}
+
+		table.insert(self.logger_log, log_msg)
+		self.total_logger_height = self.total_logger_height + log_msg.height
+	end
+	self.logger_file_pos = f:seek()
+	f:close()
+
+	-- Delete oldest log item if we're at the limit
+	--if #self.message_log > self.log_limit then
+	--	local removed_msg = table.remove(self.message_log, 1)
+	--	self.total_log_height = self.total_log_height - removed_msg.height
+	--	self.shift_up_amt = self.shift_up_amt + removed_msg.height
+	--end
+
+	-- Follow log if it's currently open
+	if self.visible and self.tailing_log then
+		self.jump_to_end = true
+	end
+end
+
 function LogWindow:update()
 	if self.gui == nil then return end
 
@@ -619,6 +703,8 @@ function LogWindow:update()
 	self:updateDimensionsAndCalc()
 
 	if not self.visible then return end
+
+	self:syncLogger()
 	GuiStartFrame(self.gui_input)
 	self:StartFrame()
 	self:drawWindow()

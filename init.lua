@@ -1207,7 +1207,11 @@ end
 
 -- Called while the game is paused
 function OnPausePreUpdate()
-	PauseMenu:update(MOD_VERSION, slot_options, GetDeathLink(), GetTrapLink(), GetDamageLink())
+	if slot_options ~= nil then
+		PauseMenu:update(MOD_VERSION, slot_options, GetDeathLink(), GetTrapLink(), GetDamageLink())
+	else
+		PauseMenu:update(MOD_VERSION, slot_options, "", "", "")
+	end
 	UpdateUI()
 
 	-- Stay connected while the game is paused
