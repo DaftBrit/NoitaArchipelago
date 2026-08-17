@@ -68,6 +68,8 @@ function LogWindow:create()
 	self.tab_idx = 1
 
 	self.input_str = ""
+	self.input_history = {}
+	self.input_history_cursor = 1
 	self.gui_input = GuiCreate()
 	self.key_repeat_timer = 0
 	self.key_down_timer = 0
@@ -102,8 +104,10 @@ end
 ---Toggles the visibility of the log window.
 function LogWindow:toggle()
 	if self.just_closed then return end
-	self.visible = not self.visible
 	if self.visible then
+		self:close()
+	else
+		self.visible = true
 		self.jump_to_end = true
 	end
 end
@@ -113,6 +117,7 @@ function LogWindow:close()
 	self.visible = false
 	self.just_closed = true
 	self.input_str = ""
+	self.input_history_cursor = #self.input_history + 1
 end
 
 ---Resets the printing cursor to 0,0
@@ -500,19 +505,29 @@ function LogWindow:drawHintsHeader()
 	end
 end
 
----@param x number
----@param y number
-function LogWindow:drawTextInput(x, y)
-	GuiZSet(self.gui_input, -8000)
-	GuiOptionsAddForNextWidget(self.gui_input, self.c.options.ForceFocusable)
-	self.input_str = GuiTextInput(self.gui_input, 67, x, y, self.input_str, self.scrollbox_width, 256)
-	local clicked, rclicked, hovered = GuiGetPreviousWidgetInfo(self.gui_input)
+---@param str string
+---@return string
+local function applyBackspace(str)
+	if str == "" then return "" end
+	if str:match("%w$") then
+        return str:match("(.-)%w+$")
+    else
+        return str:match("(.-)[^%w]+$")
+    end
+end
 
-	if rclicked then
-		self.input_str = ""
-	end
+function LogWindow:handleInput()
+	local isCtrlDown = InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)
 
-	if hovered then
+	if isCtrlDown then
+		-- CTRL+backspace deletes word
+		if InputIsKeyJustDown(Key_BACKSPACE) and (InputIsKeyDown(Key_LCTRL) or InputIsKeyDown(Key_RCTRL)) then
+			self.input_str = applyBackspace(self.input_str)
+		elseif InputIsKeyJustDown(Key_c) then	-- CTRL+C clears field (like terminal)
+			self.input_str = ""
+			self.input_history_cursor = #self.input_history + 1
+		end
+	else
 		-- holding backspace deletes more than one character
 		if not InputIsKeyJustDown(Key_BACKSPACE) and InputIsKeyDown(Key_BACKSPACE) then
 			self.key_down_timer = self.key_down_timer + 1
@@ -524,11 +539,42 @@ function LogWindow:drawTextInput(x, y)
 		else
 			self.key_down_timer = 0
 		end
+	end
 
-		if InputIsKeyJustDown(Key_RETURN) and self.input_str:len() > 0 then
-			self.ap:Say(self.input_str)
-			self.input_str = ""
+	if InputIsKeyJustDown(Key_RETURN) and self.input_str:len() > 0 then
+		table.insert(self.input_history, self.input_str)
+		self.input_history_cursor = #self.input_history + 1
+
+		self.ap:Say(self.input_str)
+		self.input_str = ""
+	elseif InputIsKeyJustDown(Key_UP) then
+		if self.input_history_cursor > 1 then
+			self.input_history_cursor = self.input_history_cursor - 1
+			self.input_str = self.input_history[self.input_history_cursor]
 		end
+	elseif InputIsKeyJustDown(Key_DOWN) then
+		if self.input_history_cursor < #self.input_history then
+			self.input_history_cursor = self.input_history_cursor + 1
+			self.input_str = self.input_history[self.input_history_cursor]
+		end
+	end
+end
+
+---@param x number
+---@param y number
+function LogWindow:drawTextInput(x, y)
+	GuiZSet(self.gui_input, -8000)
+	GuiOptionsAddForNextWidget(self.gui_input, self.c.options.ForceFocusable)
+	self.input_str = GuiTextInput(self.gui_input, 67, x, y, self.input_str, self.scrollbox_width, 256)
+	local clicked, rclicked, hovered = GuiGetPreviousWidgetInfo(self.gui_input)
+
+	if rclicked then
+		self.input_str = ""
+		self.input_history_cursor = #self.input_history + 1
+	end
+
+	if hovered then
+		self:handleInput()
 	end
 end
 
