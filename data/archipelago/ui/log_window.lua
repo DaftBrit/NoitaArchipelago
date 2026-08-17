@@ -476,7 +476,8 @@ function LogWindow:drawTabBar(x, y, tabs)
 	end
 end
 
-function LogWindow:drawHintsHeader()
+---@param z integer
+function LogWindow:drawHintsHeader(z)
 	local header = {
 		GameTextGetTranslatedOrNot("$ap_hint_col_receiver"),
 		GameTextGetTranslatedOrNot("$ap_hint_col_item"),
@@ -495,6 +496,7 @@ function LogWindow:drawHintsHeader()
 			self:ColorGray()
 		end
 
+		self:SetZ(z)
 		self:TextCentered(x, y, name, self.hint_cell_width)
 		local hovered = self:IsHovered()
 		self.button_hovered[name] = hovered
@@ -564,8 +566,7 @@ end
 ---@param y number
 function LogWindow:drawTextInput(x, y)
 	GuiZSet(self.gui_input, -8000)
-	GuiOptionsAddForNextWidget(self.gui_input, self.c.options.ForceFocusable)
-	self.input_str = GuiTextInput(self.gui_input, 67, x, y, self.input_str, self.scrollbox_width, 256)
+	self.input_str = GuiTextInput(self.gui_input, 67, x, y, self.input_str, self.scrollbox_width, 128)
 	local clicked, rclicked, hovered = GuiGetPreviousWidgetInfo(self.gui_input)
 
 	if rclicked then
@@ -575,6 +576,15 @@ function LogWindow:drawTextInput(x, y)
 
 	if hovered then
 		self:handleInput()
+	else
+		local wid = self:GetTextDimension(self.input_str) + 6
+		self:ColorGray()
+		self:SetZ(-8002)
+		local msg = GameTextGetTranslatedOrNot("$ap_textinput_instruction")
+		local instruction_wid = self:GetTextDimension(msg)
+
+		local instruction_x = math.min(x + wid, x + self.scrollbox_width - instruction_wid - 1)
+		self:Text(instruction_x, y, "Mouse over to type")
 	end
 end
 
@@ -631,7 +641,7 @@ function LogWindow:drawWindow()
 
 	elseif self.tab_idx == 3 then
 		self.textarea_start_x = 0
-		self:drawHintsHeader()
+		self:drawHintsHeader(-6000)
 
 		self:SetNext9PieceAlpha(0.8)
 		self:ScrollBoxFixed(scroller_x, scroller_y + self.text_line_height, -5000, self.scrollbox_width, self.hint_scrollbox_height, math.max(self.hint_scrollbox_height, self.total_hint_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawHintList)
