@@ -932,6 +932,11 @@ function ui_class:Color(r, g, b, a)
 end
 
 --- @protected
+function ui_class:ColorWhite()
+	self:Color(0.9, 0.9, 0.9)
+end
+
+--- @protected
 function ui_class:ColorGray()
 	self:Color(0.6, 0.6, 0.6)
 end
@@ -989,6 +994,12 @@ function ui_class:Image(x, y, sprite, alpha, scale_x, scale_y)
 	GuiImage(self.gui, self:id(), x, y, sprite, alpha or 1, scale_x or 1, scale_y or scale_x or 1, 0, 2)
 end
 
+---Sets the alpha for the next 9Piece drawn through ui_lib.
+---@param alpha number
+function ui_class:SetNext9PieceAlpha(alpha)
+	self.ninePieceAlphaOverride = alpha
+end
+
 --- draw 9piece
 --- @protected
 --- @param x number
@@ -1001,8 +1012,15 @@ end
 function ui_class:Draw9Piece(x, y, z, width, height, sprite, highlight)
 	sprite = sprite or self.c.default_9piece
 	highlight = highlight or sprite
+
+	local alpha = 1
+	if self.ninePieceAlphaOverride ~= nil then
+		alpha = self.ninePieceAlphaOverride
+		self.ninePieceAlphaOverride = nil
+	end
+
 	GuiZSetForNextWidget(self.gui, z)
-	GuiImageNinePiece(self.gui, self:id(), x, y, width, height, 1, sprite, highlight)
+	GuiImageNinePiece(self.gui, self:id(), x, y, width, height, alpha, sprite, highlight)
 end
 
 -- ############################################

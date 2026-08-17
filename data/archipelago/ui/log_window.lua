@@ -22,21 +22,6 @@ local color_map = {
 	["grey"] = { 0.75, 0.75, 0.75, 1 },
 }
 
--- Hacks to override some stuff in ui_lib
-local OldGuiImageNinePiece = GuiImageNinePiece
-local ninePieceAlphaOverride = nil
-function GuiImageNinePiece(gui, id, x, y, width, height, alpha, sprite_filename, sprite_highlight_filename)
-	if ninePieceAlphaOverride then
-		alpha = ninePieceAlphaOverride
-		ninePieceAlphaOverride = nil
-	end
-	OldGuiImageNinePiece(gui, id, x, y, width, height, alpha, sprite_filename, sprite_highlight_filename)
-end
-
-function GuiSetNextNinePieceAlpha(alpha)
-	ninePieceAlphaOverride = alpha
-end
-
 ---@param value any
 ---@return integer?
 local function tointeger(value)
@@ -95,11 +80,11 @@ end
 function LogWindow:updateDimensionsAndCalc()
 	self:UpdateDimensions()
 
-	self.box_x = self.dim.x / 12
+	self.box_x = math.floor(self.dim.x / 12)
 	-- guess to not overlap the quickbar, to prevent accidental clicks
 	self.box_y = MagicNumbersGetValue("UI_BARS_POS_Y") + MagicNumbersGetValue("UI_QUICKBAR_OFFSET_Y") + 22
-	self.box_width = self.dim.x - self.box_x * 2
-	self.box_height = self.dim.y - self.box_y * 1.5
+	self.box_width = math.floor(self.dim.x - self.box_x * 2)
+	self.box_height = math.floor(self.dim.y - self.box_y * 1.5)
 
 	self.scrollbox_width = self.box_width - 8 * 2
 	self.textarea_end_x = self.scrollbox_width
@@ -110,7 +95,7 @@ function LogWindow:updateDimensionsAndCalc()
 	self.text_line_height = text_height
 	self.hint_scrollbox_height = self.box_height - 16 - 8 - 4 - text_height
 
-	self.hint_cell_width = self.scrollbox_width / 6
+	self.hint_cell_width = math.floor(self.scrollbox_width / 6)
 end
 
 ---Toggles the visibility of the log window.
@@ -544,7 +529,7 @@ function LogWindow:drawTextInput(x, y)
 end
 
 function LogWindow:drawWindow()
-	GuiSetNextNinePieceAlpha(0.5)
+	self:SetNext9PieceAlpha(0.5)
 	self:Draw9Piece(self.box_x, self.box_y, -4000, self.box_width, self.box_height)
 	if self:IsHovered() then
 		-- Prevent shooting wand and whatever when interacting
@@ -562,7 +547,7 @@ function LogWindow:drawWindow()
 		self.textarea_start_x = 0
 		self.textarea_end_x = self.scrollbox_width
 
-		GuiSetNextNinePieceAlpha(0.8)
+		self:SetNext9PieceAlpha(0.8)
 		self:ScrollBoxFixed(scroller_x, scroller_y, -5000, self.scrollbox_width, self.scrollbox_height, math.max(self.scrollbox_height, self.total_log_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawMessageList)
 		self.tailing_log = self.scroll.y >= self.tailing_y - 1
 		self.tailing_y = math.max(self.tailing_y, self.scroll.y)
@@ -580,7 +565,7 @@ function LogWindow:drawWindow()
 		self.textarea_start_x = 0
 		self.textarea_end_x = self.scrollbox_width
 
-		GuiSetNextNinePieceAlpha(0.8)
+		self:SetNext9PieceAlpha(0.8)
 		local height = self.scrollbox_height + 12
 		self:ScrollBoxFixed(scroller_x, scroller_y, -5000, self.scrollbox_width, height, math.max(height, self.total_logger_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawLoggerList)
 		self.tailing_log = self.scroll.y >= self.tailing_y - 1
@@ -598,7 +583,7 @@ function LogWindow:drawWindow()
 		self.textarea_start_x = 0
 		self:drawHintsHeader()
 
-		GuiSetNextNinePieceAlpha(0.8)
+		self:SetNext9PieceAlpha(0.8)
 		self:ScrollBoxFixed(scroller_x, scroller_y + self.text_line_height, -5000, self.scrollbox_width, self.hint_scrollbox_height, math.max(self.hint_scrollbox_height, self.total_hint_height), "data/ui_gfx/decorations/9piece0_gray.png", 0, 0, self.drawHintList)
 	end
 end
