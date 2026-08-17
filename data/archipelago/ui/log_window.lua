@@ -70,6 +70,7 @@ function LogWindow:create()
 	self.input_str = ""
 	self.gui_input = GuiCreate()
 	self.key_repeat_timer = 0
+	self.key_down_timer = 0
 end
 
 ---@param ap APClient
@@ -514,11 +515,14 @@ function LogWindow:drawTextInput(x, y)
 	if hovered then
 		-- holding backspace deletes more than one character
 		if not InputIsKeyJustDown(Key_BACKSPACE) and InputIsKeyDown(Key_BACKSPACE) then
+			self.key_down_timer = self.key_down_timer + 1
 			self.key_repeat_timer = self.key_repeat_timer + 1
-			if self.key_repeat_timer > 4 then
+			if self.key_down_timer > 16 and self.key_repeat_timer > 4 then
 				self.key_repeat_timer = 0
 				self.input_str = self.input_str:sub(1, -2)
 			end
+		else
+			self.key_down_timer = 0
 		end
 
 		if InputIsKeyJustDown(Key_RETURN) and self.input_str:len() > 0 then
