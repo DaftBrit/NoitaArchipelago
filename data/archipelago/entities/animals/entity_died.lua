@@ -69,9 +69,9 @@ local function IsPlayerKill(damage_type_bit_field, entity_thats_responsible)
 		end
 
 		-- Most likely died naturally instead of by an attack
-		if bit.band(damage_type_bit_field, Dmg.DAMAGE_FIRE) then return false end
-		if bit.band(damage_type_bit_field, Dmg.DAMAGE_MATERIAL) then return false end
-		if bit.band(damage_type_bit_field, Dmg.DAMAGE_DROWNING) then return false end
+		if bit.band(damage_type_bit_field, Dmg.DAMAGE_FIRE) ~= 0 then return false end
+		if bit.band(damage_type_bit_field, Dmg.DAMAGE_MATERIAL) ~= 0 then return false end
+		if bit.band(damage_type_bit_field, Dmg.DAMAGE_DROWNING) ~= 0 then return false end
 	end
 
 	-- Visible enemy died maybe from physics damage or something

@@ -1,4 +1,3 @@
-local APLIB = require(ModPath():gsub("/", ".") .. "bin.lua-apclientpp") ---@type APClient
 local LogWindow = dofile("data/archipelago/lib/ui_lib.lua") ---@class LogWindow : UI_class
 local Globals = dofile("data/archipelago/scripts/globals.lua") ---@type Globals
 dofile_once("data/scripts/debug/keycodes.lua")
@@ -220,11 +219,11 @@ function LogWindow:printItemId(token)
 		local item_flags = tointeger(token.flags)
 		if item_flags == nil then item_flags = 0 end
 
-		if bit.band(item_flags, APLIB.ItemFlags.FLAG_ADVANCEMENT) then
+		if bit.band(item_flags, self.ap.ItemFlags.FLAG_ADVANCEMENT) ~= 0 then
 			self:setColor("plum")
-		elseif bit.band(item_flags, APLIB.ItemFlags.FLAG_NEVER_EXCLUDE) then
+		elseif bit.band(item_flags, self.ap.ItemFlags.FLAG_NEVER_EXCLUDE) ~= 0 then
 			self:setColor("slateblue")
-		elseif bit.band(item_flags, APLIB.ItemFlags.FLAG_TRAP) then
+		elseif bit.band(item_flags, self.ap.ItemFlags.FLAG_TRAP) ~= 0 then
 			self:setColor("salmon")
 		else
 			self:setColor("cyan")
@@ -405,7 +404,7 @@ end
 function LogWindow:drawHintList()
 	local DrawKeys = {
 		function(hint) self:printPlayerId({ text = hint.receiving_player }) end,
-		function(hint) self:printItemId({ text = hint.item, player = hint.receiving_player }) end,
+		function(hint) self:printItemId({ text = hint.item, player = hint.receiving_player, flags = hint.item_flags }) end,
 		function(hint) self:printPlayerId({ text = hint.finding_player }) end,
 		function(hint) self:printLocationId({ text = hint.location, player = hint.finding_player }) end,
 		function(hint) self:printText(hint.entrance) end,
