@@ -185,8 +185,11 @@ function ShopItems.generate_ap_shop_item(location_id, biomeid, x, y, cheap_item)
 	})
 end -- generate_ap_shop_item
 
+---@param location_id any
+---@return table
 function ShopItems.get_related_shop_locations(location_id)
 	location_id = tonumber(location_id)
+
 	-- Holy Mountain shops
 	for parallel_world = -1, 1 do
 		for shop_id = 1, 7 do

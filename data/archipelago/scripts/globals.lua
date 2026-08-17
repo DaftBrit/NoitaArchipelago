@@ -11,6 +11,7 @@ local Globals = {
 	Seed = Global("ARCHIPELAGO_SEED"), --- @type Global
 	FirstLoadDone = Global("ARCHIPELAGO_FIRST_LOAD_DONE"), --- @type Global
 	PlayerSlot = Global("ARCHIPELAGO_PLAYER_SLOT"), --- @type Global
+	RoomID = Global("AP_ROOM_ID"), --- @type Global
 	HMPortalsUnlocked = Global("ARCHIPELAGO_PORTALS_UNLOCKED"), --- @type Global
 
 	LocationScouts = GlobalComplex("AP_LOCATIONSCOUTS_DATA"), --- @type GlobalComplex
@@ -20,6 +21,11 @@ local Globals = {
 	LogHistory = GlobalComplex("AP_LOG_HISTORY"), --- @type GlobalComplex
 	TrapLinkQueue = GlobalComplex("AP_TRAP_LINK_QUEUE"), --- @type GlobalComplex
 	DamageLinkQueue = GlobalComplex("AP_DAMAGE_LINK_QUEUE"), --- @type GlobalComplex
+
+	--- Uses the array index as id, i.e. Sky island tablet = id 1, Lava Lake = id 2
+	--- As long as the locations are consistent the contents don't really matter, since they'll be provided by the apworld.
+	--- @type GlobalComplex
+	HiddenHints = GlobalComplex("AP_HIDDEN_HINTS"),
 
 	DeathLinkSetting = GlobalOption("AP_DEATHLINK"), --- @type GlobalOption
 	TrapLinkSetting = GlobalOption("AP_TRAPLINK"), --- @type GlobalOption

@@ -1,5 +1,5 @@
 ---@class Constants
-return {
+local AP = {
 	-- Item flag constants.
 	-- See https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#networkitem
 	ITEM_FLAG_PROGRESSION = 1, --- @type integer
@@ -60,12 +60,38 @@ return {
 	PROGRESSIVE_LEFT_PARALLEL_WORLD = 20001, --- @type integer
 	PROGRESSIVE_RIGHT_PARALLEL_WORLD = 20002, --- @type integer
 
-	-- Killsanity
-	FIRST_ANIMAL_LOCATION_ID = 200000, --- @type integer
+	--- Killsanity
+	--- @type integer
+	FIRST_ANIMAL_LOCATION_ID = 200000,
 
-	-- Spellsanity
-	SPELL_FIRST_ITEM_ID = 30000, --- @type integer
+	--- Spellsanity
+	--- @type integer
+	SPELL_FIRST_ITEM_ID = 30000,
 
-	-- Perksanity
-	UNLOCK_PERK_FIRST_ITEM_ID = 40000, --- @type integer
+	--- Perksanity
+	--- @type integer
+	UNLOCK_PERK_FIRST_ITEM_ID = 40000,
+
+	--- List of all locations to scout if available
+	--- @type integer[]
+	ALL_SCOUT_LOCATIONS = {},
 }
+
+-- NOTE: No need to care about the settings, invalid locations will be filtered out when MissingLocations gets checked
+for i = AP.FIRST_SHOP_LOCATION_ID, AP.LAST_SHOP_LOCATION_ID do
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i + AP.WEST_OFFSET
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i + AP.EAST_OFFSET
+end
+for i = AP.FIRST_ORB_LOCATION_ID, AP.LAST_ORB_LOCATION_ID do
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i + AP.WEST_OFFSET
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i + AP.EAST_OFFSET
+end
+for i = AP.FIRST_BIOME_LOCATION_ID, AP.LAST_BIOME_LOCATION_ID do
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i + AP.WEST_OFFSET
+	AP.ALL_SCOUT_LOCATIONS[#AP.ALL_SCOUT_LOCATIONS + 1] = i + AP.EAST_OFFSET
+end
+
+return AP

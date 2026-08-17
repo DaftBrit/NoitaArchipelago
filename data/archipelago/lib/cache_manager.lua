@@ -29,6 +29,11 @@ function Cache:reset()
 	self:write()
 end
 
+---@private
+function Cache:clearDirty()
+	_G[self.dirty_id] = false
+end
+
 function Cache:restore()
 	local filename = self:get_filename()
 	local f, err = io.open(filename, "r")
@@ -39,7 +44,7 @@ function Cache:restore()
 
 	_G[self.cache_id] = JSON:decode(f:read("*a")) or {}
 	f:close()
-	_G[self.dirty_id] = false
+	self:clearDirty()
 end
 
 function Cache:write()
@@ -52,7 +57,7 @@ function Cache:write()
 
 	f:write(JSON:encode(_G[self.cache_id]))
 	f:close()
-	_G[self.dirty_id] = false
+	self:clearDirty()
 end
 
 function Cache:check_dirty()
@@ -63,23 +68,18 @@ end
 
 function Cache:set(key, value)
 	self:check_dirty()
-	_G[self.cache_id][key] = (value or true)
+	_G[self.cache_id][tostring(key)] = (value or true)
 	self:write()
 end
 
 function Cache:get(key, default_value)
 	self:check_dirty()
-
-	local result = _G[self.cache_id][key]
-	if result == nil and type(key) == "number" then
-		result = _G[self.cache_id][tostring(key)]
-	end
-	return result or default_value
+	return _G[self.cache_id][tostring(key)] or default_value
 end
 
 function Cache:is_set(key)
 	self:check_dirty()
-	return _G[self.cache_id][key] ~= nil
+	return _G[self.cache_id][tostring(key)] ~= nil
 end
 
 function Cache:is_empty()

@@ -44,6 +44,17 @@ local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
 
+---@class HintTableEntry
+---@field receiving_player integer player slot receiving the item
+---@field item integer item id of the item
+---@field location integer location id of the item inside the world
+---@field player integer player slot of the world the item is located in
+---@field flags itemflags bit flags for item classification
+---@field item_name string (added after receiving) name of the item
+---@field player_name string (added after receiving) name of the slot meant to find the item
+---@field location_name string (added after receiving) name of the location the item is at
+---@field receiver_name string (added after receiving) name of the player receiving the item
+
 ---@class SlotOpts
 ---@field victory_condition integer?
 ---@field death_link integer?
@@ -53,6 +64,9 @@ local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 ---@field orbs_as_checks integer?
 ---@field shop_price number?
 ---@field lock_portals integer?
+---@field hints HintTableEntry[]? Tablet hints
+---@field room_uid integer? Unique id specific to the room, distinct from other rooms using the same seed
+
 
 ---@type SlotOpts?
 local slot_options = nil
@@ -70,6 +84,8 @@ local messages_setting = "all"
 local forced_disconnect = false
 local req_restart = false
 local hostname = ""
+local hint_location_received = {}
+
 
 local function generateFakeUUID()
 	local year, month, day, hour, minute, second = GameGetDateAndTimeUTC()
@@ -319,7 +335,10 @@ local function CheckComponentItemsUnlocked()
 	Globals.LocationUnlockQueue:reset()
 end
 
+---@param location_id integer
+---@return boolean
 local function AlreadyHinted(location_id)
+	if hint_location_received[tonumber(location_id)] then return true end
 	return Globals.ShopScouted:has_key(location_id)
 end
 
@@ -329,19 +348,24 @@ local function CheckShopScouted()
 	local hint_queue = Globals.ShopScoutedQueue:get_table()
 	if #hint_queue > 0 then
 		for _, hint in ipairs(hint_queue) do
-			if AlreadyHinted(hint) then goto continue end
-
 			local shop_locations = ShopItems.get_related_shop_locations(hint)
+			local check_locations = {}
+			for _, location in ipairs(shop_locations) do
+				if not AlreadyHinted(location) then
+					table.insert(check_locations, location)
+				end
+			end
+			if #check_locations == 0 then goto continue end
 
 			local hints_sent = Globals.ShopScouted:get_table()
-			for _, location in ipairs(shop_locations) do
+			for _, location in ipairs(check_locations) do
 				hints_sent[tostring(location)] = true
 			end
 
-			Log.Info("Sending request to reveal hints: \n" .. JSON:encode(shop_locations))
+			Log.Info("Sending request to reveal hints: \n" .. JSON:encode(check_locations))
 
 			-- create_as_hint = 2  reveals the hint and prevents re-notifications
-			ap:LocationScouts(shop_locations, 2)
+			ap:LocationScouts(check_locations, 2)
 			Globals.ShopScouted:set_table(hints_sent)
 
 			::continue::
@@ -382,64 +406,30 @@ end
 ----------------------------------------------------------------------------------------------------
 -- CACHE SETUP
 ----------------------------------------------------------------------------------------------------
--- Share location scouts with other Lua contexts via Noita globals
--- This workaround is necessary because the `io` module isn't accessible in other scripts.
+
+--- Share location scouts with other Lua contexts via Noita globals
+--- This workaround is necessary because the `io` module isn't accessible in other scripts.
 local function ShareLocationScouts()
 	local cache = Cache.LocationInfo:reference()
 	Globals.LocationScouts:set_table(cache)
 	GameAddFlagRun("AP_LocationInfo_received")
 end
 
--- Request items we need to display (i.e. shops)
+--- Request items we need to display (i.e. shops, pedestals)
 local function SetupLocationScouts()
 	if Cache.LocationInfo:is_empty() then
 		local locations = {}
-		for i = AP.FIRST_SHOP_LOCATION_ID, AP.LAST_SHOP_LOCATION_ID do
+		for _, i in ipairs(AP.ALL_SCOUT_LOCATIONS) do
 			if Globals.MissingLocationsSet:has_key(i) then
 				table.insert(locations, i)
-				if slot_options.path_option == 4 and i < AP.FIRST_NON_PW_SHOP then -- no lab or secret shop
-					table.insert(locations, i + AP.WEST_OFFSET)
-					table.insert(locations, i + AP.EAST_OFFSET)
-				end
 			end
 		end
-		for i = AP.FIRST_ORB_LOCATION_ID, AP.LAST_ORB_LOCATION_ID do
-			if Globals.MissingLocationsSet:has_key(i) then
-				table.insert(locations, i)
-				if slot_options.orbs_as_checks == 4 and i ~= 110661 then -- lava lake orb
-					table.insert(locations, i + AP.WEST_OFFSET)
-					table.insert(locations, i + AP.EAST_OFFSET)
-				end
-			end
-		end
-		for _, biome_data in pairs(Biomes) do
-			for i = biome_data.first_hc, biome_data.first_hc + 19 do
-				if Globals.MissingLocationsSet:has_key(i) then
-					table.insert(locations, i)
-					if slot_options.path_option == 4 then
-						table.insert(locations, i + AP.WEST_OFFSET)
-						table.insert(locations, i + AP.EAST_OFFSET)
-					end
-				end
-			end
-			for i = biome_data.first_ped, biome_data.first_ped + 19 do
-				if Globals.MissingLocationsSet:has_key(i) then
-					table.insert(locations, i)
-					if slot_options.path_option == 4 then
-						table.insert(locations, i + AP.WEST_OFFSET)
-						table.insert(locations, i + AP.EAST_OFFSET)
-					end
-				end
-			end
-		end
-
 		ap:LocationScouts(locations)
 	else
 		Log.Info("Restored LocationInfo from cache")
 		ShareLocationScouts()
 	end
 end
-
 
 ----------------------------------------------------------------------------------------------------
 -- SPECIFIC MESSAGE HANDLING
@@ -509,6 +499,16 @@ local function ForceDisconnect(msg)
 	ConnectionError(msg .. "\nPlease update the settings and restart the game.")
 end
 
+---@param hints HintTableEntry[]
+local function SetupHints(hints)
+	for _, hint in ipairs(hints) do
+		hint.player_name = ap:get_player_alias(hint.player)
+		hint.location_name = ap:get_location_name(hint.location, ap:get_player_game(hint.player))
+		hint.receiver_name = ap:get_player_alias(hint.receiving_player)
+		hint.item_name = ap:get_item_name(hint.item, ap:get_player_game(hint.receiving_player))
+	end
+	Globals.HiddenHints:set_table(hints)
+end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#Connected
 function RECV_MSG.Connected()
@@ -520,6 +520,7 @@ function RECV_MSG.Connected()
 	end
 	current_player_slot = ap:get_player_number()
 	Globals.PlayerSlot:set(current_player_slot)
+	Globals.RoomID:set(tostring(slot_options.room_uid or 0))
 
 	GamePrint("$ap_connected_to_server")
 	local connmsg = string.format("Connected to slot %s", ap:get_slot())
@@ -575,6 +576,10 @@ function RECV_MSG.Connected()
 	Globals.PedestalLocationsSet:set_table(peds_checklist)
 
 	SetupLocationScouts()
+	if slot_options.hints ~= nil then
+		SetupHints(slot_options.hints)
+	end
+
 	-- Enable deathlink if the setting on the server and the mod setting said to
 	InitLocalSettings()
 	UpdateConnectionTags()
@@ -825,14 +830,9 @@ function RECV_MSG.Bounced(msg)
 		end
 	elseif has_tag["SharedDamage"] then	-- DamageLink
 		-- Don't receive damage from the same slot
-		if data["uuid"] ~= nil then
-			if data["uuid"] == uuid then
-				return
-			end
-		elseif data["source"] == ap:get_slot() then
-			return
+		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
+			RecvDamageLink(data["source"], data["damage_points"])
 		end
-		RecvDamageLink(data["source"], data["damage_points"])
 	else
 		Log.Warn("Unsupported Bounced type received. " .. JSON:encode(msg))
 	end
@@ -843,19 +843,12 @@ end
 -- This is the reply to the LocationScouts request
 ---@param items NetworkItem[]
 function RECV_MSG.LocationInfo(items)
-	if not Cache.LocationInfo:is_empty() and #items <= 10 then
-		-- Don't replace our big item cache with shop hints (which breaks everything).
-		-- Just assume the second call with small item count was a hint and mark it as such.
-		return
-	end
-
-	Cache.LocationInfo:reset() -- this is a workaround, if this isn't here it throws an error at Cache.LocationInfo:write()
 	local cache = Cache.LocationInfo:reference()
 	-- Set global shop item names to share with the shop lua context
 	for _, net_item in ipairs(items) do
 		local item_id = net_item.item
 
-		cache[net_item.location] = {
+		cache[tostring(net_item.location)] = {
 			item_name = GetItemName(net_item.player, item_id, net_item.flags),
 			item_flags = net_item.flags,
 			item_id = item_id,
@@ -874,6 +867,12 @@ function RECV_MSG.SetReply(data)
 	for k, v in pairs(data) do
 		if k == hints_key then
 			LogWindow:setHints(v)
+
+			for _, hint in ipairs(v) do
+				if hint.finding_player == ap:get_player_number() then
+					hint_location_received[hint.location] = true
+				end
+			end
 		end
 	end
 end
