@@ -82,8 +82,8 @@ end
 local function GetAnimalName()
 	local entity_id = GetUpdatedEntityID()
 
-	local comp = EntityGetFirstComponentIncludingDisabled(entity_id, "GameStatsComponent") or {}
-	if comp then
+	local comp = EntityGetFirstComponentIncludingDisabled(entity_id, "GameStatsComponent")
+	if comp ~= nil then
 		return tostring(ComponentGetValue2(comp, "name"))
 	end
 	return ""
@@ -121,7 +121,7 @@ function death(damage_type_bit_field, damage_message, entity_thats_responsible, 
 		CountKill(name)
 	elseif not GameHasFlagRun("ap_killsanity_" .. name) then
 		if IsValidEntity(entity_thats_responsible) then
-			local log_str = string.format("%s died: %s [%08X] killed by %s", name, damage_message, damage_type_bit_field, EntityGetName(entity_thats_responsible))
+			local log_str = string.format("%s died: %s [%08X] killed by %s (%s)", name, damage_message, damage_type_bit_field, EntityGetName(entity_thats_responsible) or "", name)
 			Log.Info(log_str)
 		else
 			local log_str = string.format("%s died: %s [%08X]", name, damage_message, damage_type_bit_field)
