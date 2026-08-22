@@ -258,6 +258,7 @@ local function CheckTrapLinkQueue()
 			trap_name = trap.trap_name,
 			source = ap:get_slot(),
 			noita_id = trap.noita_id,
+			uuid = uuid,
 		}
 		Log.Info("Sending TrapLink: " .. JSON:encode(pkt))
 		ap:Bounce(pkt, nil, nil, {"TrapLink"})
@@ -814,7 +815,6 @@ local function RecvDeathLink(source, cause)
 		return
 	end
 
-	local last_time = last_death_time
 	if not UpdateDeathTime() then
 		return
 	end
@@ -894,10 +894,12 @@ function RECV_MSG.Bounced(msg)
 	local data = msg["data"]
 
 	if has_tag["DeathLink"] then
-		RecvDeathLink(data["source"], data["cause"])
+		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
+			RecvDeathLink(data["source"], data["cause"])
+		end
 	elseif has_tag["TrapLink"] then
 		-- Don't receive traps from the same slot since they get shared through receiving items
-		if data["source"] ~= ap:get_slot() then
+		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
 			RecvTrapLink(data["source"], data["trap_name"], data["noita_id"])
 		end
 	elseif has_tag["SharedDamage"] then	-- DamageLink
@@ -1322,7 +1324,8 @@ function OnPlayerDied(player)
 	ap:Bounce({
 		time = last_death_time,
 		cause = slotname .. " died to " .. death_msg,
-		source = slotname
+		source = slotname,
+		uuid = uuid,
 	}, nil, nil, {"DeathLink"})
 end
 
