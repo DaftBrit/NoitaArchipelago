@@ -19,126 +19,48 @@ mod_settings_version = 1 -- This is a magic global that can be used to migrate s
 -- ModSettingSetNextValue() will set the buffered value, that will later become visible via ModSettingGet(), unless the setting scope is MOD_SETTING_SCOPE_RUNTIME.
 
 local translations = {
-	["$ap_menu_server_settings_name"] = {
-		en="Server"
-	},
-	["$ap_menu_server_settings_desc"] = {
-		en="Archipelago server settings"
-	},
-	["$ap_menu_integration_settings_name"] = {
-		en="Integrations"
-	},
-	["$ap_menu_integration_settings_desc"] = {
-		en="Archipelago integration settings.\nCan be changed when connected to a room, the settings will be specific to that room."
-	},
-	["$ap_menu_server_settings_address_name"] = {
-		en="Server"
-	},
-	["$ap_menu_server_settings_address_desc"] = {
-		en="Server address"
-	},
-	["$ap_menu_server_settings_port_name"] = {
-		en="Port"
-	},
-	["$ap_menu_server_settings_port_desc"] = {
-		en="Server Port"
-	},
-	["$ap_menu_server_settings_slot_name"] = {
-		en="Slot"
-	},
-	["$ap_menu_server_settings_slot_desc"] = {
-		en="Slot name"
-	},
-	["$ap_menu_server_settings_password_name"] = {
-		en="Password"
-	},
-	["$ap_menu_server_settings_password_desc"] = {
-		en="Password"
-	},
-	["$ap_menu_server_settings_debug_items_name"] = {
-		en="Debug Items"
-	},
-	["$ap_menu_server_settings_debug_items_desc"] = {
-		en="Makes debug items and perks spawn when starting a new run."
-	},
-	["$ap_orb_art_settings_name"] = {
-		en="Orb Art"
-	},
-	["$ap_orb_art_settings_desc"] = {
-		en="Changes the appearance of orbs spawned by the randomizer.\nDoes not affect orbs spawned by the game itself."
-	},
-	["$ap_death_link_settings_name"] = {
-		en="Allow Death Link"
-	},
-	["$ap_death_link_settings_desc"] = {
-		en="Off = Death Link is always off.\nOn = Death Link is always on.\nTraps = When receiving a Death Link, trigger a random\ntrap instead. Death Links are still sent."
-	},
-	["$ap_trap_link_settings_name"] = {
-		en="Trap Link"
-	},
-	["$ap_trap_link_settings_desc"] = {
-		en="When any client with Trap Link on receives a trap,\nall clients with Trap Link receive the same trap."
-	},
-	["$ap_damage_link_settings_name"] = {
-		en="Damage Link"
-	},
-	["$ap_damage_link_settings_desc"] = {
-		en="When any client with Damage Link receives damage,\nall clients with Damage Link receive damage."
-	},
-	["$ap_menu_game_settings_name"] = {
-		en="Game"
-	},
-	["$ap_menu_game_settings_desc"] = {
-		en="Game-specific settings for the Archipelago mod."
-	},
-	["$ap_menu_killsanity_settings_name"] = {
-		en="Killsanity"
-	},
-	["$ap_menu_killsanity_settings_desc"] = {
-		en="Game-specific settings for Killsanity credit."
-	},
-	["$ap_log_limit_settings_name"] = {
-		en="Log Limit"
-	},
-	["$ap_log_limit_settings_desc"] = {
-		en="Maximum number of log lines to store and render in the log window."
-	},
-	["$ap_menu_commands_name"] = {
-		en="Commands"
-	},
-	["$ap_menu_commands_desc"] = {
-		en="Commands that can be used for the current Archipelago session."
-	},
-	["$ap_messages_settings_name"] = {
-		en = "Text Messages"
-	},
-	["$ap_messages_settings_desc"] = {
-		en = "Determine which text messages are shown.\n  All = Show all messages\n  Self = Show only messages pertaining to yourself\n  None = Never receive messages"
-	},
-	["$ap_join_messages_settings_name"] = {
-		en = "Join/Leave Messages"
-	},
-	["$ap_join_messages_settings_desc"] = {
-		en = "Determine whether to show join/leave messages (hidden if Text Messages is set to None)"
-	},
-	["$ap_killcredit_settings_name"] = {
-		en = "Kill Credit"
-	},
-	["$ap_killcredit_settings_desc"] = {
-		en = "Determines how kill credit is granted.\nRules based is tailored for best experience."
-	},
-	["$ap_kills_in_fog_settings_name"] = {
-		en = "Obscured Deaths"
-	},
-	["$ap_kills_in_fog_settings_desc"] = {
-		en = "Unexplainable deaths in fogged areas count as kills."
-	},
-	["$ap_option_traps"] = {
-		en = "Traps"
-	},
-	["$ap_option_yaml"] = {
-		en = "YAML (Room Settings)"
-	},
+	["$ap_menu_server_settings_name"] = { en="Server" },
+	["$ap_menu_server_settings_desc"] = { en="Archipelago server settings" },
+	["$ap_menu_integration_settings_name"] = { en="Integrations" },
+	["$ap_menu_integration_settings_desc"] = { en="Archipelago integration settings.\nCan be changed when connected to a room, the settings will be specific to that room." },
+	["$ap_menu_server_settings_address_name"] = { en="Server" },
+	["$ap_menu_server_settings_address_desc"] = { en="Server address" },
+	["$ap_menu_server_settings_port_name"] = { en="Port" },
+	["$ap_menu_server_settings_port_desc"] = { en="Server Port" },
+	["$ap_menu_server_settings_slot_name"] = { en="Slot" },
+	["$ap_menu_server_settings_slot_desc"] = { en="Slot name" },
+	["$ap_menu_server_settings_password_name"] = { en="Password" },
+	["$ap_menu_server_settings_password_desc"] = { en="Password" },
+	["$ap_menu_server_settings_debug_items_name"] = { en="Debug Items" },
+	["$ap_menu_server_settings_debug_items_desc"] = { en="Makes debug items and perks spawn when starting a new run." },
+	["$ap_orb_art_settings_name"] = { en="Orb Art" },
+	["$ap_orb_art_settings_desc"] = { en="Changes the appearance of orbs spawned by the randomizer.\nDoes not affect orbs spawned by the game itself." },
+	["$ap_death_link_settings_name"] = { en="Allow Death Link" },
+	["$ap_death_link_settings_desc"] = { en="Off = Death Link is always off.\nOn = Death Link is always on.\nTraps = When receiving a Death Link, trigger a random\ntrap instead. Death Links are still sent." },
+	["$ap_trap_link_settings_name"] = { en="Trap Link" },
+	["$ap_trap_link_settings_desc"] = { en="When any client with Trap Link on receives a trap,\nall clients with Trap Link receive the same trap." },
+	["$ap_damage_link_settings_name"] = { en="Damage Link" },
+	["$ap_damage_link_settings_desc"] = { en="When any client with Damage Link receives damage,\nall clients with Damage Link receive damage." },
+	["$ap_knockback_link_settings_name"] = { en="Knockback Link" },
+	["$ap_knockback_link_settings_desc"] = { en="When any client with Knockback Link receives knockback,\nall clients with Knockback Link receive knockback." },
+	["$ap_menu_game_settings_name"] = { en="Game" },
+	["$ap_menu_game_settings_desc"] = { en="Game-specific settings for the Archipelago mod." },
+	["$ap_menu_killsanity_settings_name"] = { en="Killsanity" },
+	["$ap_menu_killsanity_settings_desc"] = { en="Game-specific settings for Killsanity credit." },
+	["$ap_log_limit_settings_name"] = { en="Log Limit" },
+	["$ap_log_limit_settings_desc"] = { en="Maximum number of log lines to store and render in the log window." },
+	["$ap_menu_commands_name"] = { en="Commands" },
+	["$ap_menu_commands_desc"] = { en="Commands that can be used for the current Archipelago session." },
+	["$ap_messages_settings_name"] = { en = "Text Messages" },
+	["$ap_messages_settings_desc"] = { en = "Determine which text messages are shown.\n  All = Show all messages\n  Self = Show only messages pertaining to yourself\n  None = Never receive messages" },
+	["$ap_join_messages_settings_name"] = { en = "Join/Leave Messages" },
+	["$ap_join_messages_settings_desc"] = { en = "Determine whether to show join/leave messages (hidden if Text Messages is set to None)" },
+	["$ap_killcredit_settings_name"] = { en = "Kill Credit" },
+	["$ap_killcredit_settings_desc"] = { en = "Determines how kill credit is granted.\nRules based is tailored for best experience." },
+	["$ap_kills_in_fog_settings_name"] = { en = "Obscured Deaths" },
+	["$ap_kills_in_fog_settings_desc"] = { en = "Unexplainable deaths in fogged areas count as kills." },
+	["$ap_option_traps"] = { en = "Traps" },
+	["$ap_option_yaml"] = { en = "YAML (Room Settings)" },
 }
 
 local lang_id = "en"
@@ -256,6 +178,15 @@ local function APDamageLinkOption(mod_id, gui, in_main_menu, im_id, setting)
 	APRoomOption(gui, in_main_menu, "AP_DAMAGELINK", T("$ap_damage_link_settings_name"), T("$ap_damage_link_settings_desc"), DamageLinkOpts)
 end
 
+local KnockbackLinkOpts = {
+	{ "yaml", T("$ap_option_yaml") },
+	{ "off", T("$option_off") },
+	{ "on", T("$option_on") },
+}
+local function APKnockbackLinkOption(mod_id, gui, in_main_menu, im_id, setting)
+	APRoomOption(gui, in_main_menu, "AP_KNOCKBACKLINK", T("$ap_knockback_link_settings_name"), T("$ap_knockback_link_settings_desc"), KnockbackLinkOpts)
+end
+
 local mod_settings =
 {
 	{
@@ -339,6 +270,9 @@ local mod_settings =
 			},
 			{
 				ui_fn = APDamageLinkOption,
+			},
+			{
+				ui_fn = APKnockbackLinkOption,
 			},
 		},
 	},

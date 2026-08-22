@@ -21,15 +21,18 @@ local Globals = {
 	LogHistory = GlobalComplex("AP_LOG_HISTORY"), --- @type GlobalComplex
 	TrapLinkQueue = GlobalComplex("AP_TRAP_LINK_QUEUE"), --- @type GlobalComplex
 	DamageLinkQueue = GlobalComplex("AP_DAMAGE_LINK_QUEUE"), --- @type GlobalComplex
+	KnockbackLinkQueue = GlobalComplex("AP_KNOCKBACK_LINK_QUEUE"), --- @type GlobalComplex
 
 	--- Uses the array index as id, i.e. Sky island tablet = id 1, Lava Lake = id 2
 	--- As long as the locations are consistent the contents don't really matter, since they'll be provided by the apworld.
 	--- @type GlobalComplex
 	HiddenHints = GlobalComplex("AP_HIDDEN_HINTS"),
+	LastDamageCauses = GlobalComplex("AP_LAST_DAMAGE_CAUSE"), --- @type GlobalComplex
 
 	DeathLinkSetting = GlobalOption("AP_DEATHLINK"), --- @type GlobalOption
 	TrapLinkSetting = GlobalOption("AP_TRAPLINK"), --- @type GlobalOption
 	DamageLinkSetting = GlobalOption("AP_DAMAGELINK"), --- @type GlobalOption
+	KnockbackLinkSetting = GlobalOption("AP_KNOCKBACKLINK"), --- @type GlobalOption
 }
 
 return Globals

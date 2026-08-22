@@ -138,3 +138,5 @@ ap_hint_status_priority,Priority,приорите́т,prioridade,prioridad,Prior
 ap_hint_status_found,Found,,,,,,,,,,,,,
 ap_damagelink_received,Received $0 damage from $1,,,,,,,,,,,,,
 ap_textinput_instruction,Mouse over to type,,,,,,,,,,,,,
+ap_knockbacklink_received,"$0 shared their knockback, cause by $1",,,,,,,,,,,,,
+ap_knockbacklink_immune,"$0 tried sharing knockback with you, but you’re immune!",,,,,,,,,,,,,

@@ -7,10 +7,8 @@ local PauseMenu = {
 
 ---@param mod_version string
 ---@param slot_options SlotOpts?
----@param deathlink string
----@param traplink string
----@param damagelink string
-function PauseMenu:update(mod_version, slot_options, deathlink, traplink, damagelink)
+---@param links {[string]:string}?
+function PauseMenu:update(mod_version, slot_options, links)
 	local win_condition = ""
 	local shop_price_multiplier = 1
 	local hm_portals = ""
@@ -25,12 +23,12 @@ function PauseMenu:update(mod_version, slot_options, deathlink, traplink, damage
 	local status = {
 		"Archipelago Version: " .. mod_version,
 		"Win Condition: " .. win_condition,
-		"Deathlink: " .. deathlink,
-		"Traplink: " .. traplink,
-		"Damagelink: " .. damagelink,
 		"Shop Price Multiplier: x" .. tostring(shop_price_multiplier),
 		"Holy Mountain Portals: " .. hm_portals,
 	}
+	for name, value in pairs(links or {}) do
+		table.insert(status, name .. ": " .. value)
+	end
 
 	GuiLayoutBeginVertical(self.gui, 12.5, 10, true)
 	for _, msg in ipairs(status) do

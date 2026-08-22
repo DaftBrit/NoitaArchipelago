@@ -60,6 +60,7 @@ local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
 ---@field death_link integer?
 ---@field trap_link integer?
 ---@field damage_link integer?
+---@field knockback_link integer?
 ---@field path_option integer?
 ---@field orbs_as_checks integer?
 ---@field shop_price number?
@@ -136,6 +137,7 @@ local function UpdateDeathTime()
 	return result
 end
 
+---@return string
 local function GetDeathLink()
 	local opt = Cache.Options:get("death_link", "yaml")
 	if opt == "yaml" then
@@ -150,6 +152,7 @@ local function GetDeathLink()
 	return opt
 end
 
+---@return string
 local function GetTrapLink()
 	local opt = Cache.Options:get("trap_link", "yaml")
 	if opt == "yaml" then
@@ -162,6 +165,7 @@ local function GetTrapLink()
 	return opt
 end
 
+---@return string
 local function GetDamageLink()
 	local opt = Cache.Options:get("damage_link", "yaml")
 	if opt == "yaml" then
@@ -174,10 +178,23 @@ local function GetDamageLink()
 	return opt
 end
 
+---@return string
+local function GetKnockbackLink()
+	local opt = Cache.Options:get("knockback_link", "yaml")
+	if opt == "yaml" then
+		if slot_options.knockback_link == 1 then
+			opt = "on"
+		else
+			opt = "off"
+		end
+	end
+	return opt
+end
+
 ---Updates the connect tags based on whether a link is enabled.
 ---@param setting_name string
 ---@param tag_name string
-local function SyncLinkSetting(setting_name, tag_name)
+local function SyncLinkTags(setting_name, tag_name)
 	local opt = Cache.Options:get(setting_name, "yaml")
 
 	local enabled = false
@@ -194,45 +211,42 @@ local function SyncLinkSetting(setting_name, tag_name)
 	end
 end
 
---- Updates DeathLink, requires calling UpdateConnectionTags() separately afterwards
-local function SyncDeathLink()
-	SyncLinkSetting("death_link", "DeathLink")
-end
-
---- Updates TrapLink, requires calling UpdateConnectionTags() separately afterwards
-local function SyncTrapLink()
-	SyncLinkSetting("trap_link", "TrapLink")
-end
-
---- Updates DamageLink, requires calling UpdateConnectionTags() separately afterwards
-local function SyncDamageLink()
-	SyncLinkSetting("damage_link", "SharedDamage")
+---@param setting_name string
+---@param tag_name string
+---@param setting GlobalOption
+local function SyncSetting(setting_name, tag_name, setting)
+	Cache.Options:set(setting_name, setting:get())
+	if setting:hasChanged() then
+		setting:clearChanged()
+		SyncLinkTags(setting_name, tag_name)
+	end
 end
 
 local function UpdateLocalSettings()
-	Cache.Options:set("death_link", Globals.DeathLinkSetting:get())
-	if Globals.DeathLinkSetting:hasChanged() then
-		Globals.DeathLinkSetting:clearChanged()
-		SyncDeathLink()
-	end
+	SyncSetting("death_link", "DeathLink", Globals.DeathLinkSetting)
+	SyncSetting("trap_link", "TrapLink", Globals.TrapLinkSetting)
+	SyncSetting("damage_link", "SharedDamage", Globals.DamageLinkSetting)
+	SyncSetting("knockback_link", "KnockbackLink", Globals.KnockbackLinkSetting)
+end
 
-	Cache.Options:set("trap_link", Globals.TrapLinkSetting:get())
-	if Globals.TrapLinkSetting:hasChanged() then
-		Globals.TrapLinkSetting:clearChanged()
-		SyncTrapLink()
+local valid_opts = {
+	yaml = 1, off = 1, on = 1, traps = 1,
+}
+---@param setting_name string
+---@param setting GlobalOption
+local function InitSetting(setting_name, setting)
+	local cached_opt = Cache.Options:get(setting_name, "yaml")
+	if valid_opts[cached_opt] == nil then	-- ensure it's always valid
+		cached_opt = "yaml"
 	end
-
-	Cache.Options:set("damage_link", Globals.DamageLinkSetting:get())
-	if Globals.DamageLinkSetting:hasChanged() then
-		Globals.DamageLinkSetting:clearChanged()
-		SyncDamageLink()
-	end
+	setting:set(cached_opt)
 end
 
 local function InitLocalSettings()
-	Globals.DeathLinkSetting:set(Cache.Options:get("death_link", "yaml"))
-	Globals.TrapLinkSetting:set(Cache.Options:get("trap_link", "yaml"))
-	Globals.DamageLinkSetting:set(Cache.Options:get("damage_link", "yaml"))
+	InitSetting("death_link", Globals.DeathLinkSetting)
+	InitSetting("trap_link", Globals.TrapLinkSetting)
+	InitSetting("damage_link", Globals.DamageLinkSetting)
+	InitSetting("knockback_link", Globals.KnockbackLinkSetting)
 	UpdateLocalSettings()
 end
 
@@ -273,6 +287,41 @@ local function CheckDamageLinkQueue()
 		end
 	end
 	Globals.DamageLinkQueue:reset()
+end
+
+local function CheckKnockbackLinkQueue()
+	if GetKnockbackLink() ~= "off" then
+		local knockbacks = Globals.KnockbackLinkQueue:get_table()
+		local vx = 0
+		local vy = 0
+		local causes = {}
+		for _,knock in ipairs(knockbacks) do
+			vx = vx + knock.x
+			vy = vy + knock.y
+			table.insert(causes, knock.cause)
+		end
+
+		vx = math.floor(vx * 0.5)
+		vy = -math.floor(vy * 0.5)
+
+		if math.abs(vx) >= 5 or math.abs(vy) >= 5 then
+			local pkt = {
+				time = ap:get_server_time(),
+				uuid = uuid,
+				source = ap:get_slot(),
+				cause = table.concat(causes, ", "),
+				value = {
+					x = vx,
+					y = vy,
+				}
+			}
+			Log.Info("Sending KnockbackLink: " .. JSON:encode(pkt))
+			ap:Bounce(pkt, nil, nil, {"KnockbackLink"})
+
+			damage_saved = damage_saved - math.floor(damage_saved)
+		end
+	end
+	Globals.KnockbackLinkQueue:reset()
 end
 
 
@@ -762,13 +811,11 @@ end
 local function RecvDeathLink(source, cause)
 	local death_link_option = GetDeathLink()
 	if death_link_option == "off" then
-		Log.Info("Rejecting DeathLink: death_link_option = " .. tostring(death_link_option))
 		return
 	end
 
 	local last_time = last_death_time
 	if not UpdateDeathTime() then
-		Log.Info("Rejecting DeathLink: too soon, last = " .. tostring(last_time) .. ", curr = " .. tostring(last_death_time))
 		return
 	end
 
@@ -790,12 +837,8 @@ local function RecvDeathLink(source, cause)
 				ComponentSetValue2(gsc_id, "extra_death_msg", cause)
 			end
 			EntityKill(player)
-			Log.Info("DeathLink: get fked")
-		else
-			Log.Info("DeathLink: extra life saved you")
 		end
 	else
-		Log.Info("DeathLink: picking a trap...")
 		BadTimes(true)
 	end
 end
@@ -803,13 +846,42 @@ end
 ---@param source string
 ---@param amount integer
 local function RecvDamageLink(source, amount)
-	local msg = GameTextGet("$ap_damagelink_received", tostring(amount), source)
-	GamePrint(msg)
-
 	local player = get_player()
 	if player == nil then return end
 
+	local msg = GameTextGet("$ap_damagelink_received", tostring(amount), source)
+	GamePrint(msg)
+
 	EntityInflictDamage(player, amount / MagicNumbersGetValue("GUI_HP_MULTIPLIER"), "DAMAGE_CURSE", "DamageLink - " .. msg, "NONE", 0, 0)
+end
+
+---@param cause string
+---@param value table
+local function RecvKnockbackLink(source, cause, value)
+	local player = get_player_always()
+	if player == nil then return end
+
+	if GameGetGameEffect(player, "KNOCKBACK_IMMUNITY") ~= 0 or GameGetGameEffect(player, "PROTECTION_ALL") ~= 0 then
+		local msg = GameTextGet("$ap_knockbacklink_immune", source)
+		GamePrint(msg)
+		return
+	end
+
+	local msg = GameTextGet("$ap_knockbacklink_received", source, cause)
+	GamePrint(msg)
+
+	local effect = LoadGameEffectEntityTo(player, "data/entities/misc/effect_knockback.xml")
+	local lua_comp = EntityGetFirstComponent(effect, "LuaComponent", "ap_knockback")
+	if lua_comp ~= nil then
+		EntityRemoveComponent(effect, lua_comp)
+	end
+
+	local char_data = EntityGetFirstComponent(player, "CharacterDataComponent")
+	if char_data ~= nil then
+		local vx = (value.x or 0) * 2
+		local vy = -(value.y or 60) * 2
+		ComponentSetValue2(char_data, "mVelocity", vx, vy)
+	end
 end
 
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
@@ -832,6 +904,10 @@ function RECV_MSG.Bounced(msg)
 		-- Don't receive damage from the same slot
 		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
 			RecvDamageLink(data["source"], data["damage_points"])
+		end
+	elseif has_tag["KnockbackLink"] then
+		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
+			RecvKnockbackLink(data["source"], data["cause"], data["value"])
 		end
 	else
 		Log.Warn("Unsupported Bounced type received. " .. JSON:encode(msg))
@@ -915,6 +991,7 @@ local function CheckGlobalsAndFlags()
 		if check_timer_20f > 20 then
 			check_timer_20f = 0
 			CheckDamageLinkQueue()
+			CheckKnockbackLinkQueue()
 		end
 
 		check_timer_1s = check_timer_1s + 1
@@ -1215,9 +1292,15 @@ end
 -- Called while the game is paused
 function OnPausePreUpdate()
 	if slot_options ~= nil then
-		PauseMenu:update(MOD_VERSION, slot_options, GetDeathLink(), GetTrapLink(), GetDamageLink())
+		local links = {
+			["Death Link"] = GetDeathLink(),
+			["Trap Link"] = GetTrapLink(),
+			["Damage Link"] = GetDamageLink(),
+			["Knockback Link"] = GetKnockbackLink(),
+		}
+		PauseMenu:update(MOD_VERSION, slot_options, links)
 	else
-		PauseMenu:update(MOD_VERSION, slot_options, "", "", "")
+		PauseMenu:update(MOD_VERSION, slot_options)
 	end
 	UpdateUI()
 
