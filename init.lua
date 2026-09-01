@@ -826,6 +826,7 @@ local function connect()
 	hostname = tostring(host) .. ":" .. tostring(port)
 	Log.Warn("Connecting on " .. hostname)
 	ap = APLIB(uuid, GAME_NAME, hostname)
+	LinkManager:SetAP(ap)
 	LogWindow:SetAP(ap)
 
 	ap:set_socket_connected_handler(on_socket_connected)
