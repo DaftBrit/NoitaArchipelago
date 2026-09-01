@@ -6,7 +6,7 @@ dofile_once("data/archipelago/scripts/trap_utils.lua")
 local TrapLink = LinkBase:extend()
 
 function TrapLink:new()
-	LinkBase.super.new(self, "TrapLink", "trap_link", { "on" })
+	TrapLink.super.new(self, "TrapLink", "trap_link", { "on" })
 end
 
 ---@param data table
@@ -26,3 +26,5 @@ function TrapLink:CheckTrapLinkQueue()
 	end
 	Globals.TrapLinkQueue:reset()
 end
+
+return TrapLink

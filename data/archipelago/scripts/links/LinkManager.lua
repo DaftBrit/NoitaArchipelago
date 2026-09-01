@@ -102,3 +102,5 @@ function LinkManager:GetAllOptions()
 	end
 	return result
 end
+
+return LinkManager

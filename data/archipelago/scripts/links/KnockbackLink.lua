@@ -5,7 +5,7 @@ local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local KnockbackLink = LinkBase:extend()
 
 function KnockbackLink:new()
-	LinkBase.super.new(self, "KnockbackLink", "knockback_link", { "on" })
+	KnockbackLink.super.new(self, "KnockbackLink", "knockback_link", { "on" })
 end
 
 ---@param data table
@@ -65,3 +65,5 @@ function KnockbackLink:CheckKnockbackLinkQueue()
 	end
 	Globals.KnockbackLinkQueue:reset()
 end
+
+return KnockbackLink

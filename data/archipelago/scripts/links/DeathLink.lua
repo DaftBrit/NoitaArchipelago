@@ -6,7 +6,7 @@ dofile_once("data/archipelago/scripts/ap_utils.lua")
 local DeathLink = LinkBase:extend()
 
 function DeathLink:new()
-	LinkBase.super.new(self, "DeathLink", "death_link", { "on", "traps" })
+	DeathLink.super.new(self, "DeathLink", "death_link", { "on", "traps" })
 	self.last_death_time = GameGetRealWorldTimeSinceStarted()
 end
 
@@ -61,3 +61,5 @@ function DeathLink:OnPlayerDied()
 	})
 	self:UpdateDeathTime()
 end
+
+return DeathLink

@@ -6,7 +6,8 @@ local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local DamageLink = LinkBase:extend()
 
 function DamageLink:new()
-	LinkBase.super.new(self, "SharedDamage", "damage_link", { "on" })
+	DamageLink.super.new(self, "SharedDamage", "damage_link", { "on" })
+	self.damage_saved = 0
 end
 
 ---@param data table
@@ -37,3 +38,5 @@ function DamageLink:CheckDamageLinkQueue()
 	end
 	Globals.DamageLinkQueue:reset()
 end
+
+return DamageLink

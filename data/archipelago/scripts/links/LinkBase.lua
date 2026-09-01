@@ -73,3 +73,5 @@ function LinkBase:InitSetting()
 	end
 	self.opt:set(cached_opt)
 end
+
+return LinkBase

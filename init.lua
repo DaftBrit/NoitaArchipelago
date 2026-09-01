@@ -96,11 +96,11 @@ local uuid = UUID.generate()
 local ap = nil --- @type APClient
 local gui = GuiCreate()
 
-local LinkManager = LinkManagerCls(uuid) ---@type LinkManager
-local DamageLink = DamageLinkCls() ---@type DamageLink
-local DeathLink = DeathLinkCls() ---@type DeathLink
-local KnockbackLink = KnockbackLinkCls() ---@type KnockbackLink
-local TrapLink = TrapLinkCls() ---@type TrapLink
+local LinkManager = LinkManagerCls(uuid)
+local DamageLink = DamageLinkCls()
+local DeathLink = DeathLinkCls()
+local KnockbackLink = KnockbackLinkCls()
+local TrapLink = TrapLinkCls()
 LinkManager:RegisterLinks(DamageLink, DeathLink, KnockbackLink, TrapLink)
 
 
