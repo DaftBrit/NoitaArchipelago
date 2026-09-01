@@ -1,5 +1,5 @@
 -- Script run when shop item is picked up
-dofile_once("data/scripts/lib/utilities.lua")
+dofile_once("data/scripts/lib/utilities.lua") -- edit_all_components2
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 

@@ -1,6 +1,6 @@
 -- streaming_integration/event_list.lua
 dofile_once("data/scripts/streaming_integration/event_utilities.lua")
-dofile_once("data/scripts/lib/utilities.lua")
+dofile_once("data/scripts/lib/utilities.lua") -- get_distance2
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 dofile_once("data/archipelago/scripts/ap_fungal_utils.lua")
 

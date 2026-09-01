@@ -1,10 +1,6 @@
-dofile_once( "data/scripts/game_helpers.lua" )
-dofile_once("data/scripts/lib/utilities.lua")
-dofile_once("data/scripts/lib/mod_settings.lua")
 local Log = dofile( "data/archipelago/scripts/logger.lua" ) ---@type Logger
 
 local entity_id = GetUpdatedEntityID()
-
 
 local orbcomp = EntityGetComponent( entity_id, "OrbComponent" )
 local orb_id = tonumber(GlobalsGetValue("ap_orb_id"))

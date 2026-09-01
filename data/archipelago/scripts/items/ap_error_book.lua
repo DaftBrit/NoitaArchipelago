@@ -1,5 +1,4 @@
 -- This file gets called every n frames
-dofile_once("data/scripts/lib/utilities.lua")
 local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 if GameHasFlagRun("AP_LocationInfo_received") then

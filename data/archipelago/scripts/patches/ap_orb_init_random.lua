@@ -1,5 +1,4 @@
 dofile_once("data/scripts/game_helpers.lua")
-dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 local function APOrbInitRandom()
@@ -9,8 +8,8 @@ local function APOrbInitRandom()
 	local entity_id = GetUpdatedEntityID()
 	local pos_x, pos_y = EntityGetTransform(entity_id)
 
-	local orbcomp = EntityGetComponent(entity_id, "OrbComponent")
-	local spritecomp = EntityGetComponent(entity_id, "SpriteComponent")
+	local orbcomp = EntityGetComponent(entity_id, "OrbComponent") or {}
+	local spritecomp = EntityGetComponent(entity_id, "SpriteComponent") or {}
 	local orb_id = -1
 
 	for _, comp_id in pairs(orbcomp) do

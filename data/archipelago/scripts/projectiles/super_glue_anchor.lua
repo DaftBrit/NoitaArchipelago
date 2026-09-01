@@ -1,4 +1,4 @@
-dofile_once("data/scripts/lib/utilities.lua")
+dofile_once("data/scripts/lib/utilities.lua") -- component_readwrite, get_magnitude, vec_mult
 
 local force = 0.018
 

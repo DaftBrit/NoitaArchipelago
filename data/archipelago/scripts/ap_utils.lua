@@ -1,4 +1,4 @@
-dofile_once("data/scripts/lib/utilities.lua")
+dofile_once("data/scripts/lib/utilities.lua") -- shoot_projectile, change_entity_ingame_name
 dofile_once("data/scripts/perks/perk.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger

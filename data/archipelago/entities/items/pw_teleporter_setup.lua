@@ -1,4 +1,3 @@
-dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/scripts/gun/procedural/gun_action_utils.lua")
 
 local function get_random_from( target )

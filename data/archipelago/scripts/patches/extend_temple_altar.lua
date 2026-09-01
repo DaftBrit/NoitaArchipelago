@@ -1,4 +1,3 @@
-dofile_once("data/scripts/lib/utilities.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
 
 local function ap_extend_temple_altar()

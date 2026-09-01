@@ -1,6 +1,7 @@
 
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
+dofile_once("data/scripts/lib/utilities.lua") -- get_player
 
 --[[
 TrapLink spreadsheet candidates:

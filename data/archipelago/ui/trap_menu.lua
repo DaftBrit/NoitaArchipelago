@@ -1,5 +1,4 @@
 dofile_once("data/archipelago/scripts/trap_utils.lua")
-dofile_once("data/scripts/lib/utilities.lua")
 
 --- Used for testing and debugging only.
 ---@class TrapMenu

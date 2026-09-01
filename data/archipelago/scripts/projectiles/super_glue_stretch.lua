@@ -1,5 +1,5 @@
 -- Modified from Nolla Games
-dofile_once("data/scripts/lib/utilities.lua")
+dofile_once("data/scripts/lib/utilities.lua") -- component_write, get_magnitude, map
 
 local break_dist = 256
 local sprite_width = 16 -- for accurate scaling (visible pixels only, no margins)

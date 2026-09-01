@@ -1,3 +1,5 @@
+dofile_once("data/scripts/lib/utilities.lua") -- component_readwrite
+
 local function ap_extend_perk_list()
 	local function remove_from_pool(perk_name)
 		for _, perk in pairs(perk_list) do

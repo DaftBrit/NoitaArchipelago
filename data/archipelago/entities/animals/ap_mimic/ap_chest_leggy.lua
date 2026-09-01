@@ -1,4 +1,3 @@
-dofile_once("data/scripts/lib/utilities.lua")
 
 local function spawn_leggy( entity_item )
 	local x, y = EntityGetTransform( entity_item )

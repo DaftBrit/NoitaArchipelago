@@ -1,5 +1,5 @@
 dofile( "data/scripts/game_helpers.lua" )
-dofile_once("data/scripts/lib/utilities.lua")
+dofile_once("data/scripts/lib/utilities.lua") -- shoot_projectile
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 
 -- NOTE: This will replace the existing `item_pickup` function in orb_pickup.lua

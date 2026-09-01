@@ -1,4 +1,3 @@
-dofile_once("data/scripts/lib/utilities.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 
