@@ -157,7 +157,7 @@ local DeathLinkOpts = {
 	{ "traps", T("$ap_option_traps") },
 }
 local function APDeathLinkOption(mod_id, gui, in_main_menu, im_id, setting)
-	APRoomOption(gui, in_main_menu, "AP_DEATHLINK", T("$ap_death_link_settings_name"), T("$ap_death_link_settings_desc"), DeathLinkOpts)
+	APRoomOption(gui, in_main_menu, "DEATH_LINK", T("$ap_death_link_settings_name"), T("$ap_death_link_settings_desc"), DeathLinkOpts)
 end
 
 local TrapLinkOpts = {
@@ -166,7 +166,7 @@ local TrapLinkOpts = {
 	{ "on", T("$option_on") },
 }
 local function APTrapLinkOption(mod_id, gui, in_main_menu, im_id, setting)
-	APRoomOption(gui, in_main_menu, "AP_TRAPLINK", T("$ap_trap_link_settings_name"), T("$ap_trap_link_settings_desc"), TrapLinkOpts)
+	APRoomOption(gui, in_main_menu, "TRAP_LINK", T("$ap_trap_link_settings_name"), T("$ap_trap_link_settings_desc"), TrapLinkOpts)
 end
 
 local DamageLinkOpts = {
@@ -175,7 +175,7 @@ local DamageLinkOpts = {
 	{ "on", T("$option_on") },
 }
 local function APDamageLinkOption(mod_id, gui, in_main_menu, im_id, setting)
-	APRoomOption(gui, in_main_menu, "AP_DAMAGELINK", T("$ap_damage_link_settings_name"), T("$ap_damage_link_settings_desc"), DamageLinkOpts)
+	APRoomOption(gui, in_main_menu, "DAMAGE_LINK", T("$ap_damage_link_settings_name"), T("$ap_damage_link_settings_desc"), DamageLinkOpts)
 end
 
 local KnockbackLinkOpts = {
@@ -184,7 +184,7 @@ local KnockbackLinkOpts = {
 	{ "on", T("$option_on") },
 }
 local function APKnockbackLinkOption(mod_id, gui, in_main_menu, im_id, setting)
-	APRoomOption(gui, in_main_menu, "AP_KNOCKBACKLINK", T("$ap_knockback_link_settings_name"), T("$ap_knockback_link_settings_desc"), KnockbackLinkOpts)
+	APRoomOption(gui, in_main_menu, "KNOCKBACK_LINK", T("$ap_knockback_link_settings_name"), T("$ap_knockback_link_settings_desc"), KnockbackLinkOpts)
 end
 
 local mod_settings =

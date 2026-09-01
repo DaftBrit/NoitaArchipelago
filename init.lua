@@ -23,9 +23,8 @@ end
 
 -- SCRIPTS
 dofile_once("data/archipelago/scripts/ap_utils.lua")
-dofile_once("data/scripts/lib/utilities.lua")
-dofile_once("data/scripts/lib/mod_settings.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
+local UUID = dofile_once("data/archipelago/lib/uuid.lua") --- @type UUID
 
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
@@ -34,12 +33,19 @@ local ShopItems = dofile("data/archipelago/scripts/shopitem_utils.lua")
 
 -- Modules
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
-local Cache = dofile("data/archipelago/scripts/caches.lua")
+local Cache = dofile("data/archipelago/scripts/caches.lua") --- @type Caches
 local ConnIcon = dofile("data/archipelago/ui/connection_icon.lua") --- @type ConnIcon
 local LogWindow = dofile("data/archipelago/ui/log_window.lua") --- @type LogWindow
 local PauseMenu = dofile("data/archipelago/ui/pause_menu.lua") --- @type PauseMenu
 --local TrapMenu = dofile("data/archipelago/ui/trap_menu.lua") --- @type TrapMenu
 local Modlist = dofile("data/archipelago/lib/modlist.lua") --- @type Modlist
+
+-- Links
+local LinkManagerCls = dofile("data/archipelago/scripts/links/LinkManager.lua") --- @type LinkManager
+local DamageLinkCls = dofile("data/archipelago/scripts/links/DamageLink.lua") --- @type DamageLink
+local DeathLinkCls = dofile("data/archipelago/scripts/links/DeathLink.lua") --- @type DeathLink
+local KnockbackLinkCls = dofile("data/archipelago/scripts/links/KnockbackLink.lua") --- @type KnockbackLink
+local TrapLinkCls = dofile("data/archipelago/scripts/links/TrapLink.lua") --- @type TrapLink
 
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
@@ -77,7 +83,6 @@ local connect_tags = {
 	["Lua-APClientPP"] = 1
 }
 
-local last_death_time = 0
 local current_player_slot = -1
 local game_is_paused = false
 local is_player_spawned = false
@@ -87,26 +92,27 @@ local req_restart = false
 local hostname = ""
 local hint_location_received = {}
 
-
-local function generateFakeUUID()
-	local year, month, day, hour, minute, second = GameGetDateAndTimeUTC()
-	local rng = year * 100000 + month * 10000 + day * 1000 + hour * 100 + minute * 10 + second
-	math.randomseed(rng)
-    local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-    return template:gsub("[xy]", function(c)
-        local r = math.random(0, 15)
-        if c == "y" then r = (r % 4) + 8 end
-        return string.format("%x", r)
-    end)
-end
-local uuid = generateFakeUUID()
-
+local uuid = UUID.generate()
 local ap = nil --- @type APClient
 local gui = GuiCreate()
 
+local LinkManager = LinkManagerCls(uuid) ---@type LinkManager
+local DamageLink = DamageLinkCls() ---@type DamageLink
+local DeathLink = DeathLinkCls() ---@type DeathLink
+local KnockbackLink = KnockbackLinkCls() ---@type KnockbackLink
+local TrapLink = TrapLinkCls() ---@type TrapLink
+LinkManager:RegisterLinks(DamageLink, DeathLink, KnockbackLink, TrapLink)
+
+
 ----------------------------------------------------------------------------------------------------
--- DEATHLINK
+-- SLOT
 ----------------------------------------------------------------------------------------------------
+
+---@param opts SlotOpts?
+local function SetSlotOptions(opts)
+	slot_options = opts
+	LinkManager:SetSlotOptions(opts)
+end
 
 ---@return string[] taglist
 local function GetConnectionTags()
@@ -128,203 +134,6 @@ local function UpdateConnectionTags()
 
 	ap:ConnectUpdate(nil, new_conn_tags)
 end
-
--- Updates a death timer to prevent immediate re-sends of deaths that have been received.
-local function UpdateDeathTime()
-	local curr_death_time = ap:get_server_time()
-	local result = curr_death_time - last_death_time > 1
-	last_death_time = curr_death_time
-	return result
-end
-
----@return string
-local function GetDeathLink()
-	local opt = Cache.Options:get("death_link", "yaml")
-	if opt == "yaml" then
-		if slot_options.death_link == 1 then
-			opt = "on"
-		elseif slot_options.death_link == 2 then
-			opt = "traps"
-		else
-			opt = "off"
-		end
-	end
-	return opt
-end
-
----@return string
-local function GetTrapLink()
-	local opt = Cache.Options:get("trap_link", "yaml")
-	if opt == "yaml" then
-		if slot_options.trap_link == 1 then
-			opt = "on"
-		else
-			opt = "off"
-		end
-	end
-	return opt
-end
-
----@return string
-local function GetDamageLink()
-	local opt = Cache.Options:get("damage_link", "yaml")
-	if opt == "yaml" then
-		if slot_options.damage_link == 1 then
-			opt = "on"
-		else
-			opt = "off"
-		end
-	end
-	return opt
-end
-
----@return string
-local function GetKnockbackLink()
-	local opt = Cache.Options:get("knockback_link", "yaml")
-	if opt == "yaml" then
-		if slot_options.knockback_link == 1 then
-			opt = "on"
-		else
-			opt = "off"
-		end
-	end
-	return opt
-end
-
----Updates the connect tags based on whether a link is enabled.
----@param setting_name string
----@param tag_name string
-local function SyncLinkTags(setting_name, tag_name)
-	local opt = Cache.Options:get(setting_name, "yaml")
-
-	local enabled = false
-	if opt == "yaml" then
-		enabled = (slot_options[setting_name] or 0) ~= 0
-	elseif opt ~= "off" then
-		enabled = true
-	end
-
-	if enabled then
-		connect_tags[tag_name] = 1
-	else
-		connect_tags[tag_name] = nil
-	end
-end
-
----@param setting_name string
----@param tag_name string
----@param setting GlobalOption
-local function SyncSetting(setting_name, tag_name, setting)
-	Cache.Options:set(setting_name, setting:get())
-	if setting:hasChanged() then
-		setting:clearChanged()
-		SyncLinkTags(setting_name, tag_name)
-	end
-end
-
-local function UpdateLocalSettings()
-	SyncSetting("death_link", "DeathLink", Globals.DeathLinkSetting)
-	SyncSetting("trap_link", "TrapLink", Globals.TrapLinkSetting)
-	SyncSetting("damage_link", "SharedDamage", Globals.DamageLinkSetting)
-	SyncSetting("knockback_link", "KnockbackLink", Globals.KnockbackLinkSetting)
-end
-
-local valid_opts = {
-	yaml = 1, off = 1, on = 1, traps = 1,
-}
----@param setting_name string
----@param setting GlobalOption
-local function InitSetting(setting_name, setting)
-	local cached_opt = Cache.Options:get(setting_name, "yaml")
-	if valid_opts[cached_opt] == nil then	-- ensure it's always valid
-		cached_opt = "yaml"
-	end
-	setting:set(cached_opt)
-end
-
-local function InitLocalSettings()
-	InitSetting("death_link", Globals.DeathLinkSetting)
-	InitSetting("trap_link", Globals.TrapLinkSetting)
-	InitSetting("damage_link", Globals.DamageLinkSetting)
-	InitSetting("knockback_link", Globals.KnockbackLinkSetting)
-	UpdateLocalSettings()
-end
-
-local function CheckTrapLinkQueue()
-	local traps = Globals.TrapLinkQueue:get_table()
-	for _,trap in ipairs(traps) do
-		local pkt = {
-			time = ap:get_server_time(),
-			trap_name = trap.trap_name,
-			source = ap:get_slot(),
-			noita_id = trap.noita_id,
-			uuid = uuid,
-		}
-		Log.Info("Sending TrapLink: " .. JSON:encode(pkt))
-		ap:Bounce(pkt, nil, nil, {"TrapLink"})
-	end
-	Globals.TrapLinkQueue:reset()
-end
-
-local damage_saved = 0
-local function CheckDamageLinkQueue()
-	if GetDamageLink() ~= "off" then
-		local damagequeue = Globals.DamageLinkQueue:get_table()
-		for _,amount in ipairs(damagequeue) do
-			damage_saved = damage_saved + amount
-		end
-
-		if damage_saved > 1 then
-			local pkt = {
-				time = ap:get_server_time(),
-				uuid = uuid,
-				source = ap:get_slot(),
-				damage_points = math.floor(damage_saved),
-			}
-			Log.Info("Sending DamageLink: " .. JSON:encode(pkt))
-			ap:Bounce(pkt, nil, nil, {"SharedDamage"})
-
-			damage_saved = damage_saved - math.floor(damage_saved)
-		end
-	end
-	Globals.DamageLinkQueue:reset()
-end
-
-local function CheckKnockbackLinkQueue()
-	if GetKnockbackLink() ~= "off" then
-		local knockbacks = Globals.KnockbackLinkQueue:get_table()
-		local vx = 0
-		local vy = 0
-		local causes = {}
-		for _,knock in ipairs(knockbacks) do
-			vx = vx + knock.x
-			vy = vy + knock.y
-			table.insert(causes, knock.cause)
-		end
-
-		vx = math.floor(vx * 0.5)
-		vy = -math.floor(vy * 0.5)
-
-		if math.abs(vx) >= 5 or math.abs(vy) >= 5 then
-			local pkt = {
-				time = ap:get_server_time(),
-				uuid = uuid,
-				source = ap:get_slot(),
-				cause = table.concat(causes, ", "),
-				value = {
-					x = vx,
-					y = vy,
-				}
-			}
-			Log.Info("Sending KnockbackLink: " .. JSON:encode(pkt))
-			ap:Bounce(pkt, nil, nil, {"KnockbackLink"})
-
-			damage_saved = damage_saved - math.floor(damage_saved)
-		end
-	end
-	Globals.KnockbackLinkQueue:reset()
-end
-
 
 ----------------------------------------------------------------------------------------------------
 -- VICTORY CONDITIONS
@@ -491,7 +300,7 @@ local RECV_MSG = {}
 local function ConnectionError(msg_str)
 	-- commented out since it makes the user think there's a problem when there isn't one
 	-- Log.Error(msg_str)
-	slot_options = nil
+	SetSlotOptions(nil)
 	Log.Warn(msg_str)
 	ConnIcon:setDisconnected(msg_str)
 end
@@ -631,7 +440,7 @@ function RECV_MSG.Connected()
 	end
 
 	-- Enable deathlink if the setting on the server and the mod setting said to
-	InitLocalSettings()
+	LinkManager:InitSettings(connect_tags)
 	UpdateConnectionTags()
 
 	local hints_key = "_read_hints_" .. ap:get_team_number() .. "_" .. ap:get_player_number()
@@ -807,111 +616,10 @@ function RECV_MSG.PrintJSON(msg, extra)
 end
 
 
----@param source string?
----@param cause string?
-local function RecvDeathLink(source, cause)
-	local death_link_option = GetDeathLink()
-	if death_link_option == "off" then
-		return
-	end
-
-	if not UpdateDeathTime() then
-		return
-	end
-
-	if cause == nil or cause == "" then
-		local message = GameTextGet(death_link_option == "on" and "$ap_died" or "$ap_died_traps", tostring(source))
-		GamePrintImportant(message, "$ap_deathlink_triggered")
-	else
-		GamePrintImportant(cause, "$ap_deathlink_triggered")
-	end
-
-	local player = get_player()
-	-- Don't try anything if the player doesn't exist (gj you dodged it)
-	if player == nil then return end
-
-	if death_link_option == "on" then
-		if not DecreaseExtraLife(player) then
-			local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
-			if gsc_id ~= nil then
-				ComponentSetValue2(gsc_id, "extra_death_msg", cause)
-			end
-			EntityKill(player)
-		end
-	else
-		BadTimes(true)
-	end
-end
-
----@param source string
----@param amount integer
-local function RecvDamageLink(source, amount)
-	local player = get_player()
-	if player == nil then return end
-
-	local msg = GameTextGet("$ap_damagelink_received", tostring(amount), source)
-	GamePrint(msg)
-
-	EntityInflictDamage(player, amount / MagicNumbersGetValue("GUI_HP_MULTIPLIER"), "DAMAGE_CURSE", "DamageLink - " .. msg, "NONE", 0, 0)
-end
-
----@param cause string
----@param value table
-local function RecvKnockbackLink(source, cause, value)
-	local player = get_player_always()
-	if player == nil then return end
-
-	if GameGetGameEffect(player, "KNOCKBACK_IMMUNITY") ~= 0 or GameGetGameEffect(player, "PROTECTION_ALL") ~= 0 then
-		local msg = GameTextGet("$ap_knockbacklink_immune", source)
-		GamePrint(msg)
-		return
-	end
-
-	local msg = GameTextGet("$ap_knockbacklink_received", source, cause)
-	GamePrint(msg)
-
-	local effect = LoadGameEffectEntityTo(player, "data/entities/misc/effect_knockback.xml")
-	local lua_comp = EntityGetFirstComponent(effect, "LuaComponent", "ap_knockback")
-	if lua_comp ~= nil then
-		EntityRemoveComponent(effect, lua_comp)
-	end
-
-	local char_data = EntityGetFirstComponent(player, "CharacterDataComponent")
-	if char_data ~= nil then
-		local vx = (value.x or 0) * 2
-		local vy = -(value.y or 60) * 2
-		ComponentSetValue2(char_data, "mVelocity", vx, vy)
-	end
-end
-
 -- https://github.com/ArchipelagoMW/Archipelago/blob/main/docs/network%20protocol.md#bounced
 ---@param msg {[string]: any}
 function RECV_MSG.Bounced(msg)
-	local has_tag = {}
-	for _,tag in ipairs(msg["tags"]) do
-		has_tag[tag] = true
-	end
-	local data = msg["data"]
-
-	if has_tag["DeathLink"] then
-		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
-			RecvDeathLink(data["source"], data["cause"])
-		end
-	elseif has_tag["TrapLink"] then
-		-- Don't receive traps from the same slot since they get shared through receiving items
-		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
-			RecvTrapLink(data["source"], data["trap_name"], data["noita_id"])
-		end
-	elseif has_tag["SharedDamage"] then	-- DamageLink
-		-- Don't receive damage from the same slot
-		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
-			RecvDamageLink(data["source"], data["damage_points"])
-		end
-	elseif has_tag["KnockbackLink"] then
-		if data["source"] ~= ap:get_slot() or data["uuid"] ~= uuid then
-			RecvKnockbackLink(data["source"], data["cause"], data["value"])
-		end
-	else
+	if not LinkManager:ProcessBounce(msg) then
 		Log.Warn("Unsupported Bounced type received. " .. JSON:encode(msg))
 	end
 end
@@ -986,14 +694,14 @@ local function CheckGlobalsAndFlags()
 			check_timer_10f = 0
 			CheckComponentItemsUnlocked()
 			CheckLocationFlags()
-			CheckTrapLinkQueue()
+			TrapLink:CheckTrapLinkQueue()
 		end
 
 		check_timer_20f = check_timer_20f + 1
 		if check_timer_20f > 20 then
 			check_timer_20f = 0
-			CheckDamageLinkQueue()
-			CheckKnockbackLinkQueue()
+			DamageLink:CheckDamageLinkQueue()
+			KnockbackLink:CheckKnockbackLinkQueue()
 		end
 
 		check_timer_1s = check_timer_1s + 1
@@ -1059,7 +767,7 @@ local function connect()
 	---@param slot_data {[string]: any}
 	local function on_slot_connected(slot_data)
 		Log.Info("on_slot_connected: " .. JSON:encode(slot_data))
-		slot_options = slot_data
+		SetSlotOptions(slot_data)
 		RECV_MSG.Connected()
 	end
 
@@ -1268,7 +976,7 @@ function OnPausedChanged(is_paused, is_inventory_pause)
 	-- However we know they have to pause the game (menu) to start a new game.
 	game_is_paused = is_paused and not is_inventory_pause
 
-	UpdateLocalSettings()
+	LinkManager:SyncSettings(connect_tags)
 
 	-- Disable/enable text messages if settings change
 	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
@@ -1293,17 +1001,7 @@ end
 
 -- Called while the game is paused
 function OnPausePreUpdate()
-	if slot_options ~= nil then
-		local links = {
-			["Death Link"] = GetDeathLink(),
-			["Trap Link"] = GetTrapLink(),
-			["Damage Link"] = GetDamageLink(),
-			["Knockback Link"] = GetKnockbackLink(),
-		}
-		PauseMenu:update(MOD_VERSION, slot_options, links)
-	else
-		PauseMenu:update(MOD_VERSION, slot_options)
-	end
+	PauseMenu:update(MOD_VERSION, slot_options, LinkManager:GetAllOptions())
 	UpdateUI()
 
 	-- Stay connected while the game is paused
@@ -1315,18 +1013,8 @@ end
 -- Called when the player dies
 -- https://noita.wiki.gg/wiki/Modding:_Lua_API#OnPlayerDied
 function OnPlayerDied(player)
-	if slot_options == nil or GetDeathLink() == "off" or game_is_paused then return end
-	if not UpdateDeathTime() then return end
-
-	local death_msg = GetCauseOfDeath() or "skill issue"
-	local slotname = ap:get_slot()
-	Log.Info("Deathlink triggered - player died (" .. death_msg .. ")")
-	ap:Bounce({
-		time = last_death_time,
-		cause = slotname .. " died to " .. death_msg,
-		source = slotname,
-		uuid = uuid,
-	}, nil, nil, {"DeathLink"})
+	if game_is_paused then return end
+	DeathLink:OnPlayerDied()
 end
 
 -- Called at the earliest possible time
