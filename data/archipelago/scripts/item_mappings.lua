@@ -16,6 +16,7 @@ return {
 	[20013] = { perk = "ADVENTURER", redeliverable = true, newgame = true },
 	[20014] = { perk = "ABILITY_ACTIONS_MATERIALIZED", redeliverable = true, newgame = true },
 	[20015] = { perk = "UNLIMITED_SPELLS", redeliverable = true, newgame = true },
+	[20016] = { perk = "AP_PERK_REROLL_DISCOUNT", redeliverable = true, newgame = true },
 
 	[110000] = {},	-- Trap
 
