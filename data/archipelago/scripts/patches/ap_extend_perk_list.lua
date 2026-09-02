@@ -1,24 +1,40 @@
 dofile_once("data/scripts/lib/utilities.lua") -- component_readwrite
+dofile_once("data/scripts/perks/perk_utilities.lua")
 
-local function ap_extend_perk_list()
-	local function remove_from_pool(perk_name)
-		for _, perk in pairs(perk_list) do
-			if (perk.id == perk_name) then
-				perk.not_in_default_perk_pool = true
-			end
+local function remove_from_pool(perk_name)
+	for _, perk in pairs(perk_list) do
+		if (perk.id == perk_name) then
+			perk.not_in_default_perk_pool = true
 		end
 	end
+end
 
-	remove_from_pool("PROTECTION_ELECTRICITY")
-	remove_from_pool("PROTECTION_MELEE")
-	remove_from_pool("PROTECTION_RADIOACTIVITY")
-	remove_from_pool("PROTECTION_FIRE")
-	remove_from_pool("PROTECTION_EXPLOSION")
-	remove_from_pool("EDIT_WANDS_EVERYWHERE")
-	remove_from_pool("REMOVE_FOG_OF_WAR")
+remove_from_pool("PROTECTION_ELECTRICITY")
+remove_from_pool("PROTECTION_MELEE")
+remove_from_pool("PROTECTION_RADIOACTIVITY")
+remove_from_pool("PROTECTION_FIRE")
+remove_from_pool("PROTECTION_EXPLOSION")
+remove_from_pool("EDIT_WANDS_EVERYWHERE")
+remove_from_pool("REMOVE_FOG_OF_WAR")
+remove_from_pool("RESPAWN")
+remove_from_pool("MEGA_BEAM_STONE")
 
-	table.insert(perk_list,
-			{
+--[[ For future use
+remove_from_pool("EXTRA_PERK")
+remove_from_pool("SAVING_GRACE")
+remove_from_pool("TRICK_BLOOD_MONEY")
+remove_from_pool("NO_MORE_KNOCKBACK")
+remove_from_pool("MANA_FROM_KILLS")
+remove_from_pool("RADAR_ENEMY")
+remove_from_pool("IRON_STOMACH")
+remove_from_pool("WAND_RADAR")
+remove_from_pool("ITEM_RADAR")
+remove_from_pool("ADVENTURER")
+remove_from_pool("ABILITY_ACTIONS_MATERIALIZED")
+remove_from_pool("UNLIMITED_SPELLS")
+]]
+
+table.insert(perk_list, {
 	id = "AP_LEGGY_FEET",
 	ui_name = "$perk_ap_leggy_feet",
 	ui_description = "$perkdesc_ap_leggy_feet",
@@ -119,6 +135,13 @@ local function ap_extend_perk_list()
 	end,
 })
 
+for _, perk in ipairs(perk_list) do
+	if perk.id == "EXTRA_PERK" then
+		-- previously set it to 3, but the base number might be different in AP
+		perk.func_remove = function()
+			local perk_count = tonumber( GlobalsGetValue( "TEMPLE_PERK_COUNT", "3" ) )
+			perk_count = perk_count - 1
+			GlobalsSetValue( "TEMPLE_PERK_COUNT", tostring(perk_count) )
+		end
+	end
 end
-
-ap_extend_perk_list()

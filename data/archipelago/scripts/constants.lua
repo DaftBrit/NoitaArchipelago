@@ -60,6 +60,21 @@ local AP = {
 	PROGRESSIVE_LEFT_PARALLEL_WORLD = 20001, --- @type integer
 	PROGRESSIVE_RIGHT_PARALLEL_WORLD = 20002, --- @type integer
 
+	-- TEMPLE_PERK_COUNT
+	PERK_EXTRA_PERK_ID = 20003, --- @type integer
+	PERK_SAVING_GRACE_ID = 20004, --- @type integer
+	PERK_TRICK_BLOOD_MONEY_ID = 20005, --- @type integer
+	PERK_REROLL_ID = 20006, --- @type integer
+	PERK_NO_MORE_KNOCKBACK_ID = 20007, --- @type integer
+	PERK_MANA_FROM_KILLS_ID = 20008, --- @type integer
+	PERK_ENEMY_RADAR_ID = 20009, --- @type integer
+	PERK_IRON_STOMACH_ID = 20010, --- @type integer
+	PERK_WAND_RADAR_ID = 20011, --- @type integer
+	PERK_ITEM_RADAR_ID = 20012, --- @type integer
+	PERK_HEALTHY_EXPLORATION_ID = 20013, --- @type integer
+	PERK_BOMBS_MATERIALIZED_ID = 20014, --- @type integer
+	PERK_UNLIMITED_SPELLS_ID = 20015, --- @type integer
+
 	--- Killsanity
 	--- @type integer
 	FIRST_ANIMAL_LOCATION_ID = 200000,

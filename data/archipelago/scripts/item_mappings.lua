@@ -3,6 +3,18 @@
 -- newgame means it will be delivered on new game
 return {
 	[20000] = { redeliverable = true, newgame = true }, -- progressive portal
+	[20003] = { perk = "EXTRA_PERK", redeliverable = true, newgame = true },
+	[20004] = { perk = "SAVING_GRACE", redeliverable = true, newgame = true },
+	[20005] = { perk = "TRICK_BLOOD_MONEY", redeliverable = true, newgame = true },
+	[20007] = { perk = "NO_MORE_KNOCKBACK", redeliverable = true, newgame = true },
+	[20008] = { perk = "MANA_FROM_KILLS", redeliverable = true, newgame = true },
+	[20009] = { perk = "RADAR_ENEMY", redeliverable = true, newgame = true },
+	[20010] = { perk = "IRON_STOMACH", redeliverable = true, newgame = true },
+	[20011] = { perk = "WAND_RADAR", redeliverable = true, newgame = true },
+	[20012] = { perk = "ITEM_RADAR", redeliverable = true, newgame = true },
+	[20013] = { perk = "ADVENTURER", redeliverable = true, newgame = true },
+	[20014] = { perk = "ABILITY_ACTIONS_MATERIALIZED", redeliverable = true, newgame = true },
+	[20015] = { perk = "UNLIMITED_SPELLS", redeliverable = true, newgame = true },
 
 	[110000] = {},	-- Trap
 
@@ -43,5 +55,5 @@ return {
 	[110030] = { items = { "data/entities/items/pickup/beamstone.xml" }, redeliverable = true, newgame = true }, -- sadekivi
 	[110031] = { items = { "data/entities/items/pickup/broken_wand.xml" }, redeliverable = true, newgame = true }, -- broken wand
 
-	[110032] = { items = { "data/archipelago/entities/items/pw_teleporter.xml" }, redeliverable = true, newgame = true, wand = true } -- pw teleporter for pw options
+	[110032] = { items = { "data/archipelago/entities/items/pw_teleporter.xml" }, redeliverable = true, newgame = true, wand = true }, -- pw teleporter for pw options
 }
