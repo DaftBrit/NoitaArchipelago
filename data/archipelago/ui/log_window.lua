@@ -714,6 +714,7 @@ function LogWindow:syncLogger()
 
 	f:seek("set", self.logger_file_pos)
 	for line in f:lines("*l") do
+		line = line:gsub("\r", ""):gsub("\t", " "):gsub("%{", "<"):gsub("%}", ">")
 		local log_msg = {
 			height = self:calcMessageHeight({{ text = line }}),
 			msg = line,

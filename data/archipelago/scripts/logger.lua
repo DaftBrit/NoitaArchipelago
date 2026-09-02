@@ -4,7 +4,7 @@
 ---@return string
 local function prep_log_msg(msg)
 	local _, _, _, hour, minute, second = GameGetDateAndTimeLocal()
-	return string.format("%02d:%02d:%02d", hour, minute, second) .. " [AP] " .. msg
+	return string.format("%02d:%02d:%02d [AP] %s", hour, minute, second, msg)
 end
 
 ---@class Logger
