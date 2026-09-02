@@ -47,6 +47,8 @@ local DeathLinkCls = dofile("data/archipelago/scripts/links/DeathLink.lua") --- 
 local KnockbackLinkCls = dofile("data/archipelago/scripts/links/KnockbackLink.lua") --- @type KnockbackLink
 local TrapLinkCls = dofile("data/archipelago/scripts/links/TrapLink.lua") --- @type TrapLink
 
+local Gifting = dofile("data/archipelago/scripts/gifting/GiftBox.lua") --- @type GiftBox
+
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
 
@@ -103,6 +105,7 @@ local KnockbackLink = KnockbackLinkCls()
 local TrapLink = TrapLinkCls()
 LinkManager:RegisterLinks(DamageLink, DeathLink, KnockbackLink, TrapLink)
 
+local GiftBox = Gifting()
 
 ----------------------------------------------------------------------------------------------------
 -- SLOT
@@ -444,8 +447,9 @@ function RECV_MSG.Connected()
 	UpdateConnectionTags()
 
 	local hints_key = "_read_hints_" .. ap:get_team_number() .. "_" .. ap:get_player_number()
-	ap:SetNotify({hints_key})
-	ap:Get({hints_key})
+	ap:SetNotify({ hints_key, GiftBox:GetMotherboxKey() })
+	ap:Get({ hints_key })
+	GiftBox:InitMotherbox()
 end
 
 ---@param location integer
@@ -815,18 +819,24 @@ local function connect()
 	---@param keys string[]
 	---@param command {[string]: any}
 	local function on_set_retrieved(data, keys, command)
+		Log.Info("Retrieved: " .. JSON:encode(command))
 		RECV_MSG.SetReply(data)
+		GiftBox:OnSetReply(data, command)
 	end
 
 	---@param command {[string]:any}
 	local function on_set_reply(command)
-		RECV_MSG.SetReply({ [command.key] = command.value })
+		Log.Info("SetReply: " .. JSON:encode(command))
+		local data = { [command.key] = command.value }
+		RECV_MSG.SetReply(data)
+		GiftBox:OnSetReply(data, command)
 	end
 
 	hostname = tostring(host) .. ":" .. tostring(port)
 	Log.Warn("Connecting on " .. hostname)
 	ap = APLIB(uuid, GAME_NAME, hostname)
 	LinkManager:SetAP(ap)
+	GiftBox:SetAP(ap)
 	LogWindow:SetAP(ap)
 
 	ap:set_socket_connected_handler(on_socket_connected)
@@ -886,7 +896,7 @@ local function UpdatePlayerPoptrackerPosition()
 
 		local key = "Noita_position_" .. current_player_slot
 		local pos = { x = x, y = y }
-		ap:Set(key, pos, false, { {operation = "replace", value = pos} })
+		ap:Set(key, pos, false, { { "replace", pos } })
 	end
 end
 
