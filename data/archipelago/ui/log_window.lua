@@ -355,10 +355,19 @@ function LogWindow:drawLoggerList()
 	self:resetPrinter()
 	self.printer.y = 0 - self.scroll.y
 
-	self:setColor("white")
-
 	for _, log in ipairs(self.logger_log) do
 		if self.printer.y >= 0 - log.height and self.printer.y <= self.scrollbox_height + 12 then
+
+			if log.msg:match("^Warning!") or log.msg:match("%[AP%] W:") then
+				self:setColor("yellow")
+			elseif log.msg:match("^Lua error") or log.msg:match("%[AP%] E:") then
+				self:setColor("red")
+			elseif log.msg:match("^LUA:") then
+				self:setColor("white")
+			else
+				self:setColor("gray")
+			end
+
 			self:printText(log.msg)
 			self:newLogLine()
 		else
