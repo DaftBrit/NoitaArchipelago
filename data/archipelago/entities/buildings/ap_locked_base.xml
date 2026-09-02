@@ -1,0 +1,30 @@
+<Entity>
+	<UIInfoComponent
+		_tags="locked_by_archipelago"
+		name="$ap_locked"
+	/>
+
+	<SpriteComponent
+		_tags="locked_by_archipelago"
+		image_file="data/fonts/font_pixel_white.xml"
+		is_text_sprite="1"
+		alpha="0"
+		offset_x="0"
+		offset_y="0"
+		update_transform="1"
+		update_transform_rotation="0"
+		text="..."
+		z_index="-1"
+		has_special_scale="1"
+		special_scale_x="0.5"
+		special_scale_y="0.5"
+	 />
+
+	<LuaComponent
+		_tags="locked_by_archipelago"
+		script_source_file="data/archipelago/entities/buildings/ap_locked_text_update.lua"
+		execute_every_n_frame="3"
+		call_init_function="1"
+		execute_on_added="1"
+	/>
+</Entity>

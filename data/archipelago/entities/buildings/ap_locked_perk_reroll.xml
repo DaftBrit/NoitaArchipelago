@@ -1,0 +1,15 @@
+<Entity>
+	<Base file="data/archipelago/entities/buildings/ap_locked_base.xml">
+		<UIInfoComponent name="$ap_locked_perk_reroll" />
+		<SpriteComponent
+			text="$ap_locked_perk_reroll_desc"
+			offset_y="16"
+			/>
+	</Base>
+
+	<LuaComponent
+		script_source_file="data/archipelago/scripts/items/ap_perk_reroll.lua"
+		execute_every_n_frame="30"
+		execute_on_added="1"
+	/>
+</Entity>

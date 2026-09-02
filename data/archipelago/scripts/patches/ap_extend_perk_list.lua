@@ -129,6 +129,19 @@ table.insert(perk_list, {
 	end,
 })
 
+table.insert(perk_list, {
+	id = "AP_PERK_REROLL",
+	ui_name="$item_perk_reroll",
+	ui_description="$ap_perk_reroll_desc",
+	ui_icon = "data/archipelago/ui_gfx/perk_icons/perk_reroll.png",
+	perk_icon = "data/archipelago/items_gfx/perks/perk_reroll.png",
+	stackable = STACKABLE_NO,
+	not_in_default_perk_pool = true,
+	func = function()
+		GameAddFlagRun("ap_perk_reroll_available")
+	end
+})
+
 for _, perk in ipairs(perk_list) do
 	if perk.id == "EXTRA_PERK" then
 		-- previously set it to 3, but the base number might be different in AP

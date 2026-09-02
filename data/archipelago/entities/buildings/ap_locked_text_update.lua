@@ -9,14 +9,14 @@ local function dist2(x1, y1, x2, y2)
 end
 
 function init(entity_id)
-	local text_desc = GameTextGetTranslatedOrNot("$ap_closed_portal_desc")
+	local text_component = EntityGetFirstComponentIncludingDisabled(entity_id, "SpriteComponent", "locked_by_archipelago")
+	assert(text_component)
+
+	local text_desc = GameTextGetTranslatedOrNot(ComponentGetValue2(text_component, "text"))
 
 	local gui = GuiCreate()
 	local width = GuiGetTextDimensions(gui, text_desc, 0.5)
 	GuiDestroy(gui)
-
-	local text_component = EntityGetFirstComponentIncludingDisabled(entity_id, "SpriteComponent", "locked_by_archipelago")
-	assert(text_component)
 
 	ComponentSetValue2(text_component, "text", text_desc)
 	ComponentSetValue2(text_component, "offset_x", math.floor(width))

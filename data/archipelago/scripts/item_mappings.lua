@@ -6,6 +6,7 @@ return {
 	[20003] = { perk = "EXTRA_PERK", redeliverable = true, newgame = true },
 	[20004] = { perk = "SAVING_GRACE", redeliverable = true, newgame = true },
 	[20005] = { perk = "TRICK_BLOOD_MONEY", redeliverable = true, newgame = true },
+	[20006] = { perk = "AP_PERK_REROLL", redeliverable = true, newgame = true }, -- perk that enables perk rerolling
 	[20007] = { perk = "NO_MORE_KNOCKBACK", redeliverable = true, newgame = true },
 	[20008] = { perk = "MANA_FROM_KILLS", redeliverable = true, newgame = true },
 	[20009] = { perk = "RADAR_ENEMY", redeliverable = true, newgame = true },

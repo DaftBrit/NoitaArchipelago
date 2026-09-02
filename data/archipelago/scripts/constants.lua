@@ -60,7 +60,7 @@ local AP = {
 	PROGRESSIVE_LEFT_PARALLEL_WORLD = 20001, --- @type integer
 	PROGRESSIVE_RIGHT_PARALLEL_WORLD = 20002, --- @type integer
 
-	-- TEMPLE_PERK_COUNT
+	-- New perk stuff
 	PERK_EXTRA_PERK_ID = 20003, --- @type integer
 	PERK_SAVING_GRACE_ID = 20004, --- @type integer
 	PERK_TRICK_BLOOD_MONEY_ID = 20005, --- @type integer
@@ -74,6 +74,12 @@ local AP = {
 	PERK_HEALTHY_EXPLORATION_ID = 20013, --- @type integer
 	PERK_BOMBS_MATERIALIZED_ID = 20014, --- @type integer
 	PERK_UNLIMITED_SPELLS_ID = 20015, --- @type integer
+
+	-- More filler
+	PERK_REROLL_DISCOUNT_ID = 20016, --- @type integer
+	RANDOM_PROJECTILE_SPELL_ID = 20017, --- @type integer
+	RANDOM_STATIC_PROJECTILE_SPELL_ID = 20018, --- @type integer
+	RANDOM_PROJECTILE_MODIFIER_SPELL_ID = 20019, --- @type integer
 
 	--- Killsanity
 	--- @type integer
