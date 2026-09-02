@@ -1,12 +1,16 @@
 ---@class UUID
-local UUID = {}
+local UUID = {
+	num_gens = 0
+}
 
--- https://gist.github.com/jrus/3197011
+-- Modified from https://gist.github.com/jrus/3197011
 ---@return string
 function UUID.generate()
 	local year, month, day, hour, minute, second = GameGetDateAndTimeUTC()
-	local rng = year * 100000 + month * 10000 + day * 1000 + hour * 100 + minute * 10 + second
-	math.randomseed(rng)
+	local rng = year * 10000000 + month * 1000000 + day * 100000 + hour * 10000 + minute * 1000 + second * 100
+	rng = rng + GameGetRealWorldTimeSinceStarted() * 100 + GameGetFrameNum() * 10 + UUID.num_gens
+	math.randomseed(math.floor(rng))
+	UUID.num_gens = UUID.num_gens + 1
 
     local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
     local result = template:gsub('[xy]', function (c)
