@@ -1,38 +1,32 @@
 dofile_once("data/scripts/lib/utilities.lua") -- component_readwrite
 dofile_once("data/scripts/perks/perk_utilities.lua")
 
-local function remove_from_pool(perk_name)
-	for _, perk in pairs(perk_list) do
-		if (perk.id == perk_name) then
-			perk.not_in_default_perk_pool = true
-		end
-	end
-end
+local ARCHIPELAGO_REMOVE_FROM_POOL = {
+	-- Original perk list
+	PROTECTION_ELECTRICITY = 1,
+	PROTECTION_MELEE = 1,
+	PROTECTION_RADIOACTIVITY = 1,
+	PROTECTION_FIRE = 1,
+	PROTECTION_EXPLOSION = 1,
+	EDIT_WANDS_EVERYWHERE = 1,
+	REMOVE_FOG_OF_WAR = 1,
+	RESPAWN = 1,
+	MEGA_BEAM_STONE = 1,
 
-remove_from_pool("PROTECTION_ELECTRICITY")
-remove_from_pool("PROTECTION_MELEE")
-remove_from_pool("PROTECTION_RADIOACTIVITY")
-remove_from_pool("PROTECTION_FIRE")
-remove_from_pool("PROTECTION_EXPLOSION")
-remove_from_pool("EDIT_WANDS_EVERYWHERE")
-remove_from_pool("REMOVE_FOG_OF_WAR")
-remove_from_pool("RESPAWN")
-remove_from_pool("MEGA_BEAM_STONE")
-
---[[ For future use
-remove_from_pool("EXTRA_PERK")
-remove_from_pool("SAVING_GRACE")
-remove_from_pool("TRICK_BLOOD_MONEY")
-remove_from_pool("NO_MORE_KNOCKBACK")
-remove_from_pool("MANA_FROM_KILLS")
-remove_from_pool("RADAR_ENEMY")
-remove_from_pool("IRON_STOMACH")
-remove_from_pool("WAND_RADAR")
-remove_from_pool("ITEM_RADAR")
-remove_from_pool("ADVENTURER")
-remove_from_pool("ABILITY_ACTIONS_MATERIALIZED")
-remove_from_pool("UNLIMITED_SPELLS")
-]]
+	-- V2 perk list (re-added later if still running v1 apworld)
+	EXTRA_PERK = 1,
+	SAVING_GRACE = 1,
+	TRICK_BLOOD_MONEY = 1,
+	NO_MORE_KNOCKBACK = 1,
+	MANA_FROM_KILLS = 1,
+	RADAR_ENEMY = 1,
+	IRON_STOMACH = 1,
+	WAND_RADAR = 1,
+	ITEM_RADAR = 1,
+	ADVENTURER = 1,
+	ABILITY_ACTIONS_MATERIALIZED = 1,
+	UNLIMITED_SPELLS = 1,
+}
 
 table.insert(perk_list, {
 	id = "AP_LEGGY_FEET",
@@ -143,5 +137,9 @@ for _, perk in ipairs(perk_list) do
 			perk_count = perk_count - 1
 			GlobalsSetValue( "TEMPLE_PERK_COUNT", tostring(perk_count) )
 		end
+	end
+
+	if ARCHIPELAGO_REMOVE_FROM_POOL[perk.id] ~= nil then
+		perk.not_in_default_perk_pool = true
 	end
 end

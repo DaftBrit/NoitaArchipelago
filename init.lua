@@ -74,7 +74,7 @@ local TrapLinkCls = dofile("data/archipelago/scripts/links/TrapLink.lua") --- @t
 ---@field hints HintTableEntry[]? Tablet hints
 ---@field room_uid integer? Unique id specific to the room, distinct from other rooms using the same seed
 ---@field num_starting_perks integer? Number of perks in HMs you start with, starting with 3
-
+---@field version integer?
 
 ---@type SlotOpts?
 local slot_options = nil
@@ -408,6 +408,9 @@ function RECV_MSG.Connected()
 		GlobalsSetValue("TEMPLE_PERK_COUNT", tostring(slot_options.num_starting_perks))
 	else
 		GlobalsSetValue("TEMPLE_PERK_COUNT", "3")
+	end
+	if slot_options.version ~= nil and slot_options.version >= 2 then
+		GameAddFlagRun("ap_version_2")
 	end
 
 	-- spawn kill saver makes it so you won't get traps in the first couple seconds after connecting

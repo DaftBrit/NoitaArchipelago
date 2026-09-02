@@ -12,6 +12,7 @@ ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "data/archipelago/scripts
 ModLuaFileAppend("data/scripts/biomes/boss_arena.lua", "data/archipelago/scripts/patches/extend_temple_altar_left.lua")
 ModLuaFileAppend("data/scripts/biomes/snowcastle_cavern.lua", "data/archipelago/scripts/patches/extend_snowcastle_cavern.lua")
 ModLuaFileAppend("data/scripts/perks/perk_list.lua", "data/archipelago/scripts/patches/ap_extend_perk_list.lua")
+ModLuaFileAppend("data/scripts/perks/perk.lua", "data/archipelago/scripts/patches/ap_extend_perks.lua")
 ModLuaFileAppend("data/entities/animals/boss_centipede/ending/sampo_start_ending_sequence.lua", "data/archipelago/scripts/patches/ap_extend_ending.lua")
 ModLuaFileAppend("data/entities/animals/boss_centipede/sampo_pickup.lua", "data/archipelago/scripts/patches/ap_extend_sampo_pickup.lua")
 
