@@ -81,6 +81,8 @@ local AP = {
 	RANDOM_STATIC_PROJECTILE_SPELL_ID = 20018, --- @type integer
 	RANDOM_PROJECTILE_MODIFIER_SPELL_ID = 20019, --- @type integer
 
+	PERK_AP_RADAR_ID = 20020, --- @type integer
+
 	--- Killsanity
 	--- @type integer
 	FIRST_ANIMAL_LOCATION_ID = 200000,
