@@ -14,6 +14,7 @@ local ARCHIPELAGO_V2_PERKS = {
 	ADVENTURER = 1,
 	ABILITY_ACTIONS_MATERIALIZED = 1,
 	UNLIMITED_SPELLS = 1,
+	AP_CHEST_RADAR = 1,
 }
 
 local perk_get_spawn_order_old = perk_get_spawn_order
