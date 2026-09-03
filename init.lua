@@ -1,8 +1,3 @@
--- Copyright (c) 2022 Heinermann, Scipio Wright, DaftBrit
---
--- This software is released under the MIT License.
--- https://opensource.org/licenses/MIT
-
 local MOD_VERSION = "1.6.0"
 
 dofile_once("data/archipelago/lib/pathcheck.lua")
