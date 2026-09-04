@@ -20,6 +20,7 @@ function Cache:new(cache_name)
 	_G[self.cache_id] = {}
 end
 
+---@return string
 function Cache:get_filename()
 	return "archipelago_cache/" .. self.cache_name .. ".json"
 end
@@ -66,27 +67,36 @@ function Cache:check_dirty()
 	end
 end
 
+---@param key any
+---@param value any
 function Cache:set(key, value)
 	self:check_dirty()
 	_G[self.cache_id][tostring(key)] = (value or true)
 	self:write()
 end
 
+---@param key any
+---@param default_value any
+---@return any
 function Cache:get(key, default_value)
 	self:check_dirty()
 	return _G[self.cache_id][tostring(key)] or default_value
 end
 
+---@param key any
+---@return boolean
 function Cache:is_set(key)
 	self:check_dirty()
 	return _G[self.cache_id][tostring(key)] ~= nil
 end
 
+---@return boolean
 function Cache:is_empty()
 	self:check_dirty()
 	return rawequal(next(_G[self.cache_id]), nil)
 end
 
+---@return table
 function Cache:reference()
 	self:check_dirty()
 	return _G[self.cache_id]

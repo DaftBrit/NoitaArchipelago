@@ -51,10 +51,10 @@ local TrapLinkCls = dofile("data/archipelago/scripts/links/TrapLink.lua") --- @t
 ---@field location integer location id of the item inside the world
 ---@field player integer player slot of the world the item is located in
 ---@field flags itemflags bit flags for item classification
----@field item_name string (added after receiving) name of the item
----@field player_name string (added after receiving) name of the slot meant to find the item
----@field location_name string (added after receiving) name of the location the item is at
----@field receiver_name string (added after receiving) name of the player receiving the item
+---@field item_name string? (added after receiving) name of the item
+---@field player_name string? (added after receiving) name of the slot meant to find the item
+---@field location_name string? (added after receiving) name of the location the item is at
+---@field receiver_name string? (added after receiving) name of the player receiving the item
 
 ---@class SlotOpts
 ---@field victory_condition integer?
@@ -66,7 +66,7 @@ local TrapLinkCls = dofile("data/archipelago/scripts/links/TrapLink.lua") --- @t
 ---@field orbs_as_checks integer?
 ---@field shop_price number?
 ---@field lock_portals integer?
----@field hints HintTableEntry[]? Tablet hints
+---@field hints HintTableEntry[]? Tablet hints (expect up to 42)
 ---@field room_uid integer? Unique id specific to the room, distinct from other rooms using the same seed
 ---@field num_starting_perks integer? Number of perks in HMs you start with, starting with 3
 ---@field version integer?
@@ -354,6 +354,7 @@ local function ForceDisconnect(msg)
 	ConnectionError(msg .. "\nPlease update the settings and restart the game.")
 end
 
+
 ---@param hints HintTableEntry[]
 local function SetupHints(hints)
 	for _, hint in ipairs(hints) do
@@ -439,9 +440,7 @@ function RECV_MSG.Connected()
 	Globals.PedestalLocationsSet:set_table(peds_checklist)
 
 	SetupLocationScouts()
-	if slot_options.hints ~= nil then
-		SetupHints(slot_options.hints)
-	end
+	SetupHints(slot_options.hints or {})
 
 	-- Enable deathlink if the setting on the server and the mod setting said to
 	LinkManager:InitSettings(connect_tags)
