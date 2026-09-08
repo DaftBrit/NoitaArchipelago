@@ -343,7 +343,8 @@ local archipelago_traps = {
 		id = "AP_INSTANT_DEATH",
 		ui_name = "$ap_trap_instant_death",
 		kind = STREAMING_EVENT_AWFUL,
-		action = function(event)
+		delay_timer = 600,
+		action_delayed = function(event)
 			local player = Noita.GetPlayer()
 			if player == nil then return end
 			EntityInflictDamage(player, 99999999, "DAMAGE_CURSE", "$ap_trap_instant_death", "NONE", 0, 0)
@@ -353,15 +354,15 @@ local archipelago_traps = {
 		id = "AP_ONE_HP",
 		ui_name = "$ap_trap_one_hp",
 		kind = STREAMING_EVENT_AWFUL,
-		action = function(event)
+		delay_timer = 300,
+		action_delayed = function(event)
 			local player = Noita.GetPlayer()
 			if player == nil then return end
 
 			local damage_comps = EntityGetComponent(player, "DamageModelComponent") or {}
 			for _, comp in ipairs(damage_comps) do
-				-- Play the damage sound effect
-				EntityInflictDamage(player, -0.0000001, "DAMAGE_CURSE", "$ap_trap_one_hp", "NONE", 0, 0)
-				ComponentSetValue2(comp, "hp", 1.0 / 25)
+				local hp = ComponentGetValue2(comp, "hp")
+				EntityInflictDamage(player, math.max(hp - 1.0 / 25, 0), "DAMAGE_CURSE", "$ap_trap_one_hp", "NONE", 0, 0)
 			end
 		end
 	},
