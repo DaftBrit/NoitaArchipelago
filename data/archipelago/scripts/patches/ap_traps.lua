@@ -216,7 +216,7 @@ local archipelago_traps = {
 		ui_name = "$ap_trap_chilled",
 		ui_icon = "data/ui_gfx/status_indicators/ingestion_freezing.png",
 		action = function(event)
-			ApplyStatusEffect(event, "INTERNAL_ICE", 1200)
+			ApplyStatusEffect(event, "INTERNAL_ICE", 3600)
 		end
 	},
 	{
