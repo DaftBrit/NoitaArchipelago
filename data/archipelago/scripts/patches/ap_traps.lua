@@ -223,6 +223,7 @@ local archipelago_traps = {
 		id = "AP_CHAOS_FUNGAL_SHIFT",
 		ui_name = "$ap_trap_chaos_fungal_shift",
 		ui_icon = "data/ui_gfx/status_indicators/trip.png",
+		kind = STREAMING_EVENT_AWFUL,
 		action = function(event)
 			ApplyCustomStatusEffect(event, "data/entities/misc/effect_trip_02.xml", 300, true)
 			ChaosFungalShift()
@@ -744,6 +745,7 @@ local archipelago_traps = {
 		id = "AP_EARTHQUAKE",
 		ui_name = "$ap_trap_earthquake",
 		delay_timer = 300,
+		kind = STREAMING_EVENT_AWFUL,
 		action_delayed = function(event)
 			local x, y = Noita.GetSpawnPosition()
 			local entity = EntityLoad("data/entities/projectiles/deck/crumbling_earth.xml", x, y)
