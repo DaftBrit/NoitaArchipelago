@@ -86,7 +86,7 @@ local perk_extensions = {
 				GameAddFlagRun( "AP_ATTACK_FOOT_CLIMBER" )
 			else
 				-- add length to limbs
-				for _,v in ipairs(EntityGetAllChildren(entity_who_picked)) do
+				for _,v in ipairs(EntityGetAllChildren(entity_who_picked) or {}) do
 					if EntityHasTag(v, "ap_leggy_foot_walker") then
 						component_readwrite(EntityGetFirstComponent(v, "IKLimbComponent"), { length = 50 }, function(comp)
 							comp.length = comp.length * 1.5

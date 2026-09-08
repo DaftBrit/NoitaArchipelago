@@ -1,6 +1,4 @@
-dofile_once("data/archipelago/scripts/ap_utils.lua")
-
-InitRandomSeed()
+SetRandomSeed(GameGetRealWorldTimeSinceStarted(), GameGetFrameNum())
 local entity = GetUpdatedEntityID()
 
 local literature_pool = {

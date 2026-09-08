@@ -6,6 +6,7 @@ local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
+local Noita = dofile_once("data/archipelago/lib/noita.lua") ---@type Noita
 
 
 function ResetOrbID()
@@ -54,12 +55,12 @@ function SpawnItem(item_id, traps)
 		Globals.HMPortalsUnlocked:set(Globals.HMPortalsUnlocked:get_num(0) + 1)
 		Log.Info("Progressive portal received")
 	elseif item.perk ~= nil then
-		if get_player() == nil then return false end
+		if Noita.GetPlayer() == nil then return false end
 		give_perk(item.perk)
 		Log.Info("Perk spawned")
 	elseif item.gold_amount ~= nil then
-		if get_player() == nil then return false end
-		add_money(item.gold_amount)
+		if Noita.GetPlayer() == nil then return false end
+		Noita.AddMoney(item.gold_amount)
 	elseif item.potion ~= nil then
 		spawn_potion(item.items[1])
 		GlobalsSetValue("ap_random_hax", tostring(rand_x + 2))
@@ -117,7 +118,7 @@ function NGSpawnItems(item_counts)
 		local heart_amt = item_counts[AP.HEART_ITEM_ID] or 0
 		local orb_amt = item_counts[AP.ORB_ITEM_ID] or 0
 		GivePlayerOrbsOnSpawn(orb_amt)
-		add_cur_and_max_health(heart_amt + orb_amt)
+		Noita.AddHealthUp(heart_amt + orb_amt)
 		item_counts[AP.HEART_ITEM_ID] = nil
 		item_counts[AP.ORB_ITEM_ID] = nil
 	end

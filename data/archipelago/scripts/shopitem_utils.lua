@@ -1,11 +1,11 @@
-dofile_once("data/scripts/lib/utilities.lua") -- get_variable_storage_component, change_entity_ingame_name
-dofile_once("data/scripts/perks/perk.lua")
+dofile_once("data/scripts/lib/utilities.lua") -- get_variable_storage_component
 
 local AP = dofile("data/archipelago/scripts/constants.lua")
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local JSON = dofile("data/archipelago/lib/json.lua")
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua")
 
 
 local ShopItems = {}
@@ -67,7 +67,7 @@ end -- generate_item_price
 function ShopItems.create_our_item_entity(item, x, y)
 	print("shop item create entity start")
 	if item.perk ~= nil then
-		local perk_id = perk_spawn(x, y, item.perk, true)
+		local perk_id = Noita.SpawnPerk(x, y, item.perk)
 		if perk_id ~= nil then
 			EntityRemoveTag(perk_id, "perk")
 			EntityAddTag(perk_id, "ap_item")
@@ -115,7 +115,7 @@ function ShopItems.create_foreign_item_entity(location, x, y)
 	local name = location.item_name
 
 	-- Change item name
-	change_entity_ingame_name(entity_id, name, description)
+	Noita.ChangeEntityName(entity_id, name, description)
 	return entity_id
 end
 

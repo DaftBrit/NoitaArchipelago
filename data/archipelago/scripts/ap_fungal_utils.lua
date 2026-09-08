@@ -1,5 +1,5 @@
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
-dofile_once("data/archipelago/scripts/ap_utils.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua")
 
 ---@type string[]?
 local chaos_fungal_shift_pool = nil
@@ -51,7 +51,7 @@ local function HasFungalShiftIcon(entity)
 end
 
 local function AddFungalShiftIcon()
-	local player = get_player()
+	local player = Noita.GetPlayer()
 	if player == nil or HasFungalShiftIcon(player) then return end
 
 	local icon_entity = EntityCreateNew("fungal_shift_ui_icon")
@@ -64,7 +64,7 @@ local function AddFungalShiftIcon()
 end
 
 function ChaosFungalShift()
-	InitRandomSeed()
+	Noita.InitRandomSeed()
 	InitFungalPool()
 
 	-- Randomize materials
@@ -86,7 +86,7 @@ function ChaosFungalShift()
 	ConvertMaterialEverywhere(from_id, to_id)
 
 	-- Effects
-	local x, y = get_spawn_position()
+	local x, y = Noita.GetSpawnPosition()
 	GameTriggerMusicFadeOutAndDequeueAll(5.0)
 	GameTriggerMusicEvent("music/oneshot/tripping_balls_01", false, x, y)
 

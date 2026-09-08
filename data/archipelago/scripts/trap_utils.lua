@@ -1,7 +1,7 @@
 
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
-dofile_once("data/scripts/lib/utilities.lua") -- get_player
+local Noita = dofile_once("data/archipelago/lib/noita.lua")
 
 --[[
 TrapLink spreadsheet candidates:
@@ -275,8 +275,8 @@ function RunStreamingEvent(id)
 	if evt.id == id then
 		if evt.action_delayed ~= nil then
 			if evt.delay_timer ~= nil then
-				local p = get_players()
-				for _,player in ipairs(p) do
+				local player = Noita.GetPlayer()
+				if player ~= nil then
 					add_timer_above_head(player, evt.id, evt.delay_timer)
 				end
 			end

@@ -1,4 +1,5 @@
 dofile_once("data/archipelago/scripts/ap_utils.lua")
+dofile_once("data/archipelago/lib/extensions.lua")
 
 local function APPedestalReplacer()
 	local Biomes = dofile("data/archipelago/scripts/ap_biome_mapping.lua")
@@ -44,7 +45,7 @@ local function APPedestalReplacer()
 				elseif item_id >= AP.FIRST_WAND_ITEM_ID and item_id <= AP.LAST_WAND_ITEM_ID then
 					y = y + 0.5
 				-- potions or powder stash
-				elseif contains_element({AP.POTION_ITEM_ID, AP.RANDOM_POTION_ITEM_ID, AP.SECRET_POTION_ITEM_ID, AP.POWDER_STASH_ITEM_ID}, item_id)
+				elseif table.contains({AP.POTION_ITEM_ID, AP.RANDOM_POTION_ITEM_ID, AP.SECRET_POTION_ITEM_ID, AP.POWDER_STASH_ITEM_ID}, item_id)
 						and replaced_pedestal == "wand" then
 					x = x + 1.5
 				-- kammi

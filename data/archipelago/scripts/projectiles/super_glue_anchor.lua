@@ -1,4 +1,5 @@
-dofile_once("data/scripts/lib/utilities.lua") -- component_readwrite, get_magnitude, vec_mult
+dofile_once("data/scripts/lib/utilities.lua") -- component_readwrite
+dofile_once("data/archipelago/lib/extensions.lua")
 
 local force = 0.018
 
@@ -56,6 +57,7 @@ if target_x ~= nil and target_x ~= 0 and target_y ~= 0 then
 	-- snap anchor to target
 	EntitySetTransform(entity_id, target_x, target_y - 2)
 
+	--- WTF is this comparison?
 	-- if target is anchor, don't apply force to both
 	if target > entity_id and EntityHasTag(target, "glue_anchor") then return end
 
@@ -70,14 +72,15 @@ if target_x ~= nil and target_x ~= 0 and target_y ~= 0 then
 
 		local hit, ray_x, ray_y = RaytracePlatforms(target_x, target_y, center_x, center_y)
 		if hit then
-			local dist_to_wall = get_magnitude(ray_x - target_x, ray_y - target_y)
+			local dist_to_wall = math.magnitude(ray_x - target_x, ray_y - target_y)
 			if dist_to_wall < 8 then
 				return
 			end
 		end
 
 		-- calculate force
-		vx, vy = vec_mult(vx, vy, force)
+		vx = vx * force
+		vy = vy * force
 
 		EntityApplyTransform(target, target_x + vx, target_y + vy)
 	end

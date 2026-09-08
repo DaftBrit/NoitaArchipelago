@@ -3,7 +3,6 @@ local player = EntityGetRootEntity(entity)
 
 local inventory = GameGetAllInventoryItems(player) or {}
 for _, item in ipairs(inventory) do
-	print_error("item...")
 	local abil = EntityGetFirstComponentIncludingDisabled(item, "AbilityComponent")
 	if abil ~= nil then
 		local mana = tonumber(ComponentGetValue2(abil, "mana")) or 0

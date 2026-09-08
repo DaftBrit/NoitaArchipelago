@@ -1,7 +1,7 @@
-dofile_once("data/scripts/perks/perk.lua")
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
 local AP = dofile("data/archipelago/scripts/constants.lua")
+
 
 local worldOffsetX = -16384
 local worldOffsetY = 13824
@@ -54,7 +54,7 @@ function APEggStartSpawn(item_counts)
 			item_counts[item] = nil
 		elseif item == AP.MAP_PERK_ID then
 			-- spawn the map perk on the ground, in case you find it distracting
-			perk_spawn(813, -96, item_table[item].perk)
+			spawn_ap_perk(813, -96, item_table[item].perk)
 			item_counts[item] = nil
 
 		elseif item_table[item].perk ~= nil then

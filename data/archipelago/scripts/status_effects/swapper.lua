@@ -1,6 +1,4 @@
-dofile_once("data/archipelago/scripts/ap_utils.lua")
-
-InitRandomSeed()
+SetRandomSeed(GameGetRealWorldTimeSinceStarted(), GameGetFrameNum())
 -- 1/3 chance of swapping every 5 seconds
 if Random(1,3) ~= 1 then return end
 

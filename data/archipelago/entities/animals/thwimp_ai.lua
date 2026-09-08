@@ -1,4 +1,4 @@
-dofile_once("data/archipelago/scripts/ap_utils.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua")
 
 local entity = GetUpdatedEntityID()
 local x, y = EntityGetTransform(entity)
@@ -60,7 +60,7 @@ local function update_prev_values()
 end
 
 local function get_x_vel()
-	local targ_x = get_spawn_position()
+	local targ_x = Noita.GetSpawnPosition()
 	if targ_x < x then
 		return -6
 	end

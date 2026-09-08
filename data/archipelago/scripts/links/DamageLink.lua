@@ -1,5 +1,6 @@
 local LinkBase = dofile("data/archipelago/scripts/links/LinkBase.lua") ---@type LinkBase
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
+local Noita = dofile_once("data/archipelago/lib/noita.lua")
 
 ---@class DamageLink : LinkBase
 ---@field damage_saved number Damage saved over time when below the send threshold
@@ -12,7 +13,7 @@ end
 
 ---@param data table
 function DamageLink:Received(data)
-	local player = get_player()
+	local player = Noita.GetPlayer()
 	if player == nil then return end
 	if type(data.damage_points) ~= "number" then return end
 

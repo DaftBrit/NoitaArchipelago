@@ -1,5 +1,5 @@
 local LinkBase = dofile("data/archipelago/scripts/links/LinkBase.lua") ---@type LinkBase
-dofile_once("data/archipelago/scripts/ap_utils.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua") ---@type Noita
 
 ---@class DeathLink : LinkBase
 ---@field last_death_time number
@@ -32,12 +32,12 @@ function DeathLink:Received(data)
 		GamePrintImportant(data.cause, "$ap_deathlink_triggered")
 	end
 
-	local player = get_player()
+	local player = Noita.GetPlayer()
 	-- Don't try anything if the player doesn't exist (gj you dodged it)
 	if player == nil then return end
 
 	if death_link_option == "on" then
-		if not DecreaseExtraLife(player) then
+		if not Noita.DecreaseExtraLife(player) then
 			local gsc_id = EntityGetFirstComponentIncludingDisabled(player, "GameStatsComponent")
 			if gsc_id ~= nil then
 				ComponentSetValue2(gsc_id, "extra_death_msg", data.cause)
@@ -54,7 +54,7 @@ function DeathLink:OnPlayerDied()
 	if not self:CanDeathLink() then return end
 	if not self.manager.ap then return end
 
-	local death_msg = GetCauseOfDeath() or "skill issue"
+	local death_msg = Noita.GetCauseOfDeath()
 	local slotname = self.manager.ap:get_slot()
 	self:SendBounce({
 		cause = slotname .. " died to " .. death_msg,

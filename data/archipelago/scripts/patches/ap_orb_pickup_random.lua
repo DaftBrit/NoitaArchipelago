@@ -1,4 +1,3 @@
-dofile( "data/scripts/game_helpers.lua" )
 dofile_once("data/scripts/lib/utilities.lua") -- shoot_projectile
 dofile_once("data/archipelago/scripts/ap_utils.lua")
 

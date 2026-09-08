@@ -1,9 +1,5 @@
-local NULL_ENTITY = 0 --[[@as entity_id]]
-
 local entity_id = GetUpdatedEntityID()
 local player_id = EntityGetRootEntity(entity_id)
-
-if player_id == NULL_ENTITY then return end
 
 local comp = EntityGetFirstComponentIncludingDisabled(player_id, "DamageModelComponent")
 if comp == nil then return end

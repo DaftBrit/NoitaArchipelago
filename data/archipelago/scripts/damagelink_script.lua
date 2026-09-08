@@ -1,10 +1,7 @@
 local Globals = dofile("data/archipelago/scripts/globals.lua") ---@type Globals
+dofile_once("data/archipelago/lib/extensions.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua") --- @type Noita
 
----@param s string?
----@return boolean
-function not_empty(s)
-	return s ~= nil and s ~= ''
-end
 
 ---@return string
 local function GetAnimalName(entity_id)
@@ -63,18 +60,8 @@ function damage_received(damage, message, entity_thats_responsible, is_fatal, pr
 	if maybe_has_knockback then
 		local origin = GetAnimalName(entity_thats_responsible)
 		local cause = GameTextGetTranslatedOrNot(message)
-		local result = 'Noita'
-		if not_empty(origin) and not_empty(cause) then
-			if origin:sub(-1) == 's' then
-				result = GameTextGet("$menugameover_causeofdeath_killer_cause_name_ends_in_s", origin, cause)
-			else
-				result = GameTextGet("$menugameover_causeofdeath_killer_cause", origin, cause)
-			end
-		elseif not_empty(origin) then
-			result = origin
-		elseif not_empty(cause) then
-			result = cause
-		end
+
+		local result = Noita.ParseCauseOfDeath(origin, cause)
 		Globals.LastDamageCauses:append(result)
 	end
 end

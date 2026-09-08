@@ -1,5 +1,6 @@
 local LinkBase = dofile("data/archipelago/scripts/links/LinkBase.lua") ---@type LinkBase
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
+local Noita = dofile_once("data/archipelago/lib/noita.lua")
 
 ---@class KnockbackLink : LinkBase
 local KnockbackLink = LinkBase:extend()
@@ -10,7 +11,7 @@ end
 
 ---@param data table
 function KnockbackLink:Received(data)
-	local player = get_player_always()
+	local player = Noita.GetPlayerAlways()
 	if player == nil then return end
 	if type(data.value) ~= "table" then return end
 

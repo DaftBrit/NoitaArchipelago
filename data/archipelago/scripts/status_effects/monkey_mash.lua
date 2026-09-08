@@ -1,4 +1,4 @@
-dofile_once("data/archipelago/scripts/ap_utils.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua") --- @type Noita
 
 local player = EntityGetRootEntity(GetUpdatedEntityID())
 local player_x, player_y = EntityGetTransform(player)
@@ -112,9 +112,9 @@ TargetX = TargetX + MoveTargetX
 TargetY = TargetY + MoveTargetY
 
 if Input == "ChangeItemR" then
-	SwitchInventoryItem(1)
+	Noita.SwitchInventoryItem(1)
 elseif Input == "ChangeItemL" then
-	SwitchInventoryItem(-1)
+	Noita.SwitchInventoryItem(-1)
 elseif Input == "Inventory" then
 	OpenInventory()
 else

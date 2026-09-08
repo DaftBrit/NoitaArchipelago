@@ -18,7 +18,9 @@ end
 
 -- SCRIPTS
 dofile_once("data/archipelago/scripts/ap_utils.lua")
+dofile_once("data/archipelago/lib/extensions.lua")
 dofile_once("data/archipelago/scripts/item_utils.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua")
 local UUID = dofile_once("data/archipelago/lib/uuid.lua") --- @type UUID
 
 local item_table = dofile("data/archipelago/scripts/item_mappings.lua")
@@ -45,16 +47,17 @@ local TrapLinkCls = dofile("data/archipelago/scripts/links/TrapLink.lua") --- @t
 -- See Options.py on the AP-side
 -- Can also use to indicate whether AP sent the connected packet
 
+--- Contains a subset of fields from the Hint structure
 ---@class HintTableEntry
 ---@field receiving_player integer player slot receiving the item
----@field item integer item id of the item
+---@field finding_player integer player slot of the world the item is located in
 ---@field location integer location id of the item inside the world
----@field player integer player slot of the world the item is located in
+---@field item integer item id of the item
 ---@field flags itemflags bit flags for item classification
----@field item_name string? (added after receiving) name of the item
----@field player_name string? (added after receiving) name of the slot meant to find the item
+---@field receiving_player_name string? (added after receiving) name of the player receiving the item
+---@field finding_player_name string? (added after receiving) name of the slot meant to find the item
 ---@field location_name string? (added after receiving) name of the location the item is at
----@field receiver_name string? (added after receiving) name of the player receiving the item
+---@field item_name string? (added after receiving) name of the item
 
 ---@class SlotOpts
 ---@field victory_condition integer?
@@ -358,9 +361,9 @@ end
 ---@param hints HintTableEntry[]
 local function SetupHints(hints)
 	for _, hint in ipairs(hints) do
-		hint.player_name = ap:get_player_alias(hint.player)
-		hint.location_name = ap:get_location_name(hint.location, ap:get_player_game(hint.player))
-		hint.receiver_name = ap:get_player_alias(hint.receiving_player)
+		hint.finding_player_name = ap:get_player_alias(hint.finding_player)
+		hint.location_name = ap:get_location_name(hint.location, ap:get_player_game(hint.finding_player))
+		hint.receiving_player_name = ap:get_player_alias(hint.receiving_player)
 		hint.item_name = ap:get_item_name(hint.item, ap:get_player_game(hint.receiving_player))
 	end
 	Globals.HiddenHints:set_table(hints)
@@ -871,7 +874,7 @@ local slow_position_update_timer = 0
 local old_x = 0
 local old_y = 0
 local function UpdatePlayerPoptrackerPosition()
-	local player = get_player()
+	local player = Noita.GetPlayer()
 	if not player or player == 0 then return end
 
 	slow_position_update_timer = slow_position_update_timer + 1
@@ -1031,7 +1034,7 @@ function OnModInit()
 	end
 
 	GameRemoveFlagRun("AP_LocationInfo_received")
-	create_dir("archipelago_cache")
+	os.create_dir("archipelago_cache")
 	messages_setting = tostring(ModSettingGet("archipelago.messages") or "all")
 	ConnIcon:create()
 	connect()

@@ -1,70 +1,9 @@
-dofile_once("data/scripts/lib/utilities.lua") -- shoot_projectile, change_entity_ingame_name
-dofile_once("data/scripts/perks/perk.lua")
-local AP = dofile("data/archipelago/scripts/constants.lua")
+local AP = dofile("data/archipelago/scripts/constants.lua") ---@type Constants
 local Log = dofile("data/archipelago/scripts/logger.lua") ---@type Logger
 local Globals = dofile("data/archipelago/scripts/globals.lua") --- @type Globals
+dofile_once("data/archipelago/lib/extensions.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua") --- @type Noita
 
-
----@param tbl table
----@param elem any
----@return boolean
-function contains_element(tbl, elem)
-	for _, v in ipairs(tbl or {}) do
-		if v == elem then return true end
-	end
-	return false
-end
-
----@param s string?
----@return boolean
-function not_empty(s)
-	return s ~= nil and s ~= ''
-end
-
----@param s string
----@return string
-function sanitize(s)
-	return s:gsub("[^%w_]", "_"):lower()
-end
-
---- @return entity_id|nil
-function get_player()
-	return EntityGetWithTag("player_unit")[1]
-end
-
---- Retrieves the player entity even if it is polymorphed
---- @return entity_id|nil
-function get_player_always()
-	return get_player() or EntityGetWithTag("polymorphed_player")[1] or EntityGetWithTag("polymorphed_cessation")[1]
-end
-
-local total_random_calls = 0
---- For maximum random
-function InitRandomSeed()
-	local x, y = get_spawn_position()
-	SetRandomSeed(x + GameGetFrameNum(), y * total_random_calls)
-	total_random_calls = total_random_calls + 1
-end
-
---- Gets a position for spawning items. Should always succeed.
---- Checks positions in this order:
----   1. Entity tagged with `player_unit`
----   2. Entity tagged with `polymorphed_player`
----   3. Entity tagged with `polymorphed_cessation`
----   4. Camera position
----@return number x
----@return number y
-function get_spawn_position()
-	local x = 0
-	local y = 0
-	local player_entity = get_player_always()
-	if player_entity ~= nil then
-		x, y = EntityGetTransform(player_entity)
-	else
-		x, y = GameGetCameraPos()
-	end
-	return x, y
-end
 
 --- Staggers an x,y position randomly
 ---@param x number|nil
@@ -83,16 +22,30 @@ end
 ---Function to spawn a perk at the player and then have the player automatically pick it up
 ---@param perk_name string
 function give_perk(perk_name)
-	local p = get_player()
+	local p = Noita.GetPlayer()
 	if p == nil then
 		Log.Error("give_perk - player doesn't exist for " .. perk_name)
 	end
 
-	local x, y = get_spawn_position()
-	local perk = perk_spawn(x, y, perk_name)
-	if perk and p then
-		perk_pickup(perk, p, EntityGetName(perk), false, false)
+	if p then
+		Noita.GivePerk(p, perk_name)
+	else
+		local x, y = Noita.GetSpawnPosition()
+		Noita.SpawnPerk(x, y, perk_name)
 	end
+end
+
+---@param x number
+---@param y number
+---@param perk_id string
+---@return entity_id?
+function spawn_ap_perk(x, y, perk_id)
+	local perk_entity = Noita.SpawnPerk(x, y, perk_id)
+	if perk_entity ~= nil then
+		EntityRemoveTag(perk_entity, "perk")
+		EntityAddTag(perk_entity, "ap_item")
+	end
+	return perk_entity
 end
 
 ---@param potion string filename
@@ -102,7 +55,7 @@ end
 function spawn_potion(potion, x, y)
 	-- if a position is not called, spawn it at the player
 	if x == nil or y == nil then
-		x, y = get_spawn_position()
+		x, y = Noita.GetSpawnPosition()
 	end
 
 	local potion_entity = EntityLoad(potion, random_offset(x, y))
@@ -122,131 +75,6 @@ function spawn_potion(potion, x, y)
 	return potion_entity
 end
 
----Gets the items in the 4 quickbar slots on the right (potions, tablets, etc).
----@return entity_id[]
-function GetQuickbarNonWandItems()
-	local result = {}
-
-	local player = get_player()
-	if player ~= nil then
-		for _,item in ipairs(GameGetAllInventoryItems(player) or {}) do
-			local item_comp = EntityGetFirstComponentIncludingDisabled(item, "AbilityComponent")
-			if item_comp ~= nil then
-				if not ComponentGetValue2(item_comp, "use_gun_script") then
-					table.insert(result, item)
-				end
-			end
-		end
-	end
-	return result
-end
-
----Gets the items in the 4 quickbar slots on the left (wands).
----@return entity_id[]
-function GetQuickbarWandItems()
-	local result = {}
-
-	local player = get_player()
-	if player ~= nil then
-		for _,item in ipairs(GameGetAllInventoryItems(player) or {}) do
-			local item_comp = EntityGetFirstComponentIncludingDisabled(item, "AbilityComponent")
-			if item_comp ~= nil then
-				if ComponentGetValue2(item_comp, "use_gun_script") then
-					table.insert(result, item)
-				end
-			end
-		end
-	end
-	return result
-end
-
----Sets the currently selected quickbar item to the given entity.
----@param item_entity entity_id
-function SelectItem(item_entity)
-	local player = get_player()
-	if player == nil then return end
-
-	local inventory_comp = EntityGetFirstComponentIncludingDisabled(player, "Inventory2Component")
-	if inventory_comp == nil then return end
-
-	local active_item = ComponentGetValue2(inventory_comp, "mActiveItem")
-	local actual_active_item = ComponentGetValue2(inventory_comp, "mActualActiveItem")
-
-	EntitySetComponentsWithTagEnabled(active_item, "enabled_in_hand", false)
-	EntitySetComponentsWithTagEnabled(actual_active_item, "enabled_in_hand", false)
-	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_world", false)
-	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_inventory", true)
-	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_hand", true)
-	ComponentSetValue2(inventory_comp, "mActiveItem", item_entity)
-	ComponentSetValue2(inventory_comp, "mActualActiveItem", 0)
-	ComponentSetValue2(inventory_comp, "mForceRefresh", true)
-	GamePlaySound("data/audio/Desktop/ui.bank", "ui/item_equipped", EntityGetTransform(player))
-end
-
----Gets the currently selected item in the quickbar inventory.
----@return entity_id?
-function SelectedItem()
-	local player = get_player()
-	if player == nil then return nil end
-
-	local inventory_comp = EntityGetFirstComponentIncludingDisabled(player, "Inventory2Component")
-	if inventory_comp == nil then return nil end
-
-	return ComponentGetValue2(inventory_comp, "mActiveItem")
-end
-
----@param tbl any[]
----@param itm any
----@return integer
-local function find_item_index(tbl, itm)
-	for i,v in ipairs(tbl) do
-		if v == itm then return i end
-	end
-	return 1
-end
-
----Switches the inventory item in the given direction
----@param direction integer
-function SwitchInventoryItem(direction)
-	local player = get_player()
-	if player == nil then return nil end
-
-	local active_item = SelectedItem()
-
-	local children = GameGetAllInventoryItems(player) or {}
-	local inventory_list = {}
-	for _,child in ipairs(children) do
-		if EntityGetName(EntityGetParent(child)) == "inventory_quick" then
-			table.insert(inventory_list, child)
-		end
-	end
-	if #inventory_list == 0 then return end
-
-	local idx = find_item_index(inventory_list, active_item) - 1
-	local next_item = inventory_list[math.floor((#inventory_list + idx + direction) % #inventory_list) + 1]
-
-	SelectItem(next_item)
-end
-
----@param items string[]
-function add_items_to_inventory(items)
-	local player = get_player()
-	if player == nil then
-		Log.Error("add_items_to_inventory - player doesn't exist")
-		return
-	end
-
-	for _, path in ipairs(items) do
-		local item = EntityLoad(path)
-		if item then
-			GamePickUpInventoryItem(player, item)
-		else
-			print_error("Error: Couldn't load the item [" .. path .. "]!")
-		end
-	end
-end
-
-
 -- Uses the player's position to initialize the random seed
 ---@param a number|nil
 ---@param b number|nil
@@ -255,7 +83,7 @@ function SeedRandom(a, b)
 		a = 0
 		b = 0
 	end
-	local x, y = get_spawn_position()
+	local x, y = Noita.GetSpawnPosition()
 	SetRandomSeed(x + a, y + b)
 end
 
@@ -264,126 +92,9 @@ end
 ---@param yoff number|nil
 ---@return entity_id
 function EntityLoadAtPlayer(filename, xoff, yoff)
-	local x, y = get_spawn_position()
+	local x, y = Noita.GetSpawnPosition()
 	return EntityLoad(filename, x + (xoff or 0), y + (yoff or 0))
 end
-
----@return string
-function GetCauseOfDeath()
-	local raw_death_msg = StatsGetValue("killed_by")
-	local origin, cause = string.match(raw_death_msg or " | ", "(.*) | (.*)")
-
-	if not_empty(origin) then
-		origin = GameTextGetTranslatedOrNot(origin)
-	end
-
-	local result = 'Noita'
-	if not_empty(origin) and not_empty(cause) then
-		if origin:sub(-1) == 's' then
-			result = GameTextGet("$menugameover_causeofdeath_killer_cause_name_ends_in_s", origin, cause)
-		else
-			result = GameTextGet("$menugameover_causeofdeath_killer_cause", origin, cause)
-		end
-	elseif not_empty(origin) then
-		result = origin
-	elseif not_empty(cause) then
-		result = cause
-	end
-
-	return result .. StatsGetValue("killed_by_extra")
-end
-
-
--- Modified from @Priskip in Noita Discord (https://github.com/Priskip)
--- Removes an Extra Life perk and returns true if one exists
----@param entity_id entity_id
----@return boolean
-function DecreaseExtraLife(entity_id)
-	-- guard
-	if entity_id == nil then return false end
-
-	local children = EntityGetAllChildren(entity_id)
-	for _, child in ipairs(children or {}) do
-		local effect_component = EntityGetFirstComponentIncludingDisabled(child, "GameEffectComponent")
-		local effect_value = effect_component and ComponentGetValue2(effect_component, "effect")
-
-		if effect_value == "RESPAWN" and effect_component and ComponentGetValue2(effect_component, "mCounter") == 0 then
-			--Remove extra life child
-			EntityKill(child)
-
-			--Remove UI component
-			for _, child2 in ipairs(children or {}) do
-				local child_ui_icon_component = EntityGetFirstComponentIncludingDisabled(child2, "UIIconComponent")
-				local name_value = child_ui_icon_component and ComponentGetValue2(child_ui_icon_component, "name")
-
-				if name_value == "$perk_respawn" then
-					EntityKill(child2)
-					break
-				end
-			end
-
-			GamePrintImportant("$log_gamefx_respawn", "$logdesc_gamefx_respawn")
-			return true
-		end
-	end
-	return false
-end
-
-
--- health and money functions from the cheatgui mod
----@return number current HP
----@return number max HP
-function get_health()
-	local dm = EntityGetComponent(get_player(), "DamageModelComponent")[1]
-	return ComponentGetValue2(dm, "hp"), ComponentGetValue2(dm, "max_hp")
-end
-
-
--- Note that these hp values get mulitplied by 25 by the game. Setting it to 80 means 2,000 health
----@param cur_hp number
----@param max_hp number
-function set_health(cur_hp, max_hp)
-	local damagemodels = EntityGetComponent(get_player(), "DamageModelComponent")
-	for _, damagemodel in ipairs(damagemodels or {}) do
-		ComponentSetValue2(damagemodel, "max_hp", max_hp)
-		ComponentSetValue2(damagemodel, "hp", cur_hp)
-	end
-end
-
----@param health_increase number
-function add_cur_and_max_health(health_increase)
-	local cur_hp, max_hp = get_health()
-	set_health(cur_hp + health_increase, max_hp + health_increase)
-end
-
-
-function fully_heal()
-	local _, max_hp = get_health()
-	set_health(max_hp, max_hp)
-end
-
-
----@param amt number
-local function set_money(amt)
-	local wallet = EntityGetFirstComponent(get_player(), "WalletComponent")
-	if wallet then
-		ComponentSetValue2(wallet, "money", amt)
-	end
-end
-
-
----@param amt number
-function add_money(amt)
-	local player_id = get_player()
-	local x, y = EntityGetTransform(player_id)
-	local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
-	if wallet then
-		local current_money = ComponentGetValue2(wallet, "money")
-		ComponentSetValue2(wallet, "money", current_money + amt)
-	end
-	shoot_projectile(player_id, "data/entities/particles/gold_pickup_huge.xml", x, y, 0, 0)
-end
-
 
 -- altered from the wiki
 function addNewInternalVariable(entity_id, variable_name, variable_type, initial_value)
@@ -517,12 +228,7 @@ end
 
 function create_our_item_entity(item, x, y)
 	if item.perk ~= nil then
-		local perk_id = perk_spawn(x, y, item.perk, true)
-		if perk_id ~= nil then
-			EntityRemoveTag(perk_id, "perk")
-			EntityAddTag(perk_id, "ap_item")
-		end
-		return perk_id
+		return spawn_ap_perk(x, y, item.perk)
 	elseif item.items ~= nil and #item.items > 0 then
 		-- our item is something else (random choice)
 		local entity_id = EntityLoad(item.items[Random(1, #item.items)], x, y)
@@ -546,7 +252,7 @@ function create_foreign_item_entity(location, x, y)
 	local name = location.item_name or "problem in create_foreign_item_entity"
 
 	-- Change item name
-	change_entity_ingame_name(entity_id, name, description)
+	Noita.ChangeEntityName(entity_id, name, description)
 	return entity_id
 end
 
@@ -566,31 +272,10 @@ function remove_collected_item(location_id)
 end
 
 
----@param entity_file string
----@param x number
----@param y number
----@param vel_x number
----@param vel_y number
----@return entity_id
-function shoot_projectile_ownerless(entity_file, x, y, vel_x, vel_y)
-	local entity_id = EntityLoad( entity_file, x, y )
-	local null_owner = 0
-
-	---@cast null_owner -integer, +entity_id
-	GameShootProjectile(null_owner, x, y, x+vel_x, y+vel_y, entity_id)
-
-	local velocity_comp = EntityGetFirstComponent(entity_id, "VelocityComponent")
-	if velocity_comp ~= nil then
-		ComponentSetValue2(velocity_comp, "mVelocity", vel_x, vel_y)
-	end
-	return entity_id
-end
-
-
 function countdown_fun()
-	local x, y = get_spawn_position()
+	local x, y = Noita.GetSpawnPosition()
 	for i = 0, 1 do
-		local projectile_id = shoot_projectile_ownerless("data/entities/projectiles/deck/bullet.xml", x - 5 + 10 * i, y, -400 + 800 * i, -400)
+		local projectile_id = Noita.ShootProjectileOwnerless("data/entities/projectiles/deck/bullet.xml", x - 5 + 10 * i, y, -400 + 800 * i, -400)
 		EntityAddComponent2(projectile_id, "ParticleEmitterComponent", {
 			emitted_material_name="material_rainbow",
 			emit_real_particles=true,
@@ -612,7 +297,8 @@ function give_debug_items()
 	give_perk("PROTECTION_EXPLOSION")
 	give_perk("PROTECTION_FIRE")
 	give_perk("PROTECTION_RADIOACTIVITY")
-	add_items_to_inventory({"data/entities/items/wand_level_10.xml", "data/entities/items/wands/custom/digger_01.xml"})
+	EntityLoadAtPlayer("data/entities/items/wand_level_10.xml", -10)
+	EntityLoadAtPlayer("data/entities/items/wands/custom/digger_01.xml", 10)
 	give_perk("MOVEMENT_FASTER")
 	give_perk("MOVEMENT_FASTER")
 	give_perk("HOVER_BOOST")
@@ -623,51 +309,8 @@ function give_debug_items()
 		give_perk("GENOME_MORE_LOVE")
 		give_perk("RESPAWN")
 	end
-	set_money(100000000)
-	set_health(80, 80)
+	Noita.SetHealth(80, 80)
 	EntityLoadAtPlayer("data/archipelago/entities/items/pw_teleporter.xml", 60)
 	-- above teleports you between parallel worlds, off the wiki. aim left to go right one world
 	-- don't aim other directions. the linear arc means it snaps to 8 directions
-end
-
----@param dirname string
----@return boolean
-local function dir_exists(dirname)
-	-- Universal way of checking whether a file or directory exists
-	local ok, err = os.rename(dirname, dirname)
-	if not ok and err then
-		 if err:find("[Pp]ermission") then
-				-- Permission denied, but it exists
-				return true
-		 end
-		 Log.Error(err)
-	end
-	return ok
-end
-
----@param dirname string
-function create_dir(dirname)
-	-- Prevent console window from appearing if it already exists
-	if dir_exists(dirname) then return end
-
-	local code = os.execute("mkdir " .. dirname)
-	if code ~= 0 then
-		Log.Error("Failed to create cache directory '" .. dirname .. "'. Error code: " .. tostring(code))
-	end
-end
-
---- Stolen from Fair Mod
----@param entity entity_id
----@param item_entity entity_id
-function EntityDropItem(entity, item_entity)
-	EntityRemoveFromParent(item_entity)
-	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_hand", false)
-	EntitySetComponentsWithTagEnabled(item_entity, "enabled_in_world", true)
-
-	local inventory_comp = EntityGetFirstComponentIncludingDisabled(entity, "Inventory2Component")
-	if inventory_comp ~= nil then
-		ComponentSetValue2(inventory_comp, "mActiveItem", 0)
-		ComponentSetValue2(inventory_comp, "mActualActiveItem", 0)
-		ComponentSetValue2(inventory_comp, "mForceRefresh", true)
-	end
 end

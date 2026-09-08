@@ -1,14 +1,10 @@
 -- streaming_integration/event_list.lua
 dofile_once("data/scripts/streaming_integration/event_utilities.lua")
-dofile_once("data/scripts/lib/utilities.lua") -- get_distance2
 dofile_once("data/archipelago/scripts/ap_utils.lua")
+dofile_once("data/archipelago/lib/extensions.lua")
 dofile_once("data/archipelago/scripts/ap_fungal_utils.lua")
+local Noita = dofile_once("data/archipelago/lib/noita.lua") ---@type Noita
 
-local NULL_ENTITY = 0 --[[@as entity_id]]
-local NULL_COMPONENT = 0 --[[@as component_id]]
-
----@cast NULL_ENTITY -integer,+entity_id
----@cast NULL_COMPONENT -integer,+component_id
 
 --- Replacement for add_icon_above_head with description included.
 ---@param game_effect_entity entity_id
@@ -45,7 +41,7 @@ end
 ---@param hudonly boolean?
 ---@return entity_id effect entity
 local function ApplyStatusEffect(event, game_effect, frames, hudonly)
-	local player = get_player()
+	local player = Noita.GetPlayer()
 	if player == nil then return NULL_ENTITY end
 
 	local effect_comp, effect_entity = GetGameEffectLoadTo(player, game_effect, false)
@@ -62,7 +58,7 @@ end
 ---@param hudonly boolean?
 ---@return entity_id effect entity
 local function ApplyCustomStatusEffect(event, game_effect_file, frames, hudonly)
-	local player = get_player()	-- using get_player_always here causes cape problems with INVISIBLE_BAD + POLYMORPH
+	local player = Noita.GetPlayer()	-- using get_player_always here causes cape problems with INVISIBLE_BAD + POLYMORPH
 	if player == nil then return NULL_ENTITY end
 
 	local effect_entity = LoadGameEffectEntityTo(player, game_effect_file)
@@ -81,8 +77,8 @@ end
 ---@return number x
 ---@return number y
 local function GetRandomSpawnPosNearby(distance, radius)
-	InitRandomSeed()
-	local x, y = get_spawn_position()
+	Noita.InitRandomSeed()
+	local x, y = Noita.GetSpawnPosition()
 
 	local spawn_x = x
 	local spawn_y = y
@@ -90,7 +86,7 @@ local function GetRandomSpawnPosNearby(distance, radius)
 	for _ = 1,20 do
 		local _, hit_x, hit_y = RaytraceSurfaces(x, y, x + Random(-distance, distance), y + Random(-distance, distance))
 
-		local new_dist = get_distance2(x, y, hit_x, hit_y)
+		local new_dist = math.distance2(x, y, hit_x, hit_y)
 		if new_dist > best_dist then
 			spawn_x = hit_x
 			spawn_y = hit_y
@@ -115,8 +111,8 @@ end
 ---@return number x
 ---@return number y
 local function GetRandomSpawnPosGround(min_distance, max_distance, radius)
-	InitRandomSeed()
-	local start_x, start_y = get_spawn_position()
+	Noita.InitRandomSeed()
+	local start_x, start_y = Noita.GetSpawnPosition()
 
 	-- NOTE: FindFreePositionForBody does not work
 	local x, y
@@ -135,7 +131,7 @@ end
 ---@param throw_item entity_id
 ---@param force number
 local function YeetItem(throw_item, force)
-	local player_x, player_y = get_spawn_position()
+	local player_x, player_y = Noita.GetSpawnPosition()
 	local targ_x, targ_y = GetRandomSpawnPosNearby(force*2, 0)
 	local dir_x = targ_x - player_x
 	local dir_y = targ_y - player_y
@@ -320,7 +316,7 @@ local archipelago_traps = {
 		id = "AP_RANDOM_STATUS",
 		ui_name = "$ap_trap_random_status",
 		action = function(event)
-			InitRandomSeed()
+			Noita.InitRandomSeed()
 			local bad_status_traps = {
 				"AP_STUN", "AP_CONFUSION", "AP_ON_FIRE", "AP_POISON", "AP_FREEZE", "AP_CHILLED", "SLIMY_PLAYER", "OILED_PLAYER", "DRUNK_PLAYER", "SLOW_PLAYER", "PLAYER_GAS", "TWITCHY",
 			}
@@ -337,7 +333,7 @@ local archipelago_traps = {
 		id = "AP_INSTANT_DAMAGE",
 		ui_name = "$ap_trap_instant_damage",
 		action = function(event)
-			local player = get_player()
+			local player = Noita.GetPlayer()
 			if player == nil then return end
 			EntityInflictDamage(player, 0.5, "DAMAGE_CURSE", "$ap_trap_instant_damage", "NONE", 0, 0)
 		end
@@ -347,7 +343,7 @@ local archipelago_traps = {
 		ui_name = "$ap_trap_instant_death",
 		kind = STREAMING_EVENT_AWFUL,
 		action = function(event)
-			local player = get_player()
+			local player = Noita.GetPlayer()
 			if player == nil then return end
 			EntityInflictDamage(player, 99999999, "DAMAGE_CURSE", "$ap_trap_instant_death", "NONE", 0, 0)
 		end
@@ -357,7 +353,7 @@ local archipelago_traps = {
 		ui_name = "$ap_trap_one_hp",
 		kind = STREAMING_EVENT_AWFUL,
 		action = function(event)
-			local player = get_player()
+			local player = Noita.GetPlayer()
 			if player == nil then return end
 
 			local damage_comps = EntityGetComponent(player, "DamageModelComponent") or {}
@@ -416,7 +412,7 @@ local archipelago_traps = {
 		ui_name = "$ap_trap_tarr",
 		disabled = true,
 		action = function(event)
-			InitRandomSeed()
+			Noita.InitRandomSeed()
 			local num_spawns = Random(1, 5)
 
 			local spawn_x, spawn_y = GetRandomSpawnPosNearby(50, 25)
@@ -430,7 +426,7 @@ local archipelago_traps = {
 		id = "AP_WHOOPS_TRAP",
 		ui_name = "$ap_trap_throw_selected",
 		action = function(event)
-			local player = get_player()
+			local player = Noita.GetPlayer()
 			if player == nil then return end
 
 			local inventory = EntityGetFirstComponentIncludingDisabled(player, "Inventory2Component")
@@ -438,7 +434,7 @@ local archipelago_traps = {
 
 			local throw_item = ComponentGetValue2(inventory, "mActiveItem")
 			if throw_item ~= nil then
-				EntityDropItem(player, throw_item)
+				Noita.EntityDropItem(player, throw_item)
 			end
 
 			YeetItem(throw_item, 600)
@@ -448,7 +444,7 @@ local archipelago_traps = {
 		id = "AP_EMPTY_ITEM_BOX",
 		ui_name = "$ap_trap_empty_item_box",
 		action = function(event)
-			local player = get_player()
+			local player = Noita.GetPlayer()
 			if player == nil then return end
 
 			local children = EntityGetAllChildren(player) or {}
@@ -456,7 +452,7 @@ local archipelago_traps = {
 				if EntityGetName(child) == "inventory_quick" then
 					local inventory = EntityGetAllChildren(child) or {}
 					for _,item in ipairs(inventory) do
-						EntityDropItem(player, item)
+						Noita.EntityDropItem(player, item)
 						YeetItem(item, 40)
 					end
 				end
@@ -467,8 +463,8 @@ local archipelago_traps = {
 		id = "AP_EJECT_ABILITY",
 		ui_name = "$ap_trap_eject_ability",
 		action = function(event)
-			InitRandomSeed()
-			local player = get_player()
+			Noita.InitRandomSeed()
+			local player = Noita.GetPlayer()
 			if player == nil then return end
 			local x, y = EntityGetTransform(player)
 
@@ -480,7 +476,7 @@ local archipelago_traps = {
 						local spells = EntityGetAllChildren(wand, "card_action") or {}
 						if #spells > 0 then
 							local spell = spells[Random(1, #spells)]
-							EntityDropItem(player, spell)
+							Noita.EntityDropItem(player, spell)
 							EntitySetTransform(spell, x, y)
 							YeetItem(spell, 40)
 						end
@@ -535,8 +531,8 @@ local archipelago_traps = {
 		ui_name = "$ap_trap_spell_shuffle",
 		ui_description = "$ap_trap_spell_shuffle_desc",
 		action = function(event)
-			InitRandomSeed()
-			local player = get_player()
+			Noita.InitRandomSeed()
+			local player = Noita.GetPlayer()
 			if player == nil then return end
 			local x, y = EntityGetTransform(player)
 
@@ -615,7 +611,7 @@ local archipelago_traps = {
 		action = function(event)
 			for _ = 1,4 do
 				local x, y = GetRandomSpawnPosNearby(20, 0)
-				shoot_projectile_ownerless("data/archipelago/entities/projectiles/super_glue.xml", x, y, 0, 0)
+				Noita.ShootProjectileOwnerless("data/archipelago/entities/projectiles/super_glue.xml", x, y, 0, 0)
 			end
 		end
 	},
@@ -625,8 +621,8 @@ local archipelago_traps = {
 		ui_icon = "data/ui_gfx/gun_actions/meteor_rain.png",
 		delay_timer = 300,
 		action_delayed = function(event)
-			local x, y = get_spawn_position()
-			shoot_projectile_ownerless("data/entities/projectiles/deck/meteor_rain.xml", x, y, 0, 0)
+			local x, y = Noita.GetSpawnPosition()
+			Noita.ShootProjectileOwnerless("data/entities/projectiles/deck/meteor_rain.xml", x, y, 0, 0)
 		end
 	},
 	{
@@ -683,7 +679,7 @@ local archipelago_traps = {
 		id = "AP_SPAWN_THWIMP",
 		ui_name = "$ap_trap_spawn_thwimp",
 		action = function(event)
-			local x, y = get_spawn_position()
+			local x, y = Noita.GetSpawnPosition()
 			local _, _, target_y = RaytracePlatforms(x, y, x, y - 100)
 
 			EntityLoad("data/archipelago/entities/animals/thwimp.xml", x, target_y + 10)
@@ -749,7 +745,7 @@ local archipelago_traps = {
 		ui_name = "$ap_trap_earthquake",
 		delay_timer = 300,
 		action_delayed = function(event)
-			local x, y = get_spawn_position()
+			local x, y = Noita.GetSpawnPosition()
 			local entity = EntityLoad("data/entities/projectiles/deck/crumbling_earth.xml", x, y)
 			EntityAddTag(entity, "donotrepeat") -- don't let spells to bombs ruin this
 		end
@@ -765,7 +761,7 @@ local archipelago_traps = {
 		id = "AP_LITERATURE",
 		ui_name = "$ap_trap_literature",
 		action = function(event)
-			InitRandomSeed()
+			Noita.InitRandomSeed()
 			for _ = 1,20 do
 				local x, y = GetRandomSpawnPosNearby(50, 10)
 				local book = Random(1,4)
@@ -777,7 +773,7 @@ local archipelago_traps = {
 		id = "AP_EXPLOSION",
 		ui_name = "$ap_trap_explosion",
 		action = function(event)
-			local x, y = get_spawn_position()
+			local x, y = Noita.GetSpawnPosition()
 			EntityLoad("data/entities/misc/essences/fire_explosion.xml", x, y)
 		end
 	},
@@ -791,9 +787,9 @@ local archipelago_traps = {
 				table.insert(eggs, EntityLoad("data/entities/items/pickup/egg_worm.xml", x, y))
 			end
 
-			local player = get_player()
+			local player = Noita.GetPlayer()
 			if player ~= nil then
-				local items = GetQuickbarNonWandItems()
+				local items = Noita.GetQuickbarNonWandItems()
 				for i = 1, math.min(#eggs, 4 - #items) do
 					GamePickUpInventoryItem(player, eggs[i], true)
 				end
@@ -805,7 +801,7 @@ local archipelago_traps = {
 		ui_name = "$ap_trap_swapper_curse",
 		ui_icon = "data/archipelago/ui_gfx/status_effects/plagiarize_swapper.png",
 		action = function(event)
-			local x, y = get_spawn_position()
+			local x, y = Noita.GetSpawnPosition()
 			GamePlaySound("data/audio/Desktop/projectiles.bank", "player_projectiles/megalaser/launch", x, y)
 			ApplyCustomStatusEffect(event, "data/archipelago/entities/misc/effect_swapper_curse.xml", 5400, true)
 		end
@@ -817,7 +813,7 @@ local archipelago_traps = {
 			local x, y = GetRandomSpawnPosNearby(64, 32)
 			EntityLoad("data/archipelago/entities/projectiles/circle_pea_soup.xml", x, y)
 
-			local player = get_player()
+			local player = Noita.GetPlayer()
 			if player == nil then return end
 			local children = EntityGetAllChildren(player) or {}
 			for _,child in ipairs(children) do
@@ -841,7 +837,7 @@ local archipelago_traps = {
 				EntityLoad("data/archipelago/entities/bananapeel/bananapeel.xml", x, y)
 			end
 
-			local x, y = get_spawn_position();
+			local x, y = Noita.GetSpawnPosition();
 			EntityLoad("data/archipelago/entities/bananapeel/bananapeel.xml", x, y)
 		end
 	},

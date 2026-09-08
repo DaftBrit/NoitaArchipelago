@@ -1,5 +1,5 @@
 -- Modified from Nolla Games
-dofile_once("data/scripts/lib/utilities.lua") -- component_write, get_magnitude, map
+dofile_once("data/archipelago/lib/extensions.lua")
 
 local break_dist = 256
 local sprite_width = 16 -- for accurate scaling (visible pixels only, no margins)
@@ -29,7 +29,7 @@ end
 local dir_x = v[1] - v[3]
 local dir_y = v[2] - v[4]
 local angle = math.atan(dir_y / dir_x)
-local dist = get_magnitude(dir_x, dir_y)
+local dist = math.magnitude(dir_x, dir_y)
 
 -- break if anchors are too far apart
 if dist > break_dist then
@@ -41,8 +41,11 @@ end
 local pos_x = (v[1] + v[3]) * 0.5
 local pos_y = (v[2] + v[4]) * 0.5
 local scale_x = dist / sprite_width
-local scale_y = map(dist, 0, break_dist, 1, 0.5)
+local scale_y = math.map(dist, 0, break_dist, 1, 0.5)
 EntitySetTransform(entity_id, pos_x, pos_y, angle, scale_x, scale_y)
 
-local alpha = map(dist, 0, break_dist, 1, 0.3)
-component_write( EntityGetFirstComponent(entity_id, "SpriteComponent" ), { alpha = alpha } )
+local alpha = math.map(dist, 0, break_dist, 1, 0.3)
+local sprite_comp = EntityGetFirstComponent(entity_id, "SpriteComponent")
+if sprite_comp ~= nil then
+	ComponentSetValue2(sprite_comp, "alpha", alpha)
+end
