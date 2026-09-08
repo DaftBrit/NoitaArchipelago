@@ -362,7 +362,8 @@ local archipelago_traps = {
 			local damage_comps = EntityGetComponent(player, "DamageModelComponent") or {}
 			for _, comp in ipairs(damage_comps) do
 				local hp = ComponentGetValue2(comp, "hp")
-				EntityInflictDamage(player, math.max(hp - 1.0 / 25, 0), "DAMAGE_CURSE", "$ap_trap_one_hp", "NONE", 0, 0)
+				local scale = tonumber(MagicNumbersGetValue("GUI_HP_MULTIPLIER"))
+				EntityInflictDamage(player, math.max(hp - 1.0 / scale, 0), "DAMAGE_CURSE", "$ap_trap_one_hp", "NONE", 0, 0)
 			end
 		end
 	},
