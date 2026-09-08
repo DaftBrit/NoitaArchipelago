@@ -39,7 +39,14 @@ function Cache:restore()
 	local filename = self:get_filename()
 	local f, err = io.open(filename, "r")
 	if f == nil then
-		Log.Warn("Failed to open cache for read: " .. filename .. "\n" .. tostring(err))
+		f, err = io.open(filename, "a")
+		if f == nil then
+			Log.Error("Failed to open cache for read: " .. filename .. "\n" .. tostring(err))
+			return
+		end
+
+		f:write("{}")
+		f:close()
 		return
 	end
 
