@@ -83,3 +83,10 @@ for _, sprite in ipairs(sprites) do
 	end
 
 end
+
+if EntityHasTag(root, "player_unit") then
+	local char_data = EntityGetFirstComponent(root, "CharacterDataComponent")
+	if char_data ~= nil then
+		ComponentSetValue2(char_data, "effect_hit_ground", false)
+	end
+end

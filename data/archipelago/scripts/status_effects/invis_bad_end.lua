@@ -64,8 +64,15 @@ for _, sprite in ipairs(sprites) do
 	end
 end
 
-local player_entity = EntityGetRootEntity(entity)
-local x, y = EntityGetTransform(player_entity)
+local root = EntityGetRootEntity(entity)
+local x, y = EntityGetTransform(root)
 local cape = EntityLoad("data/entities/verlet_chains/cape/cape.xml", x, y)
-EntityAddChild(player_entity, cape)
+EntityAddChild(root, cape)
 EntitySetName(cape, "cape")
+
+if EntityHasTag(root, "player_unit") then
+	local char_data = EntityGetFirstComponent(root, "CharacterDataComponent")
+	if char_data ~= nil then
+		ComponentSetValue2(char_data, "effect_hit_ground", true)
+	end
+end
