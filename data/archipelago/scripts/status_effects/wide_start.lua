@@ -35,8 +35,8 @@ ComponentSetValue2(char_comp, "collision_aabb_min_x", left * FACTOR)
 ComponentSetValue2(char_comp, "collision_aabb_max_x", right * FACTOR)
 
 for _,hit_comp in ipairs(hit_comps) do
-	local left = ComponentGetValue2(hit_comp, "collision_aabb_min_x")
-	local right = ComponentGetValue2(hit_comp, "collision_aabb_max_x")
-	ComponentSetValue2(hit_comp, "collision_aabb_min_x", left * FACTOR)
-	ComponentSetValue2(hit_comp, "collision_aabb_max_x", right * FACTOR)
+	local left = ComponentGetValue2(hit_comp, "aabb_min_x")
+	local right = ComponentGetValue2(hit_comp, "aabb_max_x")
+	ComponentSetValue2(hit_comp, "aabb_min_x", left * FACTOR)
+	ComponentSetValue2(hit_comp, "aabb_max_x", right * FACTOR)
 end
