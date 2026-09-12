@@ -119,6 +119,7 @@ local function GetConnectionTags()
 	for tag, _ in pairs(connect_tags) do
 		table.insert(tags_arr, tag)
 	end
+	table.sort(tags_arr)
 	return tags_arr
 end
 

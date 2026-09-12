@@ -1,9 +1,13 @@
+dofile_once("data/scripts/lib/utilities.lua")
+
 ---@class ConnIcon
 ---@field msg_override string?
 ---@field state STATE
 ---@field gui gui
 ---@field button_pressed boolean?
-local ConnIcon = {}
+local ConnIcon = {
+	last_hovered = false
+}
 
 --- @enum STATE
 local STATE = {
@@ -58,19 +62,41 @@ function ConnIcon:updateDimensions()
 	end
 end
 
+---@param id integer
+---@param x number
+---@param y number
+---@param sprite_filename string
+---@return boolean
+function ConnIcon:imageButton(id, x, y, sprite_filename)
+	local scale = self.last_hovered and 1.2 or 1
+	local w1, h1 = GuiGetImageDimensions(self.gui, sprite_filename, 1)
+	local w2, h2 = GuiGetImageDimensions(self.gui, sprite_filename, scale)
+
+	GuiImage(self.gui, id, x - (w2 - w1) / 2, y - (h2 - h1) / 2, sprite_filename, 1, scale)
+	local clicked, _, hovered = GuiGetPreviousWidgetInfo(self.gui)
+
+	if hovered and not self.last_hovered then
+		local camx, camy = GameGetCameraPos()
+		GamePlaySound("data/audio/Desktop/ui.snd", "ui/button_select", camx, camy)
+	end
+
+	self.last_hovered = hovered
+	return clicked
+end
+
 function ConnIcon:drawMainButton()
 	GuiIdPushString(self.gui, "MAIN BTN")
 
 	local x = self.screen_width - self.img_width - 8
 	local y = self.screen_height - self.img_height - 8
-	local result = GuiImageButton(self.gui, 0, x, y, "", self:img())
+	local clicked = self:imageButton(0, x, y, self:img())
 
 	-- Applies a tooltip to the button we just created
 	local message = self.msg_override or self:msg()
 	GuiTooltip(self.gui, message, "")
 
 	GuiIdPop(self.gui)
-	return result
+	return clicked
 end
 
 function ConnIcon:update()
